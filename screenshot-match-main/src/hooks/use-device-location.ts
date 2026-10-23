@@ -17,11 +17,20 @@ export function useDeviceLocation() {
   const [location, setLocation] = useState<DeviceLocation | null>(null);
   const [error, setError] = useState("");
 
+  // Save only whether the visitor enabled GPS, never their coordinates.
+  useEffect(() => {
+    if (localStorage.getItem("kpt:gps-mode-enabled") === "true") {
+      setLocating(true);
+      setEnabled(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (!enabled) return;
     if (!("geolocation" in navigator)) {
       setError("This browser cannot access GPS. Select a district instead.");
       setEnabled(false);
+      localStorage.removeItem("kpt:gps-mode-enabled");
       setLocating(false);
       return;
     }
@@ -56,6 +65,7 @@ export function useDeviceLocation() {
         if (reason.code === 1) {
           setLocation(null);
           setEnabled(false);
+          localStorage.removeItem("kpt:gps-mode-enabled");
         }
       },
       {
@@ -69,6 +79,7 @@ export function useDeviceLocation() {
   }, [enabled]);
 
   const disable = () => {
+    localStorage.removeItem("kpt:gps-mode-enabled");
     setEnabled(false);
     setLocating(false);
     setLocation(null);
@@ -82,6 +93,7 @@ export function useDeviceLocation() {
       setError("");
       setLocation(null);
       setLocating(true);
+      localStorage.setItem("kpt:gps-mode-enabled", "true");
       setEnabled(true);
     }
   };

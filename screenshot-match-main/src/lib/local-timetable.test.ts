@@ -40,3 +40,20 @@ describe("user supplied 23 October reference", () => {
     expect(applyLocalTimetable(api, saved, "24-10-2026").timings?.Sunrise).toBe("06:17");
   });
 });
+
+describe("automatic offset calculation for future dates", () => {
+  it("applies each prayer and sunrise correction independently on a later date", () => {
+    const saved = makeLocalTimetable(
+      "23-10-2026",
+      { Fajr: "05:00", Dhuhr: "12:13", Asr: "15:34", Maghrib: "18:08", Isha: "19:19" },
+      api, true, "06:16",
+    );
+    const nextDayApi = { ...api, Dhuhr: "12:12", Asr: "15:32", Sunrise: "06:18" };
+    const result = applyLocalTimetable(nextDayApi, saved, "24-10-2026");
+    expect(result.source).toBe("adjusted");
+    expect(result.timings).toMatchObject({
+      Fajr: "05:00", Dhuhr: "12:14", Asr: "15:33",
+      Maghrib: "18:08", Isha: "19:19", Sunrise: "06:17",
+    });
+  });
+});

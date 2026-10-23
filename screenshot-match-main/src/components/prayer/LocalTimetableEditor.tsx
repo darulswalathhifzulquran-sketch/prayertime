@@ -63,8 +63,8 @@ export function LocalTimetableEditor({ dateKey, scope, calculated, saved, onChan
     if (dateKey !== SHARED_DATE || !scope.startsWith("gps:")) return;
     setDraft(SHARED_TIMES);
     setSunrise(SHARED_SUNRISE);
-    setAutoAdjust(false);
-    saveValues(SHARED_TIMES, SHARED_SUNRISE, false);
+    setAutoAdjust(true);
+    saveValues(SHARED_TIMES, SHARED_SUNRISE, true);
   };
 
   const clear = () => {
@@ -89,9 +89,9 @@ export function LocalTimetableEditor({ dateKey, scope, calculated, saved, onChan
           <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">
             <p className="font-semibold">Your shared local timings for 23 October 2026</p>
             <p className="mt-1">Fajr 05:00 · Dhuhr 12:13 · Asr 15:34 · Maghrib 18:08 · Isha 19:19 · Sunrise 06:16</p>
-            <p className="mt-1 text-xs">Use this only when your GPS location is the same place these timings refer to.</p>
+            <p className="mt-1 text-xs">Only for this GPS area. Future dates refresh automatically with approximate minute adjustments, not a verified local daily chart.</p>
             <Button type="button" className="mt-2" size="sm" disabled={!calculated} onClick={useSharedReference}>
-              Apply these times to my GPS location for today
+              Use these times + estimated future daily updates
             </Button>
           </div>
         )}

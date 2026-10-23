@@ -60,7 +60,18 @@ function Index() {
     : "district:" + district.id;
   const [localReference, setLocalReference] = useState<LocalTimetable | null>(null);
   useEffect(() => {
-    setLocalReference(readLocalTimetable(referenceScope));
+    let reference = readLocalTimetable(referenceScope);
+    // Upgrade only the user's exact six times from the 23 Oct GPS reference.
+    // Keep all other saved timetables and district settings unchanged.
+    const matchesSharedDay = reference?.dateKey === SHARED_DATE &&
+      reference.sunrise === SHARED_SUNRISE &&
+      (["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"] as const)
+        .every((key) => reference?.times[key] === SHARED_TIMES[key]);
+    if (referenceScope.startsWith("gps:") && reference && matchesSharedDay && !reference.autoAdjust) {
+      reference = { ...reference, autoAdjust: true };
+      localStorage.setItem(localTimetableKey(referenceScope), JSON.stringify(reference));
+    }
+    setLocalReference(reference);
   }, [referenceScope]);
   const resolved = applyLocalTimetable(pt.today, localReference, pt.dateKey);
   const displayedTimings = resolved.timings;
@@ -82,7 +93,7 @@ function Index() {
   const applySharedToday = () => {
     if (!gps.location || pt.dateKey !== SHARED_DATE || !pt.today) return;
     try {
-      const reference = makeLocalTimetable(SHARED_DATE, SHARED_TIMES, pt.today, false, SHARED_SUNRISE);
+      const reference = makeLocalTimetable(SHARED_DATE, SHARED_TIMES, pt.today, true, SHARED_SUNRISE);
       localStorage.setItem(localTimetableKey(referenceScope), JSON.stringify(reference));
       setLocalReference(reference);
     } catch {
@@ -186,9 +197,9 @@ function Index() {
           <section className="mx-auto max-w-xl rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-4 text-emerald-950 shadow-soft" aria-label="Use shared local prayer times">
             <p className="font-semibold">നിങ്ങൾ നൽകിയ ഇന്നത്തെ നിസ്കാരസമയം / Your local prayer times</p>
             <p className="mt-1 text-sm">Fajr 05:00 · Dhuhr 12:13 · Asr 15:34 · Maghrib 18:08 · Isha 19:19 · Sunrise 06:16</p>
-            <p className="mt-1 text-xs">23 October 2026 only, for the current GPS area. This does not change other districts or future dates.</p>
+            <p className="mt-1 text-xs">These six reference times apply today to your GPS area. Future dates update automatically with API calculations plus separate saved minute adjustments. Future values are estimates, not verified local mosque timings.</p>
             <Button className="mt-3 w-full" type="button" disabled={!pt.today} onClick={applySharedToday}>
-              {pt.today ? "Apply my six local times for today" : "Loading calculated times…"}
+              {pt.today ? "Use these times + enable estimated daily updates" : "Loading calculated times…"}
             </Button>
           </section>
         )}
@@ -238,7 +249,7 @@ function Index() {
             <p className="mt-1 text-xs text-muted-foreground">
               GPS identifies the location; it cannot verify the local mosque timetable.
               Compare with your local masjid's approved calendar before relying on prayer times or Azan reminders.
-              {resolved.source === "adjusted" ? " Minute differences may change seasonally; please verify regularly." : ""}
+              {resolved.source === "adjusted" ? " Minute differences can change seasonally. Automatic updates remain approximate; verify against your masjid's calendar." : ""}
             </p>
           </div>
           <div className="flex flex-col gap-2">
@@ -296,7 +307,7 @@ function Index() {
           <p>{resolved.source === "manual"
             ? "Today's six times are entered by you on this device, including Sunrise if provided."
             : resolved.source === "adjusted"
-              ? "Times use user-saved approximate minute adjustments; these are not verified daily local times."
+              ? "Daily automatic times use approximate minute offsets from your saved local reference; they are not verified mosque timetable times."
               : "These are API-calculated estimates, not verified local mosque timetable times."}</p>
           <p>After saving local references, approximate location keys and your timetable values are stored in this browser. GPS-based API requests share device coordinates with AlAdhan, not our backend.</p>
         </div>
