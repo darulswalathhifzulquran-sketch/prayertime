@@ -12,9 +12,7 @@ import { Stopwatch } from "@/components/prayer/Stopwatch";
 import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
-import { LocalTimetableEditor, SHARED_DATE, SHARED_TIMES, SHARED_SUNRISE } from "@/components/prayer/LocalTimetableEditor";
-import { applyLocalTimetable, gpsReferenceScope, localTimetableKey, makeLocalTimetable, readLocalTimetable, type LocalTimetable } from "@/lib/local-timetable";
-import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, applyOffset, formatHMS, formatTime, istSecondsOfDay, nextPrayer } from "@/lib/prayer";
+import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nextPrayer } from "@/lib/prayer";
 import { tr, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -55,29 +53,10 @@ function Index() {
   const pt = usePrayerTimes(prayerLocation, method);
   const now = useNow();
   const [open, setOpen] = useState(false);
-  const referenceScope = gps.location && gpsLat !== null && gpsLng !== null
-    ? gpsReferenceScope(gpsLat, gpsLng)
-    : "district:" + district.id;
-  const [localReference, setLocalReference] = useState<LocalTimetable | null>(null);
-  useEffect(() => {
-    let reference = readLocalTimetable(referenceScope);
-    // Upgrade only the user's exact six times from the 23 Oct GPS reference.
-    // Keep all other saved timetables and district settings unchanged.
-    const matchesSharedDay = reference?.dateKey === SHARED_DATE &&
-      reference.sunrise === SHARED_SUNRISE &&
-      (["Fajr", "Dhuhr", "Asr", "Maghrib", "Isha"] as const)
-        .every((key) => reference?.times[key] === SHARED_TIMES[key]);
-    if (referenceScope.startsWith("gps:") && reference && matchesSharedDay && !reference.autoAdjust) {
-      reference = { ...reference, autoAdjust: true };
-      localStorage.setItem(localTimetableKey(referenceScope), JSON.stringify(reference));
-    }
-    setLocalReference(reference);
-  }, [referenceScope]);
-  const resolved = applyLocalTimetable(pt.today, localReference, pt.dateKey);
-  const displayedTimings = resolved.timings;
-  const tomorrowFajr = localReference?.autoAdjust && pt.tomorrowFajr
-    ? applyOffset(pt.tomorrowFajr, localReference.offsets.Fajr)
-    : pt.tomorrowFajr;
+  // Always show the live timing for the selected district or GPS coordinates.
+  // Past locally-entered reference times never override another location or date.
+  const displayedTimings = pt.today;
+  const tomorrowFajr = pt.tomorrowFajr;
 
   useEffect(() => { document.documentElement.classList.toggle("dark", theme === "dark"); }, [theme]);
 
@@ -88,17 +67,6 @@ function Index() {
     gps.disable();
     setDistrictId(id);
     setOpen(false);
-  };
-
-  const applySharedToday = () => {
-    if (!gps.location || pt.dateKey !== SHARED_DATE || !pt.today) return;
-    try {
-      const reference = makeLocalTimetable(SHARED_DATE, SHARED_TIMES, pt.today, true, SHARED_SUNRISE);
-      localStorage.setItem(localTimetableKey(referenceScope), JSON.stringify(reference));
-      setLocalReference(reference);
-    } catch {
-      // The expanded local timetable form provides a manual fallback for corrections.
-    }
   };
 
   return (
@@ -193,16 +161,6 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
-        {gps.location && pt.dateKey === SHARED_DATE && localReference?.dateKey !== SHARED_DATE && (
-          <section className="mx-auto max-w-xl rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-4 text-emerald-950 shadow-soft" aria-label="Use shared local prayer times">
-            <p className="font-semibold">നിങ്ങൾ നൽകിയ ഇന്നത്തെ നിസ്കാരസമയം / Your local prayer times</p>
-            <p className="mt-1 text-sm">Fajr 05:00 · Dhuhr 12:13 · Asr 15:34 · Maghrib 18:08 · Isha 19:19 · Sunrise 06:16</p>
-            <p className="mt-1 text-xs">These six reference times apply today to your GPS area. Future dates update automatically with API calculations plus separate saved minute adjustments. Future values are estimates, not verified local mosque timings.</p>
-            <Button className="mt-3 w-full" type="button" disabled={!pt.today} onClick={applySharedToday}>
-              {pt.today ? "Use these times + enable estimated daily updates" : "Loading calculated times…"}
-            </Button>
-          </section>
-        )}
         <section className="relative mx-auto max-w-xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-emerald-800 to-emerald-600 p-6 text-white shadow-soft sm:p-8">
           <div className="islamic-pattern absolute inset-0 opacity-60" aria-hidden />
           <div className="relative flex flex-col items-stretch gap-6">
@@ -245,11 +203,10 @@ function Index() {
           </div>
           {pt.error && <p className="mb-4 rounded-xl border border-destructive/40 p-3 text-sm text-destructive">{pt.error}</p>}
           <div className="mb-4 rounded-xl border bg-muted/60 p-3 text-sm">
-            <strong>{resolved.source === "manual" ? "Your local reference (today)" : resolved.source === "adjusted" ? "Estimated using your saved minute adjustments" : "API-calculated times — NOT verified local mosque times"}</strong>
+            <strong>API-calculated times — NOT verified local mosque times</strong>
             <p className="mt-1 text-xs text-muted-foreground">
               GPS identifies the location; it cannot verify the local mosque timetable.
               Compare with your local masjid's approved calendar before relying on prayer times or Azan reminders.
-              {resolved.source === "adjusted" ? " Minute differences can change seasonally. Automatic updates remain approximate; verify against your masjid's calendar." : ""}
             </p>
           </div>
           <div className="flex flex-col gap-2">
@@ -280,15 +237,6 @@ function Index() {
               );
             })}
           </div>
-          <div className="mt-5">
-          <LocalTimetableEditor
-            dateKey={pt.dateKey}
-            scope={referenceScope}
-            calculated={pt.today}
-            saved={localReference}
-            onChange={setLocalReference}
-          />
-          </div>
         </section>
 
         <section className="grid gap-6 md:grid-cols-2">
@@ -304,12 +252,8 @@ function Index() {
           <p>{gps.location
             ? "Prayer times are calculated using your browser's GPS coordinates (shared with AlAdhan when requesting timings). GPS has an uncertainty radius and is not guaranteed to be exact. Coordinates are not saved in browser storage."
             : "District times are calculated for each district headquarters. Use the location button for GPS-based timings."}</p>
-          <p>{resolved.source === "manual"
-            ? "Today's six times are entered by you on this device, including Sunrise if provided."
-            : resolved.source === "adjusted"
-              ? "Daily automatic times use approximate minute offsets from your saved local reference; they are not verified mosque timetable times."
-              : "These are API-calculated estimates, not verified local mosque timetable times."}</p>
-          <p>After saving local references, approximate location keys and your timetable values are stored in this browser. GPS-based API requests share device coordinates with AlAdhan, not our backend.</p>
+          <p>These are API-calculated estimates for the selected district or GPS location, not verified local mosque timetable times.</p>
+          <p>GPS-based API requests share browser-provided coordinates with AlAdhan, not our backend.</p>
         </div>
       </footer>
     </div>

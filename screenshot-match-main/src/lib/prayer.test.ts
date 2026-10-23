@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CARDS, DISTRICTS, nextPrayer, applyOffset, istDateKey, type Timings } from "./prayer";
+import { CARDS, DISTRICTS, apiUrl, nextPrayer, applyOffset, istDateKey, type Timings } from "./prayer";
 
 const t: Timings = { Fajr: "04:55", Sunrise: "06:10", Dhuhr: "12:15", Asr: "15:35", Maghrib: "18:10", Isha: "19:22" };
 
@@ -14,4 +14,13 @@ describe("prayer rules", () => {
   });
   it("applies minute offsets across midnight", () => expect(applyOffset("23:58", 5)).toBe("00:03"));
   it("uses Asia/Kolkata date", () => expect(istDateKey(new Date("2026-10-22T19:00:00Z"))).toBe("23-10-2026"));
+});
+
+describe("independent times per selected district", () => {
+  it("maps all 14 districts to different coordinates when asking the prayer API", () => {
+    const urls = DISTRICTS.map((district) => apiUrl(
+      "24-10-2026", district.lat, district.lng, 1,
+    ));
+    expect(new Set(urls).size).toBe(14);
+  });
 });

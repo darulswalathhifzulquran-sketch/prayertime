@@ -7,6 +7,7 @@ type Entry = { timings: Timings; fetchedAt: number };
 type State = {
   today?: Timings | undefined; tomorrowFajr?: string | undefined; dateKey: string;
   fetchedAt?: number | undefined; fromCache: boolean; loading: boolean; error?: string | undefined;
+  locationKey?: string;
 };
 
 const cacheKey = (id: string, date: string, method: number) => `kpt:v1:${id}:${date}:m${method}`;
@@ -41,6 +42,7 @@ async function getDay(d: PrayerLocation, date: string, method: number, force: bo
 export function usePrayerTimes(district: PrayerLocation | undefined, method: number) {
   const [s, setS] = useState<State>({ dateKey: "", fromCache: false, loading: true });
   const reqId = useRef(0);
+  const locationKey = district ? [district.id, district.lat.toFixed(4), district.lng.toFixed(4), method].join(":") : "";
 
   const load = useCallback(async (force = false) => {
     if (!district) return;
@@ -48,21 +50,21 @@ export function usePrayerTimes(district: PrayerLocation | undefined, method: num
     const now = new Date();
     const dateKey = istDateKey(now);
     const tomorrowKey = istDateKey(new Date(now.getTime() + 86400000));
-    setS({ dateKey, fromCache: false, loading: true });
+    setS({ dateKey, locationKey, fromCache: false, loading: true });
     try {
       const today = await getDay(district, dateKey, method, force);
       let tomorrowFajr: string | undefined;
       try { tomorrowFajr = (await getDay(district, tomorrowKey, method, false)).timings.Fajr; } catch { /* optional */ }
       if (id !== reqId.current) return;
       setS({
-        today: today.timings, tomorrowFajr, dateKey, fetchedAt: today.fetchedAt, fromCache: today.fromCache,
+        today: today.timings, tomorrowFajr, dateKey, locationKey, fetchedAt: today.fetchedAt, fromCache: today.fromCache,
         loading: false, error: "err" in today ? "Could not refresh — showing saved times." : undefined,
       });
     } catch (e) {
       if (id !== reqId.current) return;
-      setS({ dateKey, fromCache: false, loading: false, error: e instanceof Error ? e.message : "Failed to load" });
+      setS({ dateKey, locationKey, fromCache: false, loading: false, error: e instanceof Error ? e.message : "Failed to load" });
     }
-  }, [district, method]);
+  }, [district, method, locationKey]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -76,7 +78,18 @@ export function usePrayerTimes(district: PrayerLocation | undefined, method: num
     return () => { clearInterval(iv); document.removeEventListener("visibilitychange", vis); window.removeEventListener("focus", check); };
   }, [s.dateKey, load]);
 
-  return { ...s, reload: () => load(true) };
+  // Hide the previous location's schedule immediately, before effects run.
+  // A selected district must never display the last GPS/district's prayer times.
+  const current = s.locationKey === locationKey;
+  return {
+    ...s,
+    today: current ? s.today : undefined,
+    tomorrowFajr: current ? s.tomorrowFajr : undefined,
+    fetchedAt: current ? s.fetchedAt : undefined,
+    error: current ? s.error : undefined,
+    loading: !current || s.loading,
+    reload: () => load(true),
+  };
 }
 
 export function useNow(ms = 1000) {
