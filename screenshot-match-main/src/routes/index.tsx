@@ -220,9 +220,9 @@ function Index() {
                   sunrise && "border-dashed bg-muted/70",
                 )}>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-ml text-lg font-semibold leading-snug">{c.ml}</h3>
+                    <h3 className="font-arabic text-2xl font-semibold leading-snug text-primary text-left" dir="rtl" lang="ar">{c.ar}</h3>
                     <p className="mt-0.5 text-xs text-muted-foreground">
-                      {c.en} · <span className="font-arabic text-sm text-primary" dir="rtl" lang="ar">{c.ar}</span>
+                      <span className="font-ml text-sm font-medium">{c.ml}</span> · {c.en}
                     </p>
                     {sunrise && <p className="mt-1 text-[11px] text-muted-foreground">{t("notPrayer")}</p>}
                     {isNext && <span className="mt-1 inline-block rounded-full bg-emerald-700 px-2 py-0.5 text-[10px] font-semibold text-white">{t("upcoming")}</span>}
