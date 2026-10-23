@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl, istDateKey, type District, type Timings } from "@/lib/prayer";
 
+type PrayerLocation = Pick<District, "id" | "lat" | "lng">;
+
 type Entry = { timings: Timings; fetchedAt: number };
 type State = {
   today?: Timings | undefined; tomorrowFajr?: string | undefined; dateKey: string;
@@ -9,7 +11,7 @@ type State = {
 
 const cacheKey = (id: string, date: string, method: number) => `kpt:v1:${id}:${date}:m${method}`;
 
-async function fetchDay(d: District, date: string, method: number): Promise<Entry> {
+async function fetchDay(d: PrayerLocation, date: string, method: number): Promise<Entry> {
   const res = await fetch(apiUrl(date, d.lat, d.lng, method));
   if (!res.ok) throw new Error(`Prayer service returned ${res.status}`);
   const j = await res.json();
@@ -20,13 +22,15 @@ async function fetchDay(d: District, date: string, method: number): Promise<Entr
   return { timings, fetchedAt: Date.now() };
 }
 
-async function getDay(d: District, date: string, method: number, force: boolean) {
+async function getDay(d: PrayerLocation, date: string, method: number, force: boolean) {
+  // Never persist precise GPS coordinates or GPS-based prayer times in local storage.
+  const isGps = d.id === "gps";
   const k = cacheKey(d.id, date, method);
-  const cached = localStorage.getItem(k);
+  const cached = isGps ? null : localStorage.getItem(k);
   if (cached && !force) return { ...(JSON.parse(cached) as Entry), fromCache: true };
   try {
     const e = await fetchDay(d, date, method);
-    localStorage.setItem(k, JSON.stringify(e));
+    if (!isGps) localStorage.setItem(k, JSON.stringify(e));
     return { ...e, fromCache: false };
   } catch (err) {
     if (cached) return { ...(JSON.parse(cached) as Entry), fromCache: true, err };
@@ -34,7 +38,7 @@ async function getDay(d: District, date: string, method: number, force: boolean)
   }
 }
 
-export function usePrayerTimes(district: District | undefined, method: number) {
+export function usePrayerTimes(district: PrayerLocation | undefined, method: number) {
   const [s, setS] = useState<State>({ dateKey: "", fromCache: false, loading: true });
   const reqId = useRef(0);
 
@@ -44,7 +48,7 @@ export function usePrayerTimes(district: District | undefined, method: number) {
     const now = new Date();
     const dateKey = istDateKey(now);
     const tomorrowKey = istDateKey(new Date(now.getTime() + 86400000));
-    setS((p) => ({ ...p, loading: true, error: undefined, dateKey }));
+    setS({ dateKey, fromCache: false, loading: true });
     try {
       const today = await getDay(district, dateKey, method, force);
       let tomorrowFajr: string | undefined;

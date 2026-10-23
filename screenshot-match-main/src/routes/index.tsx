@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, ChevronsUpDown, LocateFixed, Moon, RefreshCw, Settings, Sun, Sunrise } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -11,7 +11,8 @@ import { Clock } from "@/components/prayer/Clock";
 import { Stopwatch } from "@/components/prayer/Stopwatch";
 import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
-import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nearestDistrict, nextPrayer } from "@/lib/prayer";
+import { useDeviceLocation } from "@/hooks/use-device-location";
+import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nextPrayer } from "@/lib/prayer";
 import { tr, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -38,22 +39,30 @@ function Index() {
   const [lang, setLang] = usePersisted<Lang>("kpt:lang", "en");
   const t = tr(lang);
   const district = DISTRICTS.find((d) => d.id === districtId) ?? DISTRICTS[0];
-  const pt = usePrayerTimes(district, method);
+  const gps = useDeviceLocation();
+  // Round only for prayer-time lookup: ~11 m resolution, enough for minute-level calculations.
+  // Browser-supplied GPS coordinates are never written to localStorage.
+  const gpsLat = gps.location ? Number(gps.location.latitude.toFixed(4)) : null;
+  const gpsLng = gps.location ? Number(gps.location.longitude.toFixed(4)) : null;
+  const prayerLocation = useMemo(
+    () => gpsLat !== null && gpsLng !== null
+      ? { id: "gps", lat: gpsLat, lng: gpsLng }
+      : district,
+    [district, gpsLat, gpsLng],
+  );
+  const pt = usePrayerTimes(prayerLocation, method);
   const now = useNow();
   const [open, setOpen] = useState(false);
-  const [geoMsg, setGeoMsg] = useState("");
 
   useEffect(() => { document.documentElement.classList.toggle("dark", theme === "dark"); }, [theme]);
 
   const next = now && pt.today ? nextPrayer(pt.today, istSecondsOfDay(now), pt.tomorrowFajr) : null;
   const methodName = METHODS.find((m) => m.id === method)?.name ?? `Method ${method}`;
 
-  const locate = () => {
-    if (!navigator.geolocation) return setGeoMsg("Location not supported on this device.");
-    navigator.geolocation.getCurrentPosition(
-      (p) => { const d = nearestDistrict(p.coords.latitude, p.coords.longitude); setDistrictId(d.id); setGeoMsg(`Nearest district: ${d.en}`); },
-      () => setGeoMsg("Location permission was not given."),
-    );
+  const chooseDistrict = (id: string) => {
+    gps.disable();
+    setDistrictId(id);
+    setOpen(false);
   };
 
   return (
@@ -67,7 +76,10 @@ function Index() {
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-56 justify-between" aria-label={t("district")}>
-                {lang === "ml" ? district.ml : district.en}<ChevronsUpDown className="h-4 w-4 opacity-60" />
+                {gps.location
+                  ? (lang === "ml" ? "നിലവിലെ GPS സ്ഥാനം" : "Current GPS location")
+                  : lang === "ml" ? district.ml : district.en}
+                <ChevronsUpDown className="h-4 w-4 opacity-60" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-64 p-0" align="end">
@@ -77,7 +89,7 @@ function Index() {
                   <CommandEmpty>—</CommandEmpty>
                   <CommandGroup>
                     {DISTRICTS.map((d) => (
-                      <CommandItem key={d.id} value={`${d.en} ${d.ml}`} onSelect={() => { setDistrictId(d.id); setOpen(false); }}>
+                      <CommandItem key={d.id} value={`${d.en} ${d.ml}`} onSelect={() => chooseDistrict(d.id)}>
                         <Check className={cn("h-4 w-4", d.id === district.id ? "opacity-100" : "opacity-0")} />
                         {d.en} <span className="ml-auto font-ml text-xs text-muted-foreground">{d.ml}</span>
                       </CommandItem>
@@ -87,7 +99,15 @@ function Index() {
               </Command>
             </PopoverContent>
           </Popover>
-          <Button variant="ghost" size="icon" onClick={locate} aria-label={t("locate")}><LocateFixed /></Button>
+          <Button
+            variant={gps.enabled ? "secondary" : "ghost"}
+            size="icon"
+            onClick={gps.toggle}
+            aria-label={gps.enabled ? "Turn off GPS location" : "Use my current GPS location"}
+            title={gps.enabled ? "Turn off GPS location" : "Use current GPS location for prayer times"}
+            aria-pressed={gps.enabled}
+            className={gps.enabled ? "text-primary" : undefined}
+          ><LocateFixed className={gps.locating ? "animate-pulse" : undefined} /></Button>
           <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Theme">{theme === "dark" ? <Sun /> : <Moon />}</Button>
           <Sheet>
             <SheetTrigger asChild><Button variant="ghost" size="icon" aria-label={t("settings")}><Settings /></Button></SheetTrigger>
@@ -125,7 +145,15 @@ function Index() {
             </SheetContent>
           </Sheet>
         </div>
-        {geoMsg && <p className="pb-2 text-center text-xs text-muted-foreground">{geoMsg}</p>}
+        {(gps.locating || gps.error || gps.location) && (
+          <p className="pb-2 px-4 text-center text-xs text-muted-foreground" role="status" aria-live="polite">
+            {gps.error
+              ? gps.error
+              : gps.location
+                ? `GPS prayer times active · accuracy ±${Math.round(gps.location.accuracy)} m${gps.location.accuracy > 1000 ? " · Location is approximate; improve GPS accuracy for better results." : ""}`
+                : "Requesting precise location permission…"}
+          </p>
+        )}
       </header>
 
       <main className="mx-auto max-w-6xl space-y-10 px-4 py-8">
@@ -133,8 +161,16 @@ function Index() {
           <div className="islamic-pattern absolute inset-0 opacity-60" aria-hidden />
           <div className="relative grid items-center gap-8 md:grid-cols-2">
             <div className="text-center md:text-left">
-              <p className="text-sm uppercase tracking-[0.3em] text-gold">{lang === "ml" ? district.ml : district.en}</p>
-              <p className="mb-6 text-xs opacity-70">{district.hq} · {district.lat.toFixed(4)}°N, {district.lng.toFixed(4)}°E</p>
+              <p className="text-sm uppercase tracking-[0.3em] text-gold">
+                {gps.location
+                  ? (lang === "ml" ? "നിങ്ങളുടെ ഇപ്പോഴത്തെ GPS സ്ഥാനം" : "Your current GPS location")
+                  : lang === "ml" ? district.ml : district.en}
+              </p>
+              <p className="mb-6 text-xs opacity-70">
+                {gps.location
+                  ? `${gps.location.latitude.toFixed(4)}°N, ${gps.location.longitude.toFixed(4)}°E · GPS accuracy ±${Math.round(gps.location.accuracy)} m`
+                  : `${district.hq} · ${district.lat.toFixed(4)}°N, ${district.lng.toFixed(4)}°E`}
+              </p>
               {now ? <Clock now={now} mode={clockMode} h12={h12} lang={lang} /> : <div className="h-24" />}
             </div>
             <div className="rounded-3xl border border-gold/40 bg-background/10 p-6 text-center backdrop-blur">
@@ -200,7 +236,10 @@ function Index() {
         <div className="mx-auto max-w-6xl space-y-1 px-4 py-6 text-xs text-muted-foreground">
           <p>Source: AlAdhan API (api.aladhan.com) · Method: {methodName} · Asr: Shafi'i · Timezone: {TZ}</p>
           {pt.fetchedAt && <p>{t("updated")}: {new Date(pt.fetchedAt).toLocaleString("en-IN", { timeZone: TZ })}</p>}
-          <p>These are calculated times and can differ by a few minutes from your local mosque timetable. Please follow your local masjid.</p>
+          <p>{gps.location
+            ? "Prayer times are calculated using your browser's GPS coordinates (shared with AlAdhan when requesting timings). GPS has an uncertainty radius and is not guaranteed to be exact. Coordinates are not saved in browser storage."
+            : "District times are calculated for each district headquarters. Use the location button for GPS-based timings."}</p>
+          <p>Calculated times may differ from your local mosque's verified timetable. Please follow your local masjid.</p>
         </div>
       </footer>
     </div>
