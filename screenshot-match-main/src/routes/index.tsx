@@ -12,8 +12,8 @@ import { Stopwatch } from "@/components/prayer/Stopwatch";
 import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
-import { LocalTimetableEditor } from "@/components/prayer/LocalTimetableEditor";
-import { applyLocalTimetable, gpsReferenceScope, readLocalTimetable, type LocalTimetable } from "@/lib/local-timetable";
+import { LocalTimetableEditor, SHARED_DATE, SHARED_TIMES, SHARED_SUNRISE } from "@/components/prayer/LocalTimetableEditor";
+import { applyLocalTimetable, gpsReferenceScope, localTimetableKey, makeLocalTimetable, readLocalTimetable, type LocalTimetable } from "@/lib/local-timetable";
 import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, applyOffset, formatHMS, formatTime, istSecondsOfDay, nextPrayer } from "@/lib/prayer";
 import { tr, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -77,6 +77,17 @@ function Index() {
     gps.disable();
     setDistrictId(id);
     setOpen(false);
+  };
+
+  const applySharedToday = () => {
+    if (!gps.location || pt.dateKey !== SHARED_DATE || !pt.today) return;
+    try {
+      const reference = makeLocalTimetable(SHARED_DATE, SHARED_TIMES, pt.today, false, SHARED_SUNRISE);
+      localStorage.setItem(localTimetableKey(referenceScope), JSON.stringify(reference));
+      setLocalReference(reference);
+    } catch {
+      // The expanded local timetable form provides a manual fallback for corrections.
+    }
   };
 
   return (
@@ -171,6 +182,16 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+        {gps.location && pt.dateKey === SHARED_DATE && localReference?.dateKey !== SHARED_DATE && (
+          <section className="mx-auto max-w-xl rounded-2xl border-2 border-emerald-400 bg-emerald-50 p-4 text-emerald-950 shadow-soft" aria-label="Use shared local prayer times">
+            <p className="font-semibold">നിങ്ങൾ നൽകിയ ഇന്നത്തെ നിസ്കാരസമയം / Your local prayer times</p>
+            <p className="mt-1 text-sm">Fajr 05:00 · Dhuhr 12:13 · Asr 15:34 · Maghrib 18:08 · Isha 19:19 · Sunrise 06:16</p>
+            <p className="mt-1 text-xs">23 October 2026 only, for the current GPS area. This does not change other districts or future dates.</p>
+            <Button className="mt-3 w-full" type="button" disabled={!pt.today} onClick={applySharedToday}>
+              {pt.today ? "Apply my six local times for today" : "Loading calculated times…"}
+            </Button>
+          </section>
+        )}
         <section className="relative mx-auto max-w-xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-emerald-800 to-emerald-600 p-6 text-white shadow-soft sm:p-8">
           <div className="islamic-pattern absolute inset-0 opacity-60" aria-hidden />
           <div className="relative flex flex-col items-stretch gap-6">

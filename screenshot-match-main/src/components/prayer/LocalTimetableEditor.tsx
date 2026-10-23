@@ -8,15 +8,15 @@ import {
 
 const EMPTY: FiveTimings = { Fajr: "", Dhuhr: "", Asr: "", Maghrib: "", Isha: "" };
 // User-supplied local reference for 23 Oct 2026 only. Never apply globally.
-const SHARED_DATE = "23-10-2026";
-const SHARED_TIMES: FiveTimings = {
+export const SHARED_DATE = "23-10-2026";
+export const SHARED_TIMES: FiveTimings = {
   Fajr: "05:00",
   Dhuhr: "12:13",
   Asr: "15:34",
   Maghrib: "18:08",
   Isha: "19:19",
 };
-const SHARED_SUNRISE = "06:16";
+export const SHARED_SUNRISE = "06:16";
 
 type Props = {
   dateKey: string;
