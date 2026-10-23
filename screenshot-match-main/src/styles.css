@@ -1,0 +1,139 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system definition.
+ *
+ * The @theme inline block maps CSS custom properties to Tailwind utility
+ * classes (e.g. --color-primary -> bg-primary, text-primary).
+ *
+ * The :root and .dark blocks define the actual color values using oklch.
+ * All colors MUST use oklch format.
+ *
+ * To add a new semantic color:
+ * 1. Add the variable to :root (light value) and .dark (dark value)
+ * 2. Register it in @theme inline as --color-<name>: var(--<name>)
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-gold: var(--gold);
+  --color-hero-foreground: var(--hero-foreground);
+  --font-sans: "Inter", "Noto Sans Malayalam", system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", serif;
+  --font-arabic: "Noto Naskh Arabic", serif;
+  --font-ml: "Noto Sans Malayalam", sans-serif;
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 1rem;
+  --background: oklch(0.975 0.012 85);
+  --foreground: oklch(0.22 0.04 255);
+  --card: oklch(0.99 0.008 85);
+  --card-foreground: oklch(0.22 0.04 255);
+  --popover: oklch(0.99 0.008 85);
+  --popover-foreground: oklch(0.22 0.04 255);
+  --primary: oklch(0.42 0.09 165);
+  --primary-foreground: oklch(0.98 0.01 85);
+  --secondary: oklch(0.93 0.02 120);
+  --secondary-foreground: oklch(0.28 0.05 200);
+  --muted: oklch(0.94 0.015 90);
+  --muted-foreground: oklch(0.5 0.03 240);
+  --accent: oklch(0.74 0.11 80);
+  --accent-foreground: oklch(0.22 0.04 255);
+  --gold: oklch(0.72 0.11 80);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.88 0.02 90);
+  --input: oklch(0.88 0.02 90);
+  --ring: oklch(0.72 0.11 80);
+  --hero: linear-gradient(140deg, oklch(0.3 0.07 170), oklch(0.22 0.05 245));
+  --hero-foreground: oklch(0.97 0.015 85);
+  --shadow-soft: 0 12px 32px -14px color-mix(in oklab, var(--foreground) 25%, transparent);
+  --pattern-ink: color-mix(in oklab, var(--gold) 18%, transparent);
+}
+
+.dark {
+  --background: oklch(0.17 0.03 250);
+  --foreground: oklch(0.95 0.015 85);
+  --card: oklch(0.22 0.035 245);
+  --card-foreground: oklch(0.95 0.015 85);
+  --popover: oklch(0.22 0.035 245);
+  --popover-foreground: oklch(0.95 0.015 85);
+  --primary: oklch(0.65 0.11 165);
+  --primary-foreground: oklch(0.15 0.03 250);
+  --secondary: oklch(0.28 0.04 220);
+  --secondary-foreground: oklch(0.95 0.015 85);
+  --muted: oklch(0.26 0.03 245);
+  --muted-foreground: oklch(0.72 0.03 240);
+  --accent: oklch(0.76 0.11 80);
+  --accent-foreground: oklch(0.17 0.03 250);
+  --gold: oklch(0.78 0.11 80);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.76 0.11 80);
+  --hero: linear-gradient(140deg, oklch(0.27 0.06 170), oklch(0.16 0.04 250));
+  --shadow-soft: 0 12px 32px -14px oklch(0 0 0 / 60%);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+}
+
+@utility bg-hero { background: var(--hero); color: var(--hero-foreground); }
+@utility shadow-soft { box-shadow: var(--shadow-soft); }
+@utility islamic-pattern {
+  background-image:
+    radial-gradient(circle at 50% 50%, transparent 38%, var(--pattern-ink) 39%, var(--pattern-ink) 41%, transparent 42%),
+    conic-gradient(from 45deg, transparent 0 25%, var(--pattern-ink) 0 26%, transparent 0 50%, var(--pattern-ink) 0 51%, transparent 0 75%, var(--pattern-ink) 0 76%, transparent 0);
+  background-size: 56px 56px;
+}
