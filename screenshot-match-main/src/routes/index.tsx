@@ -12,7 +12,9 @@ import { Stopwatch } from "@/components/prayer/Stopwatch";
 import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
-import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nextPrayer } from "@/lib/prayer";
+import { LocalTimetableEditor } from "@/components/prayer/LocalTimetableEditor";
+import { applyLocalTimetable, gpsReferenceScope, readLocalTimetable, type LocalTimetable } from "@/lib/local-timetable";
+import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, applyOffset, formatHMS, formatTime, istSecondsOfDay, nextPrayer } from "@/lib/prayer";
 import { tr, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -53,10 +55,22 @@ function Index() {
   const pt = usePrayerTimes(prayerLocation, method);
   const now = useNow();
   const [open, setOpen] = useState(false);
+  const referenceScope = gps.location && gpsLat !== null && gpsLng !== null
+    ? gpsReferenceScope(gpsLat, gpsLng)
+    : "district:" + district.id;
+  const [localReference, setLocalReference] = useState<LocalTimetable | null>(null);
+  useEffect(() => {
+    setLocalReference(readLocalTimetable(referenceScope));
+  }, [referenceScope]);
+  const resolved = applyLocalTimetable(pt.today, localReference, pt.dateKey);
+  const displayedTimings = resolved.timings;
+  const tomorrowFajr = localReference?.autoAdjust && pt.tomorrowFajr
+    ? applyOffset(pt.tomorrowFajr, localReference.offsets.Fajr)
+    : pt.tomorrowFajr;
 
   useEffect(() => { document.documentElement.classList.toggle("dark", theme === "dark"); }, [theme]);
 
-  const next = now && pt.today ? nextPrayer(pt.today, istSecondsOfDay(now), pt.tomorrowFajr) : null;
+  const next = now && displayedTimings ? nextPrayer(displayedTimings, istSecondsOfDay(now), tomorrowFajr) : null;
   const methodName = METHODS.find((m) => m.id === method)?.name ?? `Method ${method}`;
 
   const chooseDistrict = (id: string) => {
@@ -198,6 +212,21 @@ function Index() {
             </div>
           </div>
           {pt.error && <p className="mb-4 rounded-xl border border-destructive/40 p-3 text-sm text-destructive">{pt.error}</p>}
+          <div className="mb-4 rounded-xl border bg-muted/60 p-3 text-sm">
+            <strong>{resolved.source === "manual" ? "Your local reference (today)" : resolved.source === "adjusted" ? "Estimated using your saved minute adjustments" : "API-calculated times — NOT verified local mosque times"}</strong>
+            <p className="mt-1 text-xs text-muted-foreground">
+              GPS identifies the location; it cannot verify the local mosque timetable.
+              Compare with your local masjid's approved calendar before relying on prayer times or Azan reminders.
+              {resolved.source === "adjusted" ? " Minute differences may change seasonally; please verify regularly." : ""}
+            </p>
+          </div>
+          <LocalTimetableEditor
+            dateKey={pt.dateKey}
+            scope={referenceScope}
+            calculated={pt.today}
+            saved={localReference}
+            onChange={setLocalReference}
+          />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {CARDS.map((c) => {
               const isNext = next?.key === c.key;
@@ -216,7 +245,7 @@ function Index() {
                     <p className="font-arabic text-2xl text-primary" dir="rtl" lang="ar">{c.ar}</p>
                   </div>
                   <div className="mt-4 flex items-end justify-between">
-                    <p className="font-mono text-3xl font-semibold tabular-nums">{pt.today ? formatTime(pt.today[c.key], h12) : "--:--"}</p>
+                    <p className="font-mono text-3xl font-semibold tabular-nums">{displayedTimings ? formatTime(displayedTimings[c.key], h12) : "--:--"}</p>
                     {sunrise ? <Sunrise className="h-7 w-7 text-gold" /> : isNext ? <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">{t("upcoming")}</span> : null}
                   </div>
                   {sunrise && <p className="mt-2 text-xs text-muted-foreground">{t("notPrayer")}</p>}
@@ -227,7 +256,7 @@ function Index() {
         </section>
 
         <section className="grid gap-6 md:grid-cols-2">
-          <AzanPlayer title={t("azan")} now={now} timings={pt.today} />
+          <AzanPlayer title={t("azan")} now={now} timings={displayedTimings} />
           <Stopwatch title={t("stopwatch")} />
         </section>
       </main>
@@ -239,7 +268,12 @@ function Index() {
           <p>{gps.location
             ? "Prayer times are calculated using your browser's GPS coordinates (shared with AlAdhan when requesting timings). GPS has an uncertainty radius and is not guaranteed to be exact. Coordinates are not saved in browser storage."
             : "District times are calculated for each district headquarters. Use the location button for GPS-based timings."}</p>
-          <p>Calculated times may differ from your local mosque's verified timetable. Please follow your local masjid.</p>
+          <p>{resolved.source === "manual"
+            ? "Today's five prayer times are entered by you on this device. Sunrise remains API-calculated."
+            : resolved.source === "adjusted"
+              ? "Times use user-saved approximate minute adjustments; these are not verified daily local times."
+              : "These are API-calculated estimates, not verified local mosque timetable times."}</p>
+          <p>After saving local references, approximate location keys and your timetable values are stored in this browser. GPS-based API requests share device coordinates with AlAdhan, not our backend.</p>
         </div>
       </footer>
     </div>
