@@ -7,6 +7,16 @@ import {
 } from "@/lib/local-timetable";
 
 const EMPTY: FiveTimings = { Fajr: "", Dhuhr: "", Asr: "", Maghrib: "", Isha: "" };
+// User-supplied local reference for 23 Oct 2026 only. Never apply globally.
+const SHARED_DATE = "23-10-2026";
+const SHARED_TIMES: FiveTimings = {
+  Fajr: "05:00",
+  Dhuhr: "12:13",
+  Asr: "15:34",
+  Maghrib: "18:08",
+  Isha: "19:19",
+};
+const SHARED_SUNRISE = "06:16";
 
 type Props = {
   dateKey: string;
@@ -19,6 +29,7 @@ type Props = {
 export function LocalTimetableEditor({ dateKey, scope, calculated, saved, onChange }: Props) {
   const [draft, setDraft] = useState<FiveTimings>(EMPTY);
   const [autoAdjust, setAutoAdjust] = useState(false);
+  const [sunrise, setSunrise] = useState("");
   const [notice, setNotice] = useState("");
 
   useEffect(() => {
@@ -26,23 +37,34 @@ export function LocalTimetableEditor({ dateKey, scope, calculated, saved, onChan
     setDraft(source ? {
       Fajr: source.Fajr, Dhuhr: source.Dhuhr, Asr: source.Asr, Maghrib: source.Maghrib, Isha: source.Isha,
     } : EMPTY);
+    setSunrise(saved?.dateKey === dateKey && saved.sunrise ? saved.sunrise : calculated?.Sunrise ?? "");
     setAutoAdjust(saved?.autoAdjust ?? false);
     setNotice("");
   }, [scope, dateKey, calculated, saved]);
 
-  const save = () => {
+  const saveValues = (times: FiveTimings, rise: string, useOffsets: boolean) => {
     if (!calculated) { setNotice("Wait for the prayer API to finish loading."); return; }
-    if (!isFiveTimings(draft)) { setNotice("Enter all five valid HH:MM times."); return; }
+    if (!isFiveTimings(times)) { setNotice("Enter all five valid HH:MM times."); return; }
     try {
-      const reference = makeLocalTimetable(dateKey, draft, calculated, autoAdjust);
+      const reference = makeLocalTimetable(dateKey, times, calculated, useOffsets, rise);
       localStorage.setItem(localTimetableKey(scope), JSON.stringify(reference));
       onChange(reference);
-      setNotice(autoAdjust
-        ? "Saved for today. Future times use approximate minute adjustments — please verify."
-        : "Saved for today only on this device. Tomorrow uses calculated API times.");
+      setNotice(useOffsets
+        ? "Saved for today. Future days use approximate adjustments only — please verify daily."
+        : "Today's six reference times saved for this location only. Future dates require verified daily values.");
     } catch (e) {
       setNotice(e instanceof Error ? e.message : "Unable to save this local reference.");
     }
+  };
+
+  const save = () => saveValues(draft, sunrise, autoAdjust);
+
+  const useSharedReference = () => {
+    if (dateKey !== SHARED_DATE || !scope.startsWith("gps:")) return;
+    setDraft(SHARED_TIMES);
+    setSunrise(SHARED_SUNRISE);
+    setAutoAdjust(false);
+    saveValues(SHARED_TIMES, SHARED_SUNRISE, false);
   };
 
   const clear = () => {
@@ -59,11 +81,21 @@ export function LocalTimetableEditor({ dateKey, scope, calculated, saved, onChan
       </summary>
       <div className="mt-3 space-y-3">
         <p className="text-sm text-muted-foreground">
-          Enter the five times from your trusted local calendar for {dateKey || "today"}.
-          Sunrise remains API-calculated. Saved values affect only this browser and selected area.
-          GPS settings store an approximate 1 km location key, not exact coordinates.
+          Enter six times from your trusted local calendar for {dateKey || "today"}.
+          Saved times affect only this browser and the selected area.
+          GPS settings use an approximate 1 km location key, not your exact coordinates.
         </p>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {scope.startsWith("gps:") && dateKey === SHARED_DATE && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">
+            <p className="font-semibold">Your shared local timings for 23 October 2026</p>
+            <p className="mt-1">Fajr 05:00 · Dhuhr 12:13 · Asr 15:34 · Maghrib 18:08 · Isha 19:19 · Sunrise 06:16</p>
+            <p className="mt-1 text-xs">Use this only when your GPS location is the same place these timings refer to.</p>
+            <Button type="button" className="mt-2" size="sm" disabled={!calculated} onClick={useSharedReference}>
+              Apply these times to my GPS location for today
+            </Button>
+          </div>
+        )}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {FIVE.map((key) => (
             <label key={key} className="flex flex-col gap-1 text-sm">
               <span className="font-medium">{key}</span>
@@ -76,6 +108,12 @@ export function LocalTimetableEditor({ dateKey, scope, calculated, saved, onChan
               />
             </label>
           ))}
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium">Sunrise</span>
+            <input type="time" aria-label="Sunrise local time" value={sunrise}
+              onChange={(event) => setSunrise(event.target.value)}
+              className="min-w-0 rounded-md border bg-background px-2 py-2 text-foreground" />
+          </label>
         </div>
         <label className="flex items-start gap-2 text-sm">
           <input
@@ -85,12 +123,12 @@ export function LocalTimetableEditor({ dateKey, scope, calculated, saved, onChan
             className="mt-1"
           />
           <span>
-            Automatically apply today's separate minute differences to later dates.
+            Optionally apply today's minute differences to later dates.
             <strong> Approximation only — NOT a verified daily local timetable.</strong>
           </span>
         </label>
         <div className="flex flex-wrap items-center gap-3">
-          <Button disabled={!calculated || !dateKey} onClick={save}>Save my local times</Button>
+          <Button disabled={!calculated || !dateKey} onClick={save}>Save six local times</Button>
           {saved && <Button type="button" variant="outline" onClick={clear}>Clear local times</Button>}
           {calculated && <span className="text-xs text-muted-foreground">
             Calculated Dhuhr: {formatTime(calculated.Dhuhr, true)} · Asr: {formatTime(calculated.Asr, true)}

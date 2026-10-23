@@ -28,3 +28,15 @@ describe("reference timetable", () => {
   it("uses coarse GPS key", () =>
     expect(gpsReferenceScope(11.2588, 75.7804)).toBe("gps:11.26:75.78"));
 });
+
+describe("user supplied 23 October reference", () => {
+  it("keeps sunrise 06:16 only for the reference date", () => {
+    const saved = makeLocalTimetable(
+      "23-10-2026",
+      { Fajr: "05:00", Dhuhr: "12:13", Asr: "15:34", Maghrib: "18:08", Isha: "19:19" },
+      api, false, "06:16",
+    );
+    expect(applyLocalTimetable(api, saved, "23-10-2026").timings?.Sunrise).toBe("06:16");
+    expect(applyLocalTimetable(api, saved, "24-10-2026").timings?.Sunrise).toBe("06:17");
+  });
+});

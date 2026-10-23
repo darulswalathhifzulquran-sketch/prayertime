@@ -80,7 +80,7 @@ function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-background to-background dark:from-emerald-950/20 dark:via-background dark:to-background">
       <header className="sticky top-0 z-20 border-b bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <div className="mr-auto flex items-center gap-2">
@@ -170,11 +170,11 @@ function Index() {
         )}
       </header>
 
-      <main className="mx-auto max-w-6xl space-y-10 px-4 py-8">
-        <section className="relative overflow-hidden rounded-[2rem] bg-hero p-6 shadow-soft sm:p-10">
+      <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+        <section className="relative mx-auto max-w-xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-emerald-800 to-emerald-600 p-6 text-white shadow-soft sm:p-8">
           <div className="islamic-pattern absolute inset-0 opacity-60" aria-hidden />
-          <div className="relative grid items-center gap-8 md:grid-cols-2">
-            <div className="text-center md:text-left">
+          <div className="relative flex flex-col items-stretch gap-6">
+            <div className="text-center">
               <p className="text-sm uppercase tracking-[0.3em] text-gold">
                 {gps.location
                   ? (lang === "ml" ? "നിങ്ങളുടെ ഇപ്പോഴത്തെ GPS സ്ഥാനം" : "Your current GPS location")
@@ -187,7 +187,7 @@ function Index() {
               </p>
               {now ? <Clock now={now} mode={clockMode} h12={h12} lang={lang} /> : <div className="h-24" />}
             </div>
-            <div className="rounded-3xl border border-gold/40 bg-background/10 p-6 text-center backdrop-blur">
+            <div className="rounded-3xl border border-white/25 bg-white/10 p-5 text-center text-white backdrop-blur">
               <p className="text-sm uppercase tracking-widest text-gold">{t("next")}</p>
               {next ? (
                 <>
@@ -203,9 +203,9 @@ function Index() {
           </div>
         </section>
 
-        <section>
+        <section className="mx-auto max-w-xl rounded-[2rem] border border-emerald-100 bg-card p-4 shadow-soft sm:p-6">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-            <h2 className="font-display text-3xl font-semibold">{t("todays")}</h2>
+            <h2 className="font-display text-2xl font-semibold">{t("todays")}</h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {pt.fetchedAt && <span>{t("updated")}: {new Date(pt.fetchedAt).toLocaleString("en-IN", { timeZone: TZ })}{pt.fromCache ? ` (${t("cached")})` : ""}</span>}
               <Button variant="ghost" size="sm" onClick={pt.reload} disabled={pt.loading}><RefreshCw className={cn("h-3 w-3", pt.loading && "animate-spin")} />{t("retry")}</Button>
@@ -220,6 +220,35 @@ function Index() {
               {resolved.source === "adjusted" ? " Minute differences may change seasonally; please verify regularly." : ""}
             </p>
           </div>
+          <div className="flex flex-col gap-2">
+            {CARDS.map((c) => {
+              const isNext = next?.key === c.key;
+              const sunrise = c.key === "Sunrise";
+              return (
+                <article key={c.key} className={cn(
+                  "relative flex items-center justify-between gap-3 rounded-2xl border bg-background px-4 py-3 shadow-sm transition-all",
+                  isNext && "border-emerald-400 bg-emerald-50 ring-1 ring-emerald-300 dark:bg-emerald-950/30",
+                  sunrise && "border-dashed bg-muted/70",
+                )}>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-ml text-lg font-semibold leading-snug">{c.ml}</h3>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {c.en} · <span className="font-arabic text-sm text-primary" dir="rtl" lang="ar">{c.ar}</span>
+                    </p>
+                    {sunrise && <p className="mt-1 text-[11px] text-muted-foreground">{t("notPrayer")}</p>}
+                    {isNext && <span className="mt-1 inline-block rounded-full bg-emerald-700 px-2 py-0.5 text-[10px] font-semibold text-white">{t("upcoming")}</span>}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {sunrise && <Sunrise className="h-5 w-5 text-amber-500" />}
+                    <p className="whitespace-nowrap font-mono text-xl font-bold tabular-nums sm:text-2xl">
+                      {displayedTimings ? formatTime(displayedTimings[c.key], h12) : "--:--"}
+                    </p>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+          <div className="mt-5">
           <LocalTimetableEditor
             dateKey={pt.dateKey}
             scope={referenceScope}
@@ -227,31 +256,6 @@ function Index() {
             saved={localReference}
             onChange={setLocalReference}
           />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {CARDS.map((c) => {
-              const isNext = next?.key === c.key;
-              const sunrise = c.key === "Sunrise";
-              return (
-                <article key={c.key} className={cn(
-                  "relative rounded-3xl border bg-card p-5 shadow-soft transition-all",
-                  isNext && "ring-2 ring-gold -translate-y-1",
-                  sunrise && "border-dashed bg-muted",
-                )}>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">{c.en}</h3>
-                      <p className="font-ml text-sm text-muted-foreground">{c.ml}</p>
-                    </div>
-                    <p className="font-arabic text-2xl text-primary" dir="rtl" lang="ar">{c.ar}</p>
-                  </div>
-                  <div className="mt-4 flex items-end justify-between">
-                    <p className="font-mono text-3xl font-semibold tabular-nums">{displayedTimings ? formatTime(displayedTimings[c.key], h12) : "--:--"}</p>
-                    {sunrise ? <Sunrise className="h-7 w-7 text-gold" /> : isNext ? <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">{t("upcoming")}</span> : null}
-                  </div>
-                  {sunrise && <p className="mt-2 text-xs text-muted-foreground">{t("notPrayer")}</p>}
-                </article>
-              );
-            })}
           </div>
         </section>
 
@@ -269,7 +273,7 @@ function Index() {
             ? "Prayer times are calculated using your browser's GPS coordinates (shared with AlAdhan when requesting timings). GPS has an uncertainty radius and is not guaranteed to be exact. Coordinates are not saved in browser storage."
             : "District times are calculated for each district headquarters. Use the location button for GPS-based timings."}</p>
           <p>{resolved.source === "manual"
-            ? "Today's five prayer times are entered by you on this device. Sunrise remains API-calculated."
+            ? "Today's six times are entered by you on this device, including Sunrise if provided."
             : resolved.source === "adjusted"
               ? "Times use user-saved approximate minute adjustments; these are not verified daily local times."
               : "These are API-calculated estimates, not verified local mosque timetable times."}</p>

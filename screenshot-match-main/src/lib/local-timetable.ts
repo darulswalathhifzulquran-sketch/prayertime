@@ -7,6 +7,8 @@ export type LocalTimetable = {
   times: FiveTimings;
   offsets: Record<FiveKey, number>;
   autoAdjust: boolean;
+  sunrise?: string;
+  sunriseOffset?: number;
 };
 
 /** Rounded to ~1 km so exact GPS values are never saved by this feature. */
@@ -34,7 +36,9 @@ export function readLocalTimetable(scope: string): LocalTimetable | null {
     const r = value as LocalTimetable;
     if (!/^\d{2}-\d{2}-\d{4}$/.test(r.dateKey) || !isFiveTimings(r.times) ||
         !r.offsets || typeof r.offsets !== "object" || typeof r.autoAdjust !== "boolean" ||
-        !FIVE.every((key) => Number.isInteger(r.offsets[key as FiveKey]) && Math.abs(r.offsets[key as FiveKey]) <= 180)) {
+        !FIVE.every((key) => Number.isInteger(r.offsets[key as FiveKey]) && Math.abs(r.offsets[key as FiveKey]) <= 180) ||
+        (r.sunrise !== undefined && (typeof r.sunrise !== "string" || !VALID_TIME.test(r.sunrise))) ||
+        (r.sunriseOffset !== undefined && (!Number.isInteger(r.sunriseOffset) || Math.abs(r.sunriseOffset) > 180))) {
       return null;
     }
     return r;
@@ -43,7 +47,7 @@ export function readLocalTimetable(scope: string): LocalTimetable | null {
   }
 }
 
-export function makeLocalTimetable(dateKey: string, times: FiveTimings, calculated: Timings, autoAdjust: boolean): LocalTimetable {
+export function makeLocalTimetable(dateKey: string, times: FiveTimings, calculated: Timings, autoAdjust: boolean, sunrise?: string): LocalTimetable {
   if (!isFiveTimings(times)) throw new Error("Enter all five times in HH:MM format.");
   const offsets = {} as Record<FiveKey, number>;
   for (const key of FIVE as FiveKey[]) {
@@ -53,7 +57,16 @@ export function makeLocalTimetable(dateKey: string, times: FiveTimings, calculat
     }
     offsets[key] = Math.max(-180, Math.min(180, delta));
   }
-  return { dateKey, times, offsets, autoAdjust };
+  if (sunrise !== undefined && !VALID_TIME.test(sunrise)) throw new Error("Enter a valid Sunrise time.");
+  const sunriseOffset = sunrise === undefined ? undefined : toMinutes(sunrise) - toMinutes(calculated.Sunrise);
+  if (autoAdjust && sunriseOffset !== undefined && Math.abs(sunriseOffset) > 180) {
+    throw new Error("Sunrise difference exceeds 3 hours; verify your reference.");
+  }
+  return {
+    dateKey, times, offsets, autoAdjust,
+    ...(sunrise === undefined ? {} : { sunrise }),
+    ...(sunriseOffset === undefined ? {} : { sunriseOffset: Math.max(-180, Math.min(180, sunriseOffset)) }),
+  };
 }
 
 export function applyLocalTimetable(
@@ -63,10 +76,12 @@ export function applyLocalTimetable(
   const timings = { ...api };
   if (reference.dateKey === dateKey) {
     for (const key of FIVE as FiveKey[]) timings[key] = reference.times[key];
+    if (reference.sunrise) timings.Sunrise = reference.sunrise;
     return { timings, source: "manual" };
   }
   if (reference.autoAdjust) {
     for (const key of FIVE as FiveKey[]) timings[key] = applyOffset(api[key], reference.offsets[key]);
+    if (reference.sunriseOffset !== undefined) timings.Sunrise = applyOffset(api.Sunrise, reference.sunriseOffset);
     return { timings, source: "adjusted" };
   }
   return { timings: api, source: "api" };
