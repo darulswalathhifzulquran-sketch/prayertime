@@ -57,11 +57,12 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc }: {
 
   const hasAudio = !!standardSrc;
   return (
-    <div className="rounded-3xl border bg-card p-6 shadow-soft">
+    <div className="glass-shell glass-tool-panel rounded-3xl p-6">
       <audio ref={audio} onEnded={() => setPlaying(false)} onPause={() => setPlaying(false)} preload="none" />
       <h3 className="font-display text-2xl font-semibold">{title}</h3>
+      <div role="img" aria-label="Photograph of a mosque minaret" className="glass-tool-photo glass-azan-photo mt-3" />
       {!hasAudio && (
-        <p className="mt-2 rounded-xl bg-muted p-3 text-sm text-muted-foreground">
+        <p className="glass-inner mt-2 rounded-xl p-3 text-sm text-muted-foreground">
           No Azan recording has been uploaded yet. Reminders will still show a notification.
         </p>
       )}
@@ -74,7 +75,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc }: {
         <Button size="icon" variant="ghost" aria-label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX /> : <Volume2 />}</Button>
         <Slider className="w-32 self-center" value={[volume * 100]} max={100} onValueChange={(v) => setVolume((v[0] ?? 0) / 100)} aria-label="Volume" />
       </div>
-      <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-muted p-3">
+      <div className="glass-inner mt-5 flex items-center justify-between gap-3 rounded-2xl p-3">
         <div className="flex items-center gap-2 text-sm font-medium">{enabled ? <Bell className="h-4 w-4 text-gold" /> : <BellOff className="h-4 w-4" />} Azan reminders</div>
         {enabled && unlocked ? (
           <Button size="sm" variant="outline" onClick={() => { setEnabled(false); setUnlocked(false); }}>Turn off</Button>
@@ -84,7 +85,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc }: {
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
         {FIVE.map((k) => (
-          <label key={k} className="flex items-center justify-between rounded-xl border px-3 py-2 text-sm">
+          <label key={k} className="glass-inner flex items-center justify-between rounded-xl px-3 py-2 text-sm">
             {k}<Switch checked={!!toggles[k]} onCheckedChange={(c) => setToggles({ ...toggles, [k]: c })} />
           </label>
         ))}

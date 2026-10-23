@@ -22,8 +22,9 @@ export function Stopwatch({ title }: { title: string }) {
   const elapsed = acc + (startedAt !== null ? performance.now() - startedAt : 0);
   const running = startedAt !== null;
   return (
-    <div className="rounded-3xl border bg-card p-6 shadow-soft">
+    <div className="glass-shell glass-tool-panel rounded-3xl p-6">
       <h3 className="font-display text-2xl font-semibold">{title}</h3>
+      <div role="img" aria-label="Photograph of an ornate mosque interior" className="glass-tool-photo glass-timer-photo mt-3" />
       <div className="my-6 text-center font-mono text-4xl tabular-nums sm:text-5xl">{fmt(elapsed)}</div>
       <div className="flex flex-wrap justify-center gap-2">
         {!running ? (

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronsUpDown, LocateFixed, Moon, RefreshCw, Settings, Sun, Sunrise } from "lucide-react";
+import { BookOpen, Check, ChevronsUpDown, Clock3, Home, LocateFixed, Moon, RefreshCw, Settings, Sun, Sunrise, Timer, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -53,6 +53,8 @@ function Index() {
   const pt = usePrayerTimes(prayerLocation, method);
   const now = useNow();
   const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("home");
   // Always show the live timing for the selected district or GPS coordinates.
   // Past locally-entered reference times never override another location or date.
   const displayedTimings = pt.today;
@@ -69,9 +71,31 @@ function Index() {
     setOpen(false);
   };
 
+  const jumpTo = (id: string) => {
+    setActiveTab(id);
+    if (id === "settings") {
+      setSettingsOpen(true);
+      return;
+    }
+    const destination = document.getElementById(id);
+    destination?.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
+  const navigation = [
+    { id: "home", name: "Home", icon: Home },
+    { id: "prayers", name: "Prayer", icon: BookOpen },
+    { id: "azan", name: "Azan", icon: Volume2 },
+    { id: "clock", name: "Clock", icon: Clock3 },
+    { id: "stopwatch", name: "Timer", icon: Timer },
+    { id: "settings", name: "Settings", icon: Settings },
+  ] as const;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-background to-background dark:from-emerald-950/20 dark:via-background dark:to-background">
-      <header className="sticky top-0 z-20 border-b bg-background/85 backdrop-blur">
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-background to-background pb-28 dark:from-emerald-950/20 dark:via-background dark:to-background">
+      <header className="sticky top-0 z-20 border-b border-white/30 bg-background/70 shadow-sm backdrop-blur-xl dark:border-white/10">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <div className="mr-auto flex items-center gap-2">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-hero font-arabic text-lg text-gold">۞</span>
@@ -113,7 +137,7 @@ function Index() {
             className={gps.enabled ? "text-primary" : undefined}
           ><LocateFixed className={gps.locating ? "animate-pulse" : undefined} /></Button>
           <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Theme">{theme === "dark" ? <Sun /> : <Moon />}</Button>
-          <Sheet>
+          <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
             <SheetTrigger asChild><Button variant="ghost" size="icon" aria-label={t("settings")}><Settings /></Button></SheetTrigger>
             <SheetContent>
               <SheetHeader><SheetTitle>{t("settings")}</SheetTitle></SheetHeader>
@@ -161,10 +185,10 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
-        <section className="relative mx-auto max-w-xl overflow-hidden rounded-[2rem] bg-gradient-to-br from-emerald-950 via-emerald-800 to-emerald-600 p-6 text-white shadow-soft sm:p-8">
+        <section id="home" className="glassy-hero scroll-mt-24 relative mx-auto max-w-xl overflow-hidden rounded-[2rem] p-6 text-white shadow-soft sm:p-8">
           <div className="islamic-pattern absolute inset-0 opacity-60" aria-hidden />
           <div className="relative flex flex-col items-stretch gap-6">
-            <div className="text-center">
+            <div id="clock" className="scroll-mt-28 text-center">
               <p className="text-sm uppercase tracking-[0.3em] text-gold">
                 {gps.location
                   ? (lang === "ml" ? "നിങ്ങളുടെ ഇപ്പോഴത്തെ GPS സ്ഥാനം" : "Your current GPS location")
@@ -177,7 +201,7 @@ function Index() {
               </p>
               {now ? <Clock now={now} mode={clockMode} h12={h12} lang={lang} /> : <div className="h-24" />}
             </div>
-            <div className="rounded-3xl border border-white/25 bg-white/10 p-5 text-center text-white backdrop-blur">
+            <div className="glass-on-dark rounded-3xl border border-white/25 p-5 text-center text-white backdrop-blur-xl">
               <p className="text-sm uppercase tracking-widest text-gold">{t("next")}</p>
               {next ? (
                 <>
@@ -193,7 +217,7 @@ function Index() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-xl rounded-[2rem] border border-emerald-100 bg-card p-4 shadow-soft sm:p-6">
+        <section id="prayers" className="glass-shell scroll-mt-24 mx-auto max-w-xl rounded-[2rem] p-4 sm:p-6">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
             <h2 className="font-display text-2xl font-semibold">{t("todays")}</h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -202,7 +226,7 @@ function Index() {
             </div>
           </div>
           {pt.error && <p className="mb-4 rounded-xl border border-destructive/40 p-3 text-sm text-destructive">{pt.error}</p>}
-          <div className="mb-4 rounded-xl border bg-muted/60 p-3 text-sm">
+          <div className="glass-inner mb-4 rounded-xl p-3 text-sm">
             <strong>API-calculated times — NOT verified local mosque times</strong>
             <p className="mt-1 text-xs text-muted-foreground">
               GPS identifies the location; it cannot verify the local mosque timetable.
@@ -214,10 +238,10 @@ function Index() {
               const isNext = next?.key === c.key;
               const sunrise = c.key === "Sunrise";
               return (
-                <article key={c.key} className={cn(
-                  "relative flex items-center justify-between gap-3 rounded-2xl border bg-background px-4 py-3 shadow-sm transition-all",
-                  isNext && "border-emerald-400 bg-emerald-50 ring-1 ring-emerald-300 dark:bg-emerald-950/30",
-                  sunrise && "border-dashed bg-muted/70",
+                <article key={c.key} data-prayer={c.key} className={cn(
+                  "glassy-prayer-row relative flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 shadow-sm transition-all",
+                  isNext && "glassy-prayer-upcoming ring-2 ring-emerald-400/70",
+                  sunrise && "border-dashed border-amber-400/40",
                 )}>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-arabic text-2xl font-semibold leading-snug text-primary text-left" dir="rtl" lang="ar">{c.ar}</h3>
@@ -239,9 +263,13 @@ function Index() {
           </div>
         </section>
 
-        <section className="grid gap-6 md:grid-cols-2">
-          <AzanPlayer title={t("azan")} now={now} timings={displayedTimings} />
-          <Stopwatch title={t("stopwatch")} />
+        <section className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+          <div id="azan" className="scroll-mt-24">
+            <AzanPlayer title={t("azan")} now={now} timings={displayedTimings} />
+          </div>
+          <div id="stopwatch" className="scroll-mt-24">
+            <Stopwatch title={t("stopwatch")} />
+          </div>
         </section>
       </main>
 
@@ -254,8 +282,24 @@ function Index() {
             : "District times are calculated for each district headquarters. Use the location button for GPS-based timings."}</p>
           <p>These are API-calculated estimates for the selected district or GPS location, not verified local mosque timetable times.</p>
           <p>GPS-based API requests share browser-provided coordinates with AlAdhan, not our backend.</p>
+          <p>Architecture photography from <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Unsplash</a>.</p>
         </div>
       </footer>
+      <nav className="glass-bottom-nav" aria-label="Primary navigation">
+        {navigation.map(({ id, name, icon: Icon }) => (
+          <button
+            type="button"
+            key={id}
+            aria-label={name}
+            aria-current={activeTab === id ? "page" : undefined}
+            onClick={() => jumpTo(id)}
+            className={cn("glass-nav-item", activeTab === id && "glass-nav-selected")}
+          >
+            <Icon className="h-[19px] w-[19px]" aria-hidden="true" />
+            <span>{name}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }
