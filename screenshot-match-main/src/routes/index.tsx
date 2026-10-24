@@ -190,7 +190,7 @@ function Index() {
         )}
       </header>
 
-      <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
+      <main className="violet-premium mx-auto max-w-5xl space-y-6 px-4 py-8">
         <section id="home" className={cn("glassy-hero scroll-mt-24 relative mx-auto max-w-xl overflow-hidden rounded-[2rem] p-6 text-white shadow-soft sm:p-8", !showHome && "hidden")}>
           <div className="islamic-pattern absolute inset-0 opacity-60" aria-hidden />
           <div className="relative flex flex-col items-stretch gap-6">
@@ -211,9 +211,11 @@ function Index() {
               <p className="text-sm uppercase tracking-widest text-gold">{t("next")}</p>
               {next ? (
                 <>
-                  <p className="mt-2 font-display text-5xl font-semibold">{next.key}</p>
-                  <p className="font-arabic text-2xl" dir="rtl" lang="ar">{CARDS.find((c) => c.key === next.key)?.ar}</p>
-                  <p className="mt-4 text-xs uppercase tracking-widest opacity-70">{t("remaining")}{next.tomorrow ? ` · ${t("tomorrow")}` : ""}</p>
+                  <p className="mt-3 font-arabic text-4xl font-bold leading-tight text-white drop-shadow-sm sm:text-5xl" dir="rtl" lang="ar">
+                    {CARDS.find((c) => c.key === next.key)?.ar}
+                  </p>
+                  <p className="mt-1 font-display text-4xl font-bold leading-none tracking-wide text-white drop-shadow-sm">{next.key}</p>
+                  <p className="mt-5 text-xs uppercase tracking-widest opacity-80">{t("remaining")}{next.tomorrow ? ` · ${t("tomorrow")}` : ""}</p>
                   <p className="font-mono text-5xl tabular-nums">{formatHMS(next.secondsLeft)}</p>
                 </>
               ) : (
