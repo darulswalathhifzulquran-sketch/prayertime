@@ -451,3 +451,17 @@
   .violet-premium .glass-shell,
   .violet-premium .glass-on-dark { backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
+
+/* Explicit high-contrast text for the Reminder toggle on amethyst glass. */
+.violet-premium .glass-tool-panel .reminder-turnoff-button,
+.dark .violet-premium .glass-tool-panel .reminder-turnoff-button {
+  background: #f4d4ff;
+  border-color: #efb8f7;
+  color: #2b0642;
+  font-weight: 700;
+}
+.violet-premium .glass-tool-panel .reminder-turnoff-button:hover,
+.dark .violet-premium .glass-tool-panel .reminder-turnoff-button:hover {
+  background: #ffffff;
+  color: #2b0642;
+}

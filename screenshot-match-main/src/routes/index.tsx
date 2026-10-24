@@ -73,7 +73,7 @@ function Index() {
 
   const jumpTo = (id: string) => {
     if (id === "settings") {
-      setSettingsOpen(true);
+      setSettingsOpen((open) => !open);
       return;
     }
     // Home and Prayer share the same page; the other tabs have dedicated content.
@@ -143,9 +143,16 @@ function Index() {
             className={gps.enabled ? "text-primary" : undefined}
           ><LocateFixed className={gps.locating ? "animate-pulse" : undefined} /></Button>
           <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Theme">{theme === "dark" ? <Sun /> : <Moon />}</Button>
-          <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <Sheet modal={false} open={settingsOpen} onOpenChange={setSettingsOpen}>
             <SheetTrigger asChild><Button variant="ghost" size="icon" aria-label={t("settings")}><Settings /></Button></SheetTrigger>
-            <SheetContent>
+            <SheetContent
+              onInteractOutside={(event) => {
+                const target = event.target;
+                if (target instanceof Element && target.closest('[data-bottom-settings-button="true"]')) {
+                  event.preventDefault();
+                }
+              }}
+            >
               <SheetHeader><SheetTitle>{t("settings")}</SheetTitle></SheetHeader>
               <div className="space-y-5 p-4 text-sm">
                 <Field label="Interface language">
@@ -307,6 +314,8 @@ function Index() {
             type="button"
             key={id}
             aria-label={name}
+            aria-expanded={id === "settings" ? settingsOpen : undefined}
+            data-bottom-settings-button={id === "settings" ? "true" : undefined}
             aria-current={(id === "settings" ? settingsOpen : activeTab === id) ? "page" : undefined}
             onClick={() => jumpTo(id)}
             className={cn("glass-nav-item", (id === "settings" ? settingsOpen : activeTab === id) && "glass-nav-selected")}

@@ -80,7 +80,12 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
       <div className="glass-inner mt-5 flex items-center justify-between gap-3 rounded-2xl p-3">
         <div className="flex items-center gap-2 text-sm font-medium">{enabled ? <Bell className="h-4 w-4 text-gold" /> : <BellOff className="h-4 w-4" />} Azan reminders</div>
         {enabled && unlocked ? (
-          <Button size="sm" variant="outline" onClick={() => { setEnabled(false); setUnlocked(false); }}>Turn off</Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="reminder-turnoff-button rounded-full border-fuchsia-200/80 bg-fuchsia-100 px-4 font-semibold text-purple-950 shadow-sm hover:bg-white hover:text-purple-950 focus-visible:ring-fuchsia-300"
+            onClick={() => { setEnabled(false); setUnlocked(false); }}
+          >Turn off</Button>
         ) : (
           <Button size="sm" onClick={enable}>{standardSrc ? "Enable Azan Audio" : "Enable Reminders"}</Button>
         )}
