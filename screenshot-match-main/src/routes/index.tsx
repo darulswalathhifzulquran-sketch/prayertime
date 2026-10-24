@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, Check, ChevronsUpDown, Clock3, Home, LocateFixed, Moon, RefreshCw, Settings, Sun, Sunrise, Timer, Volume2 } from "lucide-react";
+import { Bell, BookOpen, Check, ChevronsUpDown, Home, LocateFixed, Moon, RefreshCw, Settings, Sun, Sunrise, Timer, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -72,15 +72,20 @@ function Index() {
   };
 
   const jumpTo = (id: string) => {
-    setActiveTab(id);
     if (id === "settings") {
       setSettingsOpen(true);
       return;
     }
-    const destination = document.getElementById(id);
-    destination?.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-      block: "start",
+    // Home and Prayer share the same page; the other tabs have dedicated content.
+    setActiveTab(id);
+    // Wait for the selected tab to become visible before scrolling.
+    requestAnimationFrame(() => {
+      const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      if (id === "prayers") {
+        document.getElementById("prayers")?.scrollIntoView({ behavior, block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior });
+      }
     });
   };
 
@@ -88,10 +93,11 @@ function Index() {
     { id: "home", name: "Home", icon: Home },
     { id: "prayers", name: "Prayer", icon: BookOpen },
     { id: "azan", name: "Azan", icon: Volume2 },
-    { id: "clock", name: "Clock", icon: Clock3 },
+    { id: "reminder", name: "Reminder", icon: Bell },
     { id: "stopwatch", name: "Timer", icon: Timer },
     { id: "settings", name: "Settings", icon: Settings },
   ] as const;
+  const showHome = activeTab === "home" || activeTab === "prayers";
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-background to-background pb-28 dark:from-emerald-950/20 dark:via-background dark:to-background">
@@ -185,7 +191,7 @@ function Index() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">
-        <section id="home" className="glassy-hero scroll-mt-24 relative mx-auto max-w-xl overflow-hidden rounded-[2rem] p-6 text-white shadow-soft sm:p-8">
+        <section id="home" className={cn("glassy-hero scroll-mt-24 relative mx-auto max-w-xl overflow-hidden rounded-[2rem] p-6 text-white shadow-soft sm:p-8", !showHome && "hidden")}>
           <div className="islamic-pattern absolute inset-0 opacity-60" aria-hidden />
           <div className="relative flex flex-col items-stretch gap-6">
             <div id="clock" className="scroll-mt-28 text-center">
@@ -217,7 +223,7 @@ function Index() {
           </div>
         </section>
 
-        <section id="prayers" className="glass-shell scroll-mt-24 mx-auto max-w-xl rounded-[2rem] p-4 sm:p-6">
+        <section id="prayers" className={cn("glass-shell scroll-mt-24 mx-auto max-w-xl rounded-[2rem] p-4 sm:p-6", !showHome && "hidden")}>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
             <h2 className="font-display text-2xl font-semibold">{t("todays")}</h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -263,13 +269,21 @@ function Index() {
           </div>
         </section>
 
-        <section className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
-          <div id="azan" className="scroll-mt-24">
-            <AzanPlayer title={t("azan")} now={now} timings={displayedTimings} />
-          </div>
-          <div id="stopwatch" className="scroll-mt-24">
-            <Stopwatch title={t("stopwatch")} />
-          </div>
+        {/* Keep both tools mounted while navigating: audio scheduling and running stopwatch persist. */}
+        <section
+          id="azan"
+          className={cn("mx-auto max-w-xl scroll-mt-24", activeTab !== "azan" && activeTab !== "reminder" && "hidden")}
+          aria-label={activeTab === "reminder" ? "Azan reminders" : "Azan player"}
+        >
+          <AzanPlayer
+            title={activeTab === "reminder" ? "Azan Reminders" : t("azan")}
+            view={activeTab === "reminder" ? "reminders" : "player"}
+            now={now}
+            timings={displayedTimings}
+          />
+        </section>
+        <section id="stopwatch" className={cn("mx-auto max-w-xl scroll-mt-24", activeTab !== "stopwatch" && "hidden")}>
+          <Stopwatch title={t("stopwatch")} />
         </section>
       </main>
 
@@ -291,9 +305,9 @@ function Index() {
             type="button"
             key={id}
             aria-label={name}
-            aria-current={activeTab === id ? "page" : undefined}
+            aria-current={(id === "settings" ? settingsOpen : activeTab === id) ? "page" : undefined}
             onClick={() => jumpTo(id)}
-            className={cn("glass-nav-item", activeTab === id && "glass-nav-selected")}
+            className={cn("glass-nav-item", (id === "settings" ? settingsOpen : activeTab === id) && "glass-nav-selected")}
           >
             <Icon className="h-[19px] w-[19px]" aria-hidden="true" />
             <span>{name}</span>

@@ -7,8 +7,9 @@ import { FIVE, istDateKey, istSecondsOfDay, toMinutes, type PrayerKey, type Timi
 import { usePersisted } from "@/hooks/use-prayer-times";
 
 /** Recorded Azan player. Audio source is the admin-uploaded recording (none until uploaded). */
-export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc }: {
+export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "player" }: {
   title: string; now: Date | null; timings?: Timings | undefined; standardSrc?: string | undefined; fajrSrc?: string | undefined;
+  view?: "player" | "reminders";
 }) {
   const audio = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -61,39 +62,54 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc }: {
       <audio ref={audio} onEnded={() => setPlaying(false)} onPause={() => setPlaying(false)} preload="none" />
       <h3 className="font-display text-2xl font-semibold">{title}</h3>
       <div role="img" aria-label="Photograph of a mosque minaret" className="glass-tool-photo glass-azan-photo mt-3" />
-      {!hasAudio && (
-        <p className="glass-inner mt-2 rounded-xl p-3 text-sm text-muted-foreground">
-          No Azan recording has been uploaded yet. Reminders will still show a notification.
-        </p>
+      {view === "player" ? (
+        <>
+          {!hasAudio && (
+            <p className="glass-inner mt-2 rounded-xl p-3 text-sm text-muted-foreground">
+              No Azan recording has been uploaded yet. The Reminder tab can still enable notifications.
+            </p>
+          )}
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button size="icon" disabled={!hasAudio} onClick={() => (playing ? audio.current?.pause() : play(standardSrc))} aria-label={playing ? "Pause" : "Play"}>
+              {playing ? <Pause /> : <Play />}
+            </Button>
+            <Button size="icon" variant="outline" disabled={!hasAudio} aria-label="Stop" onClick={() => { const a = audio.current; if (a) { a.pause(); a.currentTime = 0; } }}><Square /></Button>
+            <Button size="icon" variant="outline" disabled={!hasAudio} aria-label="Replay" onClick={() => { if (audio.current) audio.current.currentTime = 0; void play(standardSrc); }}><RotateCcw /></Button>
+            <Button size="icon" variant="ghost" aria-label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX /> : <Volume2 />}</Button>
+            <Slider className="w-32 self-center" value={[volume * 100]} max={100} onValueChange={(v) => setVolume((v[0] ?? 0) / 100)} aria-label="Volume" />
+          </div>
+        </>
+      ) : (
+        <>
+          <p className="mt-3 text-sm text-muted-foreground">
+            Set notifications separately for Fajr, Dhuhr, Asr, Maghrib and Isha. Sunrise never triggers an Azan.
+          </p>
+          <div className="glass-inner mt-5 flex items-center justify-between gap-3 rounded-2xl p-3">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              {enabled ? <Bell className="h-4 w-4 text-gold" /> : <BellOff className="h-4 w-4" />}
+              Azan reminders
+            </div>
+            {enabled && unlocked ? (
+              <Button size="sm" variant="outline" onClick={() => { setEnabled(false); setUnlocked(false); }}>Turn off</Button>
+            ) : (
+              <Button size="sm" onClick={enable}>{hasAudio ? "Enable Azan Audio" : "Enable Reminders"}</Button>
+            )}
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {FIVE.map((k) => (
+              <label key={k} className="glass-inner flex items-center justify-between rounded-xl px-3 py-2 text-sm">
+                {k}<Switch checked={!!toggles[k]} onCheckedChange={(c) => setToggles({ ...toggles, [k]: c })} />
+              </label>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Reminders work while this page is open, if your browser permits notifications.
+            Sound additionally needs an uploaded recording and permission to play.
+            Browser restrictions may prevent background notifications or playback.
+          </p>
+        </>
       )}
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Button size="icon" disabled={!hasAudio} onClick={() => (playing ? audio.current?.pause() : play(standardSrc))} aria-label={playing ? "Pause" : "Play"}>
-          {playing ? <Pause /> : <Play />}
-        </Button>
-        <Button size="icon" variant="outline" disabled={!hasAudio} aria-label="Stop" onClick={() => { const a = audio.current; if (a) { a.pause(); a.currentTime = 0; } }}><Square /></Button>
-        <Button size="icon" variant="outline" disabled={!hasAudio} aria-label="Replay" onClick={() => { if (audio.current) audio.current.currentTime = 0; void play(standardSrc); }}><RotateCcw /></Button>
-        <Button size="icon" variant="ghost" aria-label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX /> : <Volume2 />}</Button>
-        <Slider className="w-32 self-center" value={[volume * 100]} max={100} onValueChange={(v) => setVolume((v[0] ?? 0) / 100)} aria-label="Volume" />
-      </div>
-      <div className="glass-inner mt-5 flex items-center justify-between gap-3 rounded-2xl p-3">
-        <div className="flex items-center gap-2 text-sm font-medium">{enabled ? <Bell className="h-4 w-4 text-gold" /> : <BellOff className="h-4 w-4" />} Azan reminders</div>
-        {enabled && unlocked ? (
-          <Button size="sm" variant="outline" onClick={() => { setEnabled(false); setUnlocked(false); }}>Turn off</Button>
-        ) : (
-          <Button size="sm" onClick={enable}>Enable Azan Audio</Button>
-        )}
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {FIVE.map((k) => (
-          <label key={k} className="glass-inner flex items-center justify-between rounded-xl px-3 py-2 text-sm">
-            {k}<Switch checked={!!toggles[k]} onCheckedChange={(c) => setToggles({ ...toggles, [k]: c })} />
-          </label>
-        ))}
-      </div>
-      {msg && <p className="mt-3 text-sm text-destructive">{msg}</p>}
-      <p className="mt-3 text-xs text-muted-foreground">
-        Sound plays only while this page is open and after you tap "Enable Azan Audio". It may not play if the browser is closed, the phone is locked, or the browser blocks autoplay. No Azan plays at Sunrise.
-      </p>
+      {msg && <p className="mt-3 text-sm text-destructive">{msg}</p>
     </div>
   );
 }
