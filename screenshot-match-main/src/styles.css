@@ -465,3 +465,58 @@
   background: #ffffff;
   color: #2b0642;
 }
+
+
+/* Premium 3D raised glass enhancement.
+   Restricted to Home countdown, prayer rows and Azan/Reminder/Stopwatch panels.
+   Preserves the existing purple palette, photos, component sizes and interactions. */
+.violet-premium .glassy-hero .glass-on-dark {
+  box-shadow:
+    0 26px 50px -19px rgb(18 0 36 / 49%),
+    0 8px 23px -9px rgb(151 42 183 / 26%),
+    inset 0 2px 1px rgb(255 255 255 / 30%),
+    inset 0 -3px 8px rgb(21 0 40 / 17%);
+}
+.violet-premium .glass-shell {
+  box-shadow:
+    0 27px 58px -27px rgb(28 1 54 / 46%),
+    0 8px 20px -12px rgb(150 38 180 / 25%),
+    inset 0 2px 1px rgb(255 255 255 / 22%),
+    inset 0 -3px 8px rgb(23 0 39 / 14%);
+}
+.violet-premium .glass-shell .glass-inner {
+  box-shadow:
+    0 9px 19px -12px rgb(12 0 32 / 45%),
+    inset 0 2px 1px rgb(255 255 255 / 19%),
+    inset 0 -2px 5px rgb(11 0 25 / 13%);
+}
+.violet-premium .glassy-prayer-row {
+  box-shadow:
+    var(--tw-ring-offset-shadow, 0 0 #0000),
+    var(--tw-ring-shadow, 0 0 #0000),
+    0 15px 26px -14px rgb(15 0 33 / 43%),
+    0 5px 12px -8px rgb(144 28 177 / 34%),
+    inset 0 2px 1px rgb(255 255 255 / 20%),
+    inset 0 -2px 5px rgb(14 0 30 / 13%);
+}
+.violet-premium .glass-tool-panel .glass-tool-photo {
+  box-shadow:
+    0 15px 25px -15px rgb(12 0 32 / 52%),
+    inset 0 1px 2px rgb(255 255 255 / 31%),
+    inset 0 -3px 8px rgb(18 0 34 / 17%);
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .violet-premium .glassy-prayer-row {
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+  .violet-premium .glassy-prayer-row:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      var(--tw-ring-offset-shadow, 0 0 #0000),
+      var(--tw-ring-shadow, 0 0 #0000),
+      0 21px 34px -15px rgb(13 0 31 / 48%),
+      0 8px 16px -10px rgb(155 40 190 / 34%),
+      inset 0 2px 1px rgb(255 255 255 / 24%),
+      inset 0 -2px 5px rgb(14 0 30 / 13%);
+  }
+}
