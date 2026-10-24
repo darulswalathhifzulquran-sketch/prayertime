@@ -667,3 +667,102 @@
       inset -4px -6px 8px rgb(14 0 36 / 38%);
   }
 }
+
+
+/* Molded 3D-glass BUTTONS — Stopwatch Start/Pause, Lap, Reset;
+   Azan Play/Pause, Stop, Replay only. Scope intentionally excludes Mute,
+   Settings, Reminders, volume and every other website control. */
+.violet-premium #stopwatch .glass-tool-panel > .flex.flex-wrap.justify-center > button,
+.violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:nth-child(-n+3) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 2px solid rgb(255 224 255 / 68%);
+  border-radius: 0.95rem;
+  background-clip: padding-box;
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow:
+    0 3px 0 rgb(27 0 54 / 37%),
+    0 10px 18px -8px rgb(24 0 49 / 51%),
+    0 17px 26px -16px rgb(193 87 226 / 49%),
+    inset 2px 3px 3px rgb(255 255 255 / 60%),
+    inset -3px -4px 6px rgb(53 11 101 / 29%);
+  transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+/* Glossy raised rim and upper-left specular reflection. Both are decorative. */
+.violet-premium #stopwatch .glass-tool-panel > .flex.flex-wrap.justify-center > button::before,
+.violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:nth-child(-n+3)::before {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  background: linear-gradient(138deg, #fff 0%, rgb(255 255 255 / 60%) 25%, rgb(255 255 255 / 9%) 53%, rgb(99 21 166 / 22%) 74%, rgb(255 245 255 / 70%) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  z-index: 2;
+}
+.violet-premium #stopwatch .glass-tool-panel > .flex.flex-wrap.justify-center > button::after,
+.violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:nth-child(-n+3)::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  inset: 3px;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 94% 85% at 18% 0%, rgb(255 255 255 / 35%), transparent 78%);
+  z-index: 0;
+}
+.violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:nth-child(-n+3) > svg {
+  position: relative;
+  z-index: 1;
+  stroke-width: 2.4;
+}
+
+/* Preserve the existing purple palette; keep the green Start action recognizable. */
+.violet-premium #stopwatch .glass-tool-panel > .flex.flex-wrap.justify-center > button:first-child {
+  color: #fff;
+  background: linear-gradient(139deg, #087c66, #075747 64%, #054c42);
+}
+.violet-premium #stopwatch .glass-tool-panel > .flex.flex-wrap.justify-center > button:not(:first-child),
+.violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:nth-child(2),
+.violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:nth-child(3) {
+  color: #2b0642;
+  background: linear-gradient(135deg, #fff6ff 0%, #e8bdf6 48%, #b888d3 100%);
+}
+.violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:first-child {
+  color: #fff;
+  background: linear-gradient(135deg, #8b55b5, #563079 67%, #3c195f);
+}
+
+/* Audio controls may be disabled until a recording is uploaded.
+   Make disabled icons legible while preserving disabled behavior. */
+.violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:disabled {
+  opacity: .64;
+  cursor: not-allowed;
+  box-shadow: 0 2px 0 rgb(32 0 52 / 25%), 0 8px 16px -11px rgb(29 0 55 / 44%), inset 2px 2px 3px rgb(255 255 255 / 40%);
+}
+.violet-premium #stopwatch .glass-tool-panel > .flex.flex-wrap.justify-center > button:disabled {
+  opacity: .7;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .violet-premium #stopwatch .glass-tool-panel > .flex.flex-wrap.justify-center > button:hover:not(:disabled),
+  .violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:nth-child(-n+3):hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow:
+      0 5px 0 rgb(25 0 55 / 29%),
+      0 13px 21px -7px rgb(20 0 50 / 55%),
+      0 19px 27px -13px rgb(190 88 222 / 48%),
+      inset 2px 3px 3px rgb(255 255 255 / 63%),
+      inset -3px -4px 6px rgb(52 10 99 / 27%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .violet-premium #stopwatch .glass-tool-panel > .flex.flex-wrap.justify-center > button,
+  .violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:nth-child(-n+3) {
+    transition: none;
+  }
+}
