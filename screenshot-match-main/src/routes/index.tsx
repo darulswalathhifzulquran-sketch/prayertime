@@ -257,7 +257,7 @@ function Index() {
                       <span className="font-ml text-sm font-medium">{c.ml}</span> · {c.en}
                     </p>
                     {sunrise && <p className="mt-1 text-[11px] text-muted-foreground">{t("notPrayer")}</p>}
-                    {isNext && <span className="mt-1 inline-block rounded-full bg-emerald-700 px-2 py-0.5 text-[10px] font-semibold text-white">{t("upcoming")}</span>}
+                    {isNext && <span className="mt-1 inline-block rounded-full border border-fuchsia-200/70 bg-fuchsia-100 px-2.5 py-1 text-[10px] font-semibold text-purple-950 shadow-sm">{t("upcoming")}</span>}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {sunrise && <Sunrise className="h-5 w-5 text-amber-500" />}
