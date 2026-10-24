@@ -260,8 +260,8 @@ function Index() {
                 )}>
                   <div className="min-w-0 flex-1">
                     <h3 className="font-arabic text-2xl font-semibold leading-snug text-primary text-left" dir="rtl" lang="ar">{c.ar}</h3>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      <span className="font-ml text-sm font-medium">{c.ml}</span> · {c.en}
+                    <p className="mt-0.5 text-xs font-bold text-muted-foreground">
+                      <span className="font-ml text-sm font-bold">{c.ml}</span> · {c.en}
                     </p>
                     {sunrise && <p className="mt-1 text-[11px] text-muted-foreground">{t("notPrayer")}</p>}
                     {isNext && <span className="mt-1 inline-block rounded-full border border-fuchsia-200/70 bg-fuchsia-100 px-2.5 py-1 text-[10px] font-semibold text-purple-950 shadow-sm">{t("upcoming")}</span>}
