@@ -32,8 +32,8 @@ export function Stopwatch({ title }: { title: string }) {
         ) : (
           <Button variant="secondary" onClick={() => { setAcc(elapsed); setStartedAt(null); }}>Pause</Button>
         )}
-        <Button variant="outline" disabled={!running} onClick={() => setLaps((l) => [elapsed, ...l])}>Lap</Button>
-        <Button variant="outline" onClick={() => { setAcc(0); setStartedAt(null); setLaps([]); }}>Reset</Button>
+        <Button variant="outline" className="border-fuchsia-200/70 bg-fuchsia-100 font-semibold text-purple-950 hover:bg-white hover:text-purple-950 disabled:opacity-70" disabled={!running} onClick={() => setLaps((l) => [elapsed, ...l])}>Lap</Button>
+        <Button variant="outline" className="border-fuchsia-200/70 bg-fuchsia-100 font-semibold text-purple-950 hover:bg-white hover:text-purple-950" onClick={() => { setAcc(0); setStartedAt(null); setLaps([]); }}>Reset</Button>
       </div>
       {laps.length > 0 && (
         <ol className="mt-4 max-h-40 space-y-1 overflow-auto text-sm">
