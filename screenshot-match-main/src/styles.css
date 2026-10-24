@@ -767,34 +767,34 @@
   }
 }
 
-
 /*
- * Sculpted 3D Glassmorphism BOTTOM NAVIGATION
- * Pearl-lavender crystal capsule modeled after the supplied rounded glass bar.
- * Keep the original six links, icons, click behavior and overall sizing.
- * Only .glass-bottom-nav / .glass-nav-item are affected.
+ * Clear Pearl Crystal Glass bottom capsule, matching the reference image.
+ * NEUTRAL clear / white / silver; no purple coloration in this navigation.
+ * The six existing buttons, tab behavior, positioning and icons are unchanged.
  */
-.glass-bottom-nav {
+.glass-bottom-nav,
+.dark .glass-bottom-nav {
   isolation: isolate;
   overflow: visible;
-  border: 2px solid rgb(244 236 255 / 92%);
+  border: 2px solid rgb(254 254 255 / 94%);
   border-radius: 999px;
   padding: 9px 10px;
   padding-bottom: max(9px, env(safe-area-inset-bottom));
   background:
-    radial-gradient(ellipse 68% 100% at 28% 0%, rgb(255 255 255 / 79%), transparent 76%),
-    linear-gradient(108deg, rgb(250 247 255 / 76%), rgb(218 208 239 / 64%) 55%, rgb(246 242 255 / 82%));
+    radial-gradient(ellipse 78% 100% at 28% 0%, rgb(255 255 255 / 82%) 0%, transparent 85%),
+    linear-gradient(175deg, rgb(255 255 255 / 87%) 0%, rgb(241 243 246 / 83%) 31%, rgb(225 228 232 / 80%) 72%, rgb(248 249 251 / 88%) 100%);
   box-shadow:
-    0 4px 0 rgb(92 75 129 / 17%),
-    0 15px 25px -8px rgb(59 29 103 / 26%),
-    0 22px 52px -16px rgb(94 54 153 / 26%),
-    inset 3px 4px 4px rgb(255 255 255 / 99%),
-    inset -3px -4px 7px rgb(97 67 154 / 25%),
-    inset 0 0 0 1px rgb(159 134 204 / 28%);
-  backdrop-filter: blur(26px) saturate(150%);
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
+    0 3px 0 rgb(147 154 166 / 36%),
+    0 12px 22px -8px rgb(32 37 50 / 22%),
+    0 23px 44px -15px rgb(19 25 36 / 20%),
+    inset 3px 4px 3px rgb(255 255 255 / 98%),
+    inset -3px -4px 7px rgb(126 135 151 / 23%),
+    inset 0 0 0 1px rgb(185 193 205 / 42%);
+  backdrop-filter: blur(28px) saturate(125%);
+  -webkit-backdrop-filter: blur(28px) saturate(125%);
 }
-/* Thick, luminous beveled rim without overlaying click/tap targets. */
+
+/* Polished glass boundary with a transparent centre: no overlay on icons. */
 .glass-bottom-nav::before {
   content: "";
   position: absolute;
@@ -802,12 +802,12 @@
   border-radius: inherit;
   padding: 3px;
   background: linear-gradient(
-    137deg,
-    rgb(255 255 255 / 99%) 0%,
-    rgb(247 243 255 / 83%) 20%,
-    rgb(154 129 209 / 39%) 49%,
-    rgb(83 58 148 / 43%) 73%,
-    rgb(255 255 255 / 93%) 100%
+    130deg,
+    #ffffff 0%,
+    rgb(252 253 255 / 97%) 20%,
+    rgb(182 191 204 / 65%) 48%,
+    rgb(139 149 166 / 61%) 73%,
+    #ffffff 100%
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -815,67 +815,61 @@
   pointer-events: none;
   z-index: 0;
 }
-/* Curved light streak under the glass surface. */
+
+/* Bright curved highlight, like the white gel capsule in the first image. */
 .glass-bottom-nav::after {
   content: "";
   position: absolute;
-  inset: 4px 5px 50% 5px;
-  border-radius: 999px 999px 45% 45%;
-  background: linear-gradient(180deg, rgb(255 255 255 / 72%), rgb(255 255 255 / 16%) 80%, transparent);
+  inset: 4px 6px 51% 6px;
+  border-radius: 999px 999px 48% 48%;
+  background: linear-gradient(
+    180deg,
+    rgb(255 255 255 / 92%) 0%,
+    rgb(255 255 255 / 39%) 70%,
+    transparent 100%
+  );
   pointer-events: none;
   z-index: 0;
 }
-.glass-bottom-nav .glass-nav-item {
+.glass-bottom-nav .glass-nav-item,
+.dark .glass-bottom-nav .glass-nav-item {
   position: relative;
   z-index: 1;
   border-radius: 999px;
   min-width: 0;
-  color: #51466f;
-  text-shadow: 0 1px rgb(255 255 255 / 52%);
-  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease, color 180ms ease;
+  color: #344055;
+  text-shadow: 0 1px rgb(255 255 255 / 85%);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease;
 }
 .glass-bottom-nav .glass-nav-item:hover,
-.glass-bottom-nav .glass-nav-item:focus-visible {
-  color: #402064;
-  background: linear-gradient(145deg, rgb(255 255 255 / 64%), rgb(217 198 241 / 45%));
-  box-shadow: inset 0 1px 1px rgb(255 255 255 / 88%);
+.glass-bottom-nav .glass-nav-item:focus-visible,
+.dark .glass-bottom-nav .glass-nav-item:hover,
+.dark .glass-bottom-nav .glass-nav-item:focus-visible {
+  color: #17263a;
+  background: linear-gradient(135deg, rgb(255 255 255 / 80%), rgb(224 229 235 / 73%));
+  box-shadow: inset 0 1px rgb(255 255 255 / 94%);
 }
-.glass-bottom-nav .glass-nav-selected {
-  color: #4b196c;
-  background: linear-gradient(137deg, rgb(255 255 255 / 82%), rgb(211 185 241 / 69%) 48%, rgb(189 153 225 / 48%));
-  border: 1px solid rgb(255 255 255 / 60%);
+.glass-bottom-nav .glass-nav-selected,
+.dark .glass-bottom-nav .glass-nav-selected {
+  color: #263346;
+  background:
+    radial-gradient(ellipse at 24% 0%, rgb(255 255 255 / 90%), transparent 84%),
+    linear-gradient(145deg, rgb(250 251 253 / 96%) 0%, rgb(218 223 231 / 85%) 76%, rgb(242 244 248 / 90%) 100%);
+  border: 1px solid rgb(252 253 255 / 98%);
   box-shadow:
-    0 4px 8px -6px rgb(61 19 109 / 36%),
-    inset 2px 2px 2px rgb(255 255 255 / 92%),
-    inset -2px -2px 3px rgb(111 68 164 / 21%);
+    0 4px 9px -5px rgb(65 73 88 / 29%),
+    inset 2px 2px 3px rgb(255 255 255 / 98%),
+    inset -2px -3px 5px rgb(145 153 168 / 27%);
 }
-.glass-bottom-nav .glass-nav-selected svg {
-  color: #6b2395;
+.glass-bottom-nav .glass-nav-selected svg,
+.dark .glass-bottom-nav .glass-nav-selected svg {
+  color: #293a50;
   stroke-width: 2.6;
 }
-/* Dark mode keeps lavender translucency and readable navigation labels. */
-.dark .glass-bottom-nav {
-  border-color: rgb(210 190 241 / 68%);
-  background:
-    radial-gradient(ellipse 80% 100% at 24% 0%, rgb(251 236 255 / 26%), transparent 78%),
-    linear-gradient(120deg, rgb(68 41 95 / 89%), rgb(45 27 75 / 86%) 53%, rgb(74 46 101 / 88%));
-  box-shadow:
-    0 4px 0 rgb(11 3 29 / 43%),
-    0 16px 29px -10px rgb(12 3 31 / 52%),
-    inset 3px 3px 3px rgb(239 208 255 / 35%),
-    inset -3px -4px 6px rgb(13 4 32 / 44%);
-}
-.dark .glass-bottom-nav .glass-nav-item {
-  color: #ede1fa;
-  text-shadow: none;
-}
-.dark .glass-bottom-nav .glass-nav-selected {
-  color: #ffffff;
-  background: linear-gradient(145deg, rgb(192 132 231 / 49%), rgb(118 60 173 / 56%));
-  border-color: rgb(250 219 255 / 45%);
-}
-.dark .glass-bottom-nav .glass-nav-selected svg { color: #ffeaff; }
-/* Keep six targets comfortably readable on narrow mobile screens. */
 @media (max-width: 360px) {
   .glass-bottom-nav {
     width: calc(100% - 12px);
@@ -889,70 +883,4 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .glass-bottom-nav .glass-nav-item { transition: none; }
-}
-
-
-/*
- * Permanent Violet Crystal Navigation: only the bottom capsule.
- * High-saturation violet core and violet-tinted bevel in BOTH light and dark
- * modes. All six links, accessibility and sculpted 3D geometry stay unchanged.
- */
-.glass-bottom-nav,
-.dark .glass-bottom-nav {
-  border: 2px solid #c997ff;
-  background:
-    radial-gradient(ellipse 76% 95% at 25% 0%, rgb(219 156 255 / 32%), transparent 78%),
-    linear-gradient(117deg, #6a2a9a 0%, #4d176f 49%, #32104f 100%);
-  box-shadow:
-    0 4px 0 rgb(50 10 83 / 53%),
-    0 15px 27px -8px rgb(71 10 120 / 40%),
-    0 23px 53px -16px rgb(91 23 143 / 34%),
-    inset 3px 4px 4px rgb(240 192 255 / 44%),
-    inset -3px -5px 8px rgb(28 5 65 / 53%),
-    inset 0 0 0 1px rgb(231 171 255 / 32%);
-}
-.glass-bottom-nav::before {
-  background: linear-gradient(
-    135deg,
-    #f3d7ff 0%,
-    #cd8ef9 18%,
-    rgb(137 54 200 / 65%) 47%,
-    rgb(102 31 167 / 76%) 71%,
-    #e9b9ff 100%
-  );
-}
-.glass-bottom-nav::after {
-  background: linear-gradient(
-    180deg,
-    rgb(255 222 255 / 43%),
-    rgb(211 134 255 / 11%) 80%,
-    transparent
-  );
-}
-.glass-bottom-nav .glass-nav-item,
-.dark .glass-bottom-nav .glass-nav-item {
-  color: #fbf0ff;
-  text-shadow: 0 1px 2px rgb(27 0 58 / 35%);
-}
-.glass-bottom-nav .glass-nav-item:hover,
-.glass-bottom-nav .glass-nav-item:focus-visible,
-.dark .glass-bottom-nav .glass-nav-item:hover,
-.dark .glass-bottom-nav .glass-nav-item:focus-visible {
-  color: #ffffff;
-  background: linear-gradient(135deg, rgb(224 168 255 / 34%), rgb(171 94 229 / 20%));
-  box-shadow: inset 0 1px 1px rgb(255 224 255 / 55%);
-}
-.glass-bottom-nav .glass-nav-selected,
-.dark .glass-bottom-nav .glass-nav-selected {
-  color: #ffffff;
-  background: linear-gradient(135deg, #a358d4 0%, #8136b9 52%, #67249e 100%);
-  border-color: #eac7ff;
-  box-shadow:
-    0 5px 10px -5px rgb(23 0 58 / 40%),
-    inset 2px 2px 3px rgb(255 228 255 / 50%),
-    inset -2px -3px 4px rgb(61 12 115 / 33%);
-}
-.glass-bottom-nav .glass-nav-selected svg,
-.dark .glass-bottom-nav .glass-nav-selected svg {
-  color: #ffffff;
 }
