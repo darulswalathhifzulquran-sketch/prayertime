@@ -465,3 +465,66 @@
   background: #ffffff;
   color: #2b0642;
 }
+
+
+/* BLUE CRYSTAL GLASS: only Home, Prayer, Azan, Reminder, Stopwatch. */
+.violet-premium { --crystal-ink:#123e59; --crystal-soft:#315f7b; }
+.violet-premium .glassy-hero {
+  color:#123e59; --pattern-ink:rgb(37 125 167 / 10%);
+  background-image:radial-gradient(ellipse at 15% 0%,rgb(255 255 255 / 88%),transparent 54%),linear-gradient(125deg,rgb(184 231 249 / 94%),rgb(227 248 255 / 84%),rgb(114 191 226 / 81%)),url("https://images.unsplash.com/photo-1674345377204-db2968dc00f2?auto=format&fit=crop&w=1400&q=76");
+  border:1px solid rgb(99 183 226 / 76%);
+  box-shadow:inset 0 2px rgb(255 255 255 / 96%),inset -2px -2px rgb(41 131 185 / 22%),0 18px 46px -25px rgb(18 107 157 / 34%);
+}
+.violet-premium .glassy-hero::after {background:linear-gradient(148deg,rgb(255 255 255 / 24%),transparent 48%);}
+.violet-premium .glassy-hero .text-gold {color:#17698f;}
+.violet-premium .glassy-hero .glass-on-dark {
+  color:#123e59; border-color:rgb(110 186 221 / 65%);
+  background:linear-gradient(133deg,rgb(255 255 255 / 78%),rgb(190 233 251 / 67%),rgb(137 206 239 / 57%));
+  box-shadow:inset 0 2px rgb(255 255 255 / 85%),inset -2px -2px rgb(46 131 181 / 23%),0 16px 30px -22px rgb(25 92 138 / 40%);
+}
+.violet-premium .glassy-hero .glass-on-dark .text-white {color:#123e59;}
+.violet-premium .glass-shell, .dark .violet-premium .glass-shell {
+  color:#123e59; border:1px solid rgb(118 192 226 / 78%);
+  background:radial-gradient(ellipse at 7% 0%,rgb(255 255 255 / 94%),transparent 56%),linear-gradient(143deg,rgb(233 249 255 / 97%),rgb(174 221 246 / 90%),rgb(218 246 255 / 95%));
+  box-shadow:inset 0 2px rgb(255 255 255 / 97%),inset -2px -2px rgb(53 141 187 / 23%),0 20px 48px -26px rgb(23 103 149 / 36%);
+}
+.violet-premium .glass-shell .glass-inner,.dark .violet-premium .glass-shell .glass-inner {
+  color:#123e59; border:1px solid rgb(137 203 231 / 68%);
+  background:linear-gradient(126deg,rgb(255 255 255 / 83%),rgb(195 237 253 / 75%));
+  box-shadow:inset 0 1px rgb(255 255 255 / 91%),inset -1px -1px rgb(81 154 202 / 20%);
+}
+.violet-premium .glass-shell .text-muted-foreground {color:#315f7b;}
+.violet-premium .glass-shell .text-primary {color:#086387;}
+.violet-premium .glassy-prayer-row,.dark .violet-premium .glassy-prayer-row {
+  color:#123e59; border:1px solid rgb(121 190 223 / 67%);
+  background-image:linear-gradient(94deg,rgb(247 253 255 / 96%),rgb(215 243 254 / 88%) 50%,rgb(165 215 241 / 67%)),var(--prayer-photo);
+  box-shadow:inset 0 1px rgb(255 255 255 / 90%),inset -1px -2px rgb(69 148 189 / 17%),0 8px 23px -15px rgb(17 90 135 / 29%);
+}
+.violet-premium .glassy-prayer-upcoming,.dark .violet-premium .glassy-prayer-upcoming {
+  border-color:#5dbce5; --tw-ring-color:rgb(63 165 217 / 48%);
+  background-image:linear-gradient(95deg,rgb(223 248 255 / 97%),rgb(168 226 249 / 91%),rgb(113 198 234 / 73%)),var(--prayer-photo);
+}
+.violet-premium .glassy-prayer-row h3,.violet-premium .glassy-prayer-row .text-primary {color:#07638e;}
+.violet-premium .glassy-prayer-row .text-muted-foreground {color:#315e78;}
+.violet-premium .glassy-prayer-row span[class*="bg-fuchsia-100"] {background:#afe9ff;color:#123f5d;border-color:#78bfe4;}
+.violet-premium .glassy-prayer-row[data-prayer="Sunrise"] svg {color:#b67a13;}
+.violet-premium .glass-tool-panel h3 {color:#123e59;}
+.violet-premium .glass-tool-panel .glass-tool-photo {
+  background-image:linear-gradient(100deg,rgb(111 203 244 / 18%),rgb(240 252 255 / 9%)),var(--tool-photo);
+  border-color:rgb(112 186 224 / 66%);
+  box-shadow:inset 0 1px rgb(255 255 255 / 82%),0 10px 24px -15px rgb(19 108 152 / 35%);
+}
+.violet-premium .glass-tool-panel button:not([role="switch"]) {
+  color:#123e59;background:linear-gradient(135deg,#f6fdff,#bbe7fa);border-color:#7fc4e5;
+  box-shadow:inset 0 1px #fff,0 5px 11px -8px rgb(17 99 150 / 40%);
+  font-weight:650;
+}
+.violet-premium .glass-tool-panel button:not([role="switch"]):hover:not(:disabled) {background:linear-gradient(135deg,#fff,#d9f6ff);}
+.violet-premium .glass-tool-panel button:disabled:not([role="switch"]) {opacity:.7;}
+.violet-premium .glass-tool-panel [role="switch"][data-state="checked"] {background-color:#188ac1;}
+.violet-premium .glass-tool-panel [role="switch"][data-state="unchecked"] {background-color:#99bfd1;}
+.violet-premium .glass-tool-panel [role="switch"] > span {background:#fff;}
+.violet-premium .glass-tool-panel [role="slider"] {background:#fff;border-color:#4c9ec7;}
+.violet-premium .glass-tool-panel .reminder-turnoff-button,.dark .violet-premium .glass-tool-panel .reminder-turnoff-button {background:linear-gradient(135deg,#fff,#bfe9fc);color:#123e59;border-color:#73bddd;font-weight:700;}
+.violet-premium .glass-tool-panel .text-destructive {color:#a83448;}
+.violet-premium .glass-tool-panel ol li {border-color:rgb(70 147 187 / 26%);}
