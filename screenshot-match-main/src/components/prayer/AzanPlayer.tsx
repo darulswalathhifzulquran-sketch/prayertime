@@ -86,9 +86,9 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
         )}
       </div>
       )}
-      <div className={view === "reminders" ? "mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3" : "hidden"}>
+      <div className={view === "reminders" ? "mt-3 flex flex-col gap-2" : "hidden"}>
         {FIVE.map((k) => (
-          <label key={k} className="glass-inner flex items-center justify-between rounded-xl px-3 py-2 text-sm">
+          <label key={k} className="glass-inner flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm">
             {k}<Switch checked={!!toggles[k]} onCheckedChange={(c) => setToggles({ ...toggles, [k]: c })} />
           </label>
         ))}
