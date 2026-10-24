@@ -890,3 +890,69 @@
 @media (prefers-reduced-motion: reduce) {
   .glass-bottom-nav .glass-nav-item { transition: none; }
 }
+
+
+/*
+ * Permanent Violet Crystal Navigation: only the bottom capsule.
+ * High-saturation violet core and violet-tinted bevel in BOTH light and dark
+ * modes. All six links, accessibility and sculpted 3D geometry stay unchanged.
+ */
+.glass-bottom-nav,
+.dark .glass-bottom-nav {
+  border: 2px solid #c997ff;
+  background:
+    radial-gradient(ellipse 76% 95% at 25% 0%, rgb(219 156 255 / 32%), transparent 78%),
+    linear-gradient(117deg, #6a2a9a 0%, #4d176f 49%, #32104f 100%);
+  box-shadow:
+    0 4px 0 rgb(50 10 83 / 53%),
+    0 15px 27px -8px rgb(71 10 120 / 40%),
+    0 23px 53px -16px rgb(91 23 143 / 34%),
+    inset 3px 4px 4px rgb(240 192 255 / 44%),
+    inset -3px -5px 8px rgb(28 5 65 / 53%),
+    inset 0 0 0 1px rgb(231 171 255 / 32%);
+}
+.glass-bottom-nav::before {
+  background: linear-gradient(
+    135deg,
+    #f3d7ff 0%,
+    #cd8ef9 18%,
+    rgb(137 54 200 / 65%) 47%,
+    rgb(102 31 167 / 76%) 71%,
+    #e9b9ff 100%
+  );
+}
+.glass-bottom-nav::after {
+  background: linear-gradient(
+    180deg,
+    rgb(255 222 255 / 43%),
+    rgb(211 134 255 / 11%) 80%,
+    transparent
+  );
+}
+.glass-bottom-nav .glass-nav-item,
+.dark .glass-bottom-nav .glass-nav-item {
+  color: #fbf0ff;
+  text-shadow: 0 1px 2px rgb(27 0 58 / 35%);
+}
+.glass-bottom-nav .glass-nav-item:hover,
+.glass-bottom-nav .glass-nav-item:focus-visible,
+.dark .glass-bottom-nav .glass-nav-item:hover,
+.dark .glass-bottom-nav .glass-nav-item:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgb(224 168 255 / 34%), rgb(171 94 229 / 20%));
+  box-shadow: inset 0 1px 1px rgb(255 224 255 / 55%);
+}
+.glass-bottom-nav .glass-nav-selected,
+.dark .glass-bottom-nav .glass-nav-selected {
+  color: #ffffff;
+  background: linear-gradient(135deg, #a358d4 0%, #8136b9 52%, #67249e 100%);
+  border-color: #eac7ff;
+  box-shadow:
+    0 5px 10px -5px rgb(23 0 58 / 40%),
+    inset 2px 2px 3px rgb(255 228 255 / 50%),
+    inset -2px -3px 4px rgb(61 12 115 / 33%);
+}
+.glass-bottom-nav .glass-nav-selected svg,
+.dark .glass-bottom-nav .glass-nav-selected svg {
+  color: #ffffff;
+}
