@@ -228,7 +228,7 @@ function Index() {
                   </p>
                   <p className="mt-1 font-display text-4xl font-bold leading-none tracking-wide text-white drop-shadow-sm">{next.key}</p>
                   <p className="mt-5 text-xs uppercase tracking-widest opacity-80">{t("remaining")}{next.tomorrow ? ` · ${t("tomorrow")}` : ""}</p>
-                  <p className="font-mono text-5xl tabular-nums">{formatHMS(next.secondsLeft)}</p>
+                  <p className="font-mono text-5xl font-extrabold tabular-nums">{formatHMS(next.secondsLeft)}</p>
                 </>
               ) : (
                 <p className="mt-4 opacity-80">{pt.error ?? "Loading…"}</p>
