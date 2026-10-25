@@ -48,9 +48,9 @@
   --color-ring-offset-background: var(--background);
   --color-gold: var(--gold);
   --color-hero-foreground: var(--hero-foreground);
-  --font-sans: "Inter", "Noto Sans Malayalam", system-ui, sans-serif;
-  /* Use the already-loaded Inter family for every numeric clock and timer display. */
-  --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* Manrope makes Latin numerals elegant; script-specific Malayalam and Arabic typography stays unchanged. */
+  --font-sans: "Manrope", "Inter", "Noto Sans Malayalam", system-ui, sans-serif;
+  --font-mono: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Cormorant Garamond", serif;
   --font-arabic: "Noto Naskh Arabic", serif;
   --font-ml: "Noto Sans Malayalam", sans-serif;
@@ -128,6 +128,8 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: "Manrope", "Inter", "Noto Sans Malayalam", system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
   }
 }
 
@@ -779,18 +781,18 @@
   position: fixed;
   isolation: isolate;
   overflow: visible;
-  border: 1px solid rgb(231 239 247 / 45%);
+  border: 1px solid rgb(231 239 247 / 32%);
   border-radius: 999px;
   padding: 9px 10px;
   padding-bottom: max(9px, env(safe-area-inset-bottom));
-  background: rgb(245 249 254 / 10%);
+  background: rgb(245 249 254 / 5%);
   box-shadow:
-    0 8px 22px -11px rgb(7 15 27 / 25%),
-    0 2px 0 rgb(255 255 255 / 12%),
-    inset 0 1px 2px rgb(255 255 255 / 32%),
-    inset 0 -2px 4px rgb(39 56 72 / 15%);
-  backdrop-filter: blur(16px) saturate(126%);
-  -webkit-backdrop-filter: blur(16px) saturate(126%);
+    0 7px 18px -11px rgb(7 15 27 / 19%),
+    0 1px 0 rgb(255 255 255 / 9%),
+    inset 0 1px 2px rgb(255 255 255 / 20%),
+    inset 0 -2px 4px rgb(39 56 72 / 11%);
+  backdrop-filter: blur(8px) saturate(105%);
+  -webkit-backdrop-filter: blur(8px) saturate(105%);
 }
 /* A fine refractive edge; transparent through the middle. */
 .glass-bottom-nav::before {
@@ -800,10 +802,10 @@
   border-radius: inherit;
   padding: 1px;
   background: linear-gradient(130deg,
-    rgb(255 255 255 / 82%) 0%,
+    rgb(255 255 255 / 62%) 0%,
     rgb(245 249 254 / 32%) 36%,
     rgb(143 160 178 / 40%) 74%,
-    rgb(255 255 255 / 68%) 100%);
+    rgb(255 255 255 / 49%) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -816,9 +818,9 @@
   top: 3px;
   left: 9%;
   right: 9%;
-  height: 3px;
+  height: 2px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 44%), transparent);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 22%), transparent);
   pointer-events: none;
   z-index: 0;
 }
@@ -829,21 +831,20 @@
   top: 9px;
   bottom: max(9px, env(safe-area-inset-bottom));
   width: calc((100% - 20px) / 6);
-  border: 1px solid rgb(245 252 255 / 45%);
+  border: 1px solid rgb(245 252 255 / 28%);
   border-radius: 999px;
   pointer-events: none;
   z-index: 1;
   background: linear-gradient(148deg,
-    rgb(255 255 255 / 27%) 0%,
-    rgb(225 241 249 / 16%) 57%,
-    rgb(141 173 190 / 16%) 100%);
+    rgb(255 255 255 / 17%) 0%,
+    rgb(225 241 249 / 11%) 57%,
+    rgb(141 173 190 / 9%) 100%);
   box-shadow:
-    0 4px 14px -7px rgb(2 26 27 / 40%),
-    0 0 15px rgb(21 195 143 / 11%),
-    inset 0 1px 2px rgb(255 255 255 / 51%),
+    0 3px 11px -8px rgb(2 26 27 / 29%),
+    inset 0 1px 2px rgb(255 255 255 / 31%),
     inset 0 -1px 2px rgb(116 146 160 / 24%);
-  backdrop-filter: blur(18px) saturate(145%);
-  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  backdrop-filter: blur(8px) saturate(112%);
+  -webkit-backdrop-filter: blur(8px) saturate(112%);
   transition: transform 330ms cubic-bezier(.22, 1, .36, 1);
 }
 .glass-bottom-nav .glass-nav-item,
@@ -884,8 +885,8 @@
   filter: drop-shadow(0 0 5px rgb(29 207 153 / 48%));
 }
 .dark .glass-bottom-nav {
-  background: rgb(9 20 32 / 24%);
-  border-color: rgb(245 250 255 / 43%);
+  background: rgb(9 20 32 / 12%);
+  border-color: rgb(245 250 255 / 30%);
   box-shadow:
     0 8px 20px -10px rgb(0 0 0 / 36%),
     inset 0 1px 2px rgb(255 255 255 / 19%),
