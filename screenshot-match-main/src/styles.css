@@ -49,6 +49,8 @@
   --color-gold: var(--gold);
   --color-hero-foreground: var(--hero-foreground);
   --font-sans: "Inter", "Noto Sans Malayalam", system-ui, sans-serif;
+  /* Use the already-loaded Inter family for every numeric clock and timer display. */
+  --font-mono: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Cormorant Garamond", serif;
   --font-arabic: "Noto Naskh Arabic", serif;
   --font-ml: "Noto Sans Malayalam", sans-serif;
