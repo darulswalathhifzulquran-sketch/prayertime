@@ -97,6 +97,11 @@ function Index() {
     { id: "stopwatch", name: "Timer", icon: Timer },
     { id: "settings", name: "Settings", icon: Settings },
   ] as const;
+  // The Settings sheet is an overlay. Its tab temporarily takes the active
+  // indicator, which returns to the current page when the sheet closes.
+  const activeNavIndex = settingsOpen
+    ? navigation.length - 1
+    : navigation.findIndex((item) => item.id === activeTab);
   const showHome = activeTab === "home" || activeTab === "prayers";
 
   return (
@@ -309,6 +314,11 @@ function Index() {
         </div>
       </footer>
       <nav className="glass-bottom-nav" aria-label="Primary navigation">
+        <span
+          aria-hidden="true"
+          className="glass-nav-indicator"
+          style={{ transform: `translate3d(${Math.max(activeNavIndex, 0) * 100}%, 0, 0)` }}
+        />
         {navigation.map(({ id, name, icon: Icon }) => (
           <button
             type="button"
@@ -316,9 +326,9 @@ function Index() {
             aria-label={name}
             aria-expanded={id === "settings" ? settingsOpen : undefined}
             data-bottom-settings-button={id === "settings" ? "true" : undefined}
-            aria-current={(id === "settings" ? settingsOpen : activeTab === id) ? "page" : undefined}
+            aria-current={(settingsOpen ? id === "settings" : activeTab === id) ? "page" : undefined}
             onClick={() => jumpTo(id)}
-            className={cn("glass-nav-item", (id === "settings" ? settingsOpen : activeTab === id) && "glass-nav-selected")}
+            className={cn("glass-nav-item", (settingsOpen ? id === "settings" : activeTab === id) && "glass-nav-selected")}
           >
             <Icon className="h-[19px] w-[19px]" aria-hidden="true" />
             <span>{name}</span>

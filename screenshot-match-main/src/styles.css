@@ -770,125 +770,154 @@
 }
 
 /*
- * Transparent molded-glass bottom capsule based on the user's actual reference.
- * The center must visibly show the page behind it: NOT violet and NOT white fill.
- * The 3D quality comes from the silver refractive rim, embossed edge and soft shadow.
- * Only bottom navigation CSS changes; all six working links remain unchanged.
+ * Polished neutral 3D-glass bottom navigation with animated active lens.
+ * Thin rim; glow only on the selected or hovered icon, and one moving pill.
+ * All other page panels/colors remain unchanged.
  */
 .glass-bottom-nav,
 .dark .glass-bottom-nav {
+  position: fixed;
   isolation: isolate;
   overflow: visible;
+  border: 1px solid rgb(231 239 247 / 45%);
   border-radius: 999px;
-  border: 1.5px solid rgb(225 228 233 / 68%);
   padding: 9px 10px;
   padding-bottom: max(9px, env(safe-area-inset-bottom));
-  background: rgb(255 255 255 / 3%);
+  background: rgb(245 249 254 / 10%);
   box-shadow:
-    0 3px 0 rgb(70 74 82 / 24%),
-    0 9px 16px -6px rgb(8 13 22 / 23%),
-    0 21px 34px -16px rgb(7 11 18 / 34%),
-    inset 2px 3px 3px rgb(255 255 255 / 29%),
-    inset -3px -4px 6px rgb(46 51 64 / 20%),
-    inset 0 0 0 1px rgb(255 255 255 / 17%);
-  backdrop-filter: blur(5px) saturate(105%);
-  -webkit-backdrop-filter: blur(5px) saturate(105%);
+    0 8px 22px -11px rgb(7 15 27 / 25%),
+    0 2px 0 rgb(255 255 255 / 12%),
+    inset 0 1px 2px rgb(255 255 255 / 32%),
+    inset 0 -2px 4px rgb(39 56 72 / 15%);
+  backdrop-filter: blur(16px) saturate(126%);
+  -webkit-backdrop-filter: blur(16px) saturate(126%);
 }
-
-/* Raised neutral-silver refraction edging — the center stays 100% unpainted. */
+/* A fine refractive edge; transparent through the middle. */
 .glass-bottom-nav::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  padding: 3px;
-  background: linear-gradient(
-    140deg,
-    rgb(255 255 255 / 84%) 0%,
-    rgb(243 245 247 / 80%) 16%,
-    rgb(169 174 184 / 37%) 39%,
-    rgb(98 106 118 / 46%) 76%,
-    rgb(245 247 251 / 78%) 100%
-  );
+  padding: 1px;
+  background: linear-gradient(130deg,
+    rgb(255 255 255 / 82%) 0%,
+    rgb(245 249 254 / 32%) 36%,
+    rgb(143 160 178 / 40%) 74%,
+    rgb(255 255 255 / 68%) 100%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
-  z-index: 0;
+  z-index: 3;
 }
-
-/* A narrow bright specular streak follows the capsule's upper curved edge. */
 .glass-bottom-nav::after {
   content: "";
   position: absolute;
   top: 3px;
-  left: 8%;
-  right: 8%;
-  height: 6px;
-  border-radius: 100% 100% 50% 50%;
-  background: linear-gradient(
-    90deg, transparent, rgb(255 255 255 / 56%) 18%,
-    rgb(255 255 255 / 68%) 52%, rgb(255 255 255 / 29%) 85%, transparent
-  );
+  left: 9%;
+  right: 9%;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 44%), transparent);
   pointer-events: none;
   z-index: 0;
 }
-
-/* Never place an opaque or colored slab inside the clear-glass shell. */
-.glass-bottom-nav .glass-nav-item {
-  position: relative;
+/* The single frosted lens slides from tab to tab without recreating tabs. */
+.glass-bottom-nav .glass-nav-indicator {
+  position: absolute;
+  left: 10px;
+  top: 9px;
+  bottom: max(9px, env(safe-area-inset-bottom));
+  width: calc((100% - 20px) / 6);
+  border: 1px solid rgb(245 252 255 / 45%);
+  border-radius: 999px;
+  pointer-events: none;
   z-index: 1;
+  background: linear-gradient(148deg,
+    rgb(255 255 255 / 27%) 0%,
+    rgb(225 241 249 / 16%) 57%,
+    rgb(141 173 190 / 16%) 100%);
+  box-shadow:
+    0 4px 14px -7px rgb(2 26 27 / 40%),
+    0 0 15px rgb(21 195 143 / 11%),
+    inset 0 1px 2px rgb(255 255 255 / 51%),
+    inset 0 -1px 2px rgb(116 146 160 / 24%);
+  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: blur(18px) saturate(145%);
+  transition: transform 330ms cubic-bezier(.22, 1, .36, 1);
+}
+.glass-bottom-nav .glass-nav-item,
+.dark .glass-bottom-nav .glass-nav-item {
+  position: relative;
+  z-index: 2;
   min-width: 0;
+  border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
-  border: 1px solid transparent;
-  color: #344052;
-  text-shadow: 0 1px rgb(255 255 255 / 65%);
-  transition: transform 180ms ease, background 180ms ease, box-shadow 180ms ease;
+  color: #304054;
+  text-shadow: 0 1px rgb(255 255 255 / 58%);
+  box-shadow: none;
+  transition: color 200ms ease, transform 200ms ease, filter 200ms ease;
 }
 .glass-bottom-nav .glass-nav-item:hover,
 .glass-bottom-nav .glass-nav-item:focus-visible {
-  background: rgb(255 255 255 / 11%);
-  box-shadow: inset 0 1px 2px rgb(255 255 255 / 32%);
+  color: #078a69;
+  background: rgb(250 255 253 / 9%);
 }
-.glass-bottom-nav .glass-nav-selected {
-  background: rgb(255 255 255 / 13%);
-  border-color: rgb(230 233 238 / 42%);
-  color: #1c2a3b;
+.glass-bottom-nav .glass-nav-item:hover svg,
+.glass-bottom-nav .glass-nav-item:focus-visible svg {
+  filter: drop-shadow(0 0 5px rgb(0 190 130 / 44%));
+}
+/* The lens provides the shape; selected buttons should not draw a second pill. */
+.glass-bottom-nav .glass-nav-selected,
+.dark .glass-bottom-nav .glass-nav-selected {
+  background: transparent;
+  border-color: transparent;
+  color: #046a55;
+  box-shadow: none;
+  font-weight: 700;
+}
+.glass-bottom-nav .glass-nav-selected svg,
+.dark .glass-bottom-nav .glass-nav-selected svg {
+  color: #0da581;
+  stroke-width: 2.7;
+  filter: drop-shadow(0 0 5px rgb(29 207 153 / 48%));
+}
+.dark .glass-bottom-nav {
+  background: rgb(9 20 32 / 24%);
+  border-color: rgb(245 250 255 / 43%);
   box-shadow:
-    0 3px 8px -5px rgb(28 33 43 / 22%),
-    inset 2px 2px 3px rgb(255 255 255 / 34%),
-    inset -2px -3px 4px rgb(82 90 105 / 12%);
+    0 8px 20px -10px rgb(0 0 0 / 36%),
+    inset 0 1px 2px rgb(255 255 255 / 19%),
+    inset 0 -2px 4px rgb(0 0 0 / 26%);
 }
-.glass-bottom-nav .glass-nav-selected svg {
-  color: inherit;
-  stroke-width: 2.6;
-}
-
-/* Contextual icon contrast on dark footer while keeping clear glass colorless. */
 .dark .glass-bottom-nav .glass-nav-item {
-  color: #f8f9fd;
-  text-shadow: 0 1px 3px rgb(0 0 0 / 55%);
+  color: #f1f7fb;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 47%);
+}
+.dark .glass-bottom-nav .glass-nav-selected {
+  color: #ecfffb;
+}
+.dark .glass-bottom-nav .glass-nav-selected svg {
+  color: #a5ffe0;
+  filter: drop-shadow(0 0 6px rgb(31 221 160 / 53%));
 }
 .dark .glass-bottom-nav .glass-nav-item:hover,
 .dark .glass-bottom-nav .glass-nav-item:focus-visible {
-  background: rgb(255 255 255 / 9%);
+  color: #d1fff0;
+  background: rgb(255 255 255 / 7%);
 }
-.dark .glass-bottom-nav .glass-nav-selected {
-  background: rgb(255 255 255 / 13%);
-  border-color: rgb(255 255 255 / 29%);
-  color: #ffffff;
-  box-shadow:
-    0 3px 8px -5px rgb(0 0 0 / 35%),
-    inset 2px 2px 3px rgb(255 255 255 / 23%),
-    inset -2px -3px 4px rgb(0 0 0 / 16%);
-}
-
 @media (max-width: 360px) {
   .glass-bottom-nav {
     width: calc(100% - 12px);
     padding: 6px;
     padding-bottom: max(6px, env(safe-area-inset-bottom));
+  }
+  .glass-bottom-nav .glass-nav-indicator {
+    left: 6px;
+    top: 6px;
+    bottom: max(6px, env(safe-area-inset-bottom));
+    width: calc((100% - 12px) / 6);
   }
   .glass-bottom-nav .glass-nav-item {
     min-height: 49px;
@@ -896,5 +925,8 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .glass-bottom-nav .glass-nav-item { transition: none; }
+  .glass-bottom-nav .glass-nav-indicator,
+  .glass-bottom-nav .glass-nav-item {
+    transition: none;
+  }
 }
