@@ -739,7 +739,7 @@
 }
 .violet-premium #azan .glass-tool-panel[data-view="player"] > .mt-4 > button:first-child {
   color: #fff;
-  background: linear-gradient(135deg, #8b55b5, #563079 67%, #3c195f);
+  background: linear-gradient(139deg, #087c66, #075747 64%, #054c42);
 }
 
 /* Audio controls may be disabled until a recording is uploaded.
@@ -943,4 +943,116 @@
   text-transform: uppercase;
   font-variant-ligatures: common-ligatures;
   text-rendering: optimizeLegibility;
+}
+
+
+/*
+ * AWQAAT Settings — pearl/lavender with emerald active accents.
+ * Visual-only treatment: the Sheet open/close state, form values, prayer
+ * calculation settings and navigation handlers are not altered.
+ */
+.awqaat-settings-panel {
+  color: #27333d;
+  border-left: 2px solid rgb(152 111 189 / 54%);
+  background:
+    radial-gradient(ellipse 90% 34% at 100% 0%, rgb(233 208 251 / 53%), transparent 76%),
+    radial-gradient(ellipse 95% 46% at 0% 100%, rgb(179 234 214 / 28%), transparent 82%),
+    linear-gradient(160deg, #fffdfa 0%, #f8f3ff 52%, #f0faf7 100%);
+  box-shadow:
+    -10px 0 48px -20px rgb(40 7 75 / 39%),
+    inset 2px 0 2px rgb(255 255 255 / 83%);
+  overflow-y: auto;
+}
+.awqaat-settings-panel > div:first-of-type {
+  position: relative;
+  padding: 17px 20px;
+  margin: 3px 21px 5px 0;
+  border: 1px solid rgb(230 194 248 / 53%);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 90% 6%, rgb(226 155 242 / 31%), transparent 44%),
+    linear-gradient(133deg, #351549 0%, #583169 75%, #3f255b 100%);
+  box-shadow:
+    0 10px 24px -16px rgb(69 23 98 / 46%),
+    inset 0 1px rgb(255 255 255 / 28%);
+}
+.awqaat-settings-panel > div:first-of-type [role="dialog"],
+.awqaat-settings-panel > div:first-of-type h2 {
+  color: #ffffff;
+  font-family: "Cinzel", "Cormorant Garamond", Georgia, serif;
+  font-size: 1.32rem;
+  letter-spacing: .04em;
+}
+.awqaat-settings-panel > button.absolute {
+  color: #5e4872;
+  border: 1px solid rgb(150 113 181 / 32%);
+  background: rgb(255 255 255 / 58%);
+  border-radius: 999px;
+  padding: 5px;
+  opacity: 1;
+  z-index: 4;
+}
+.awqaat-settings-panel > button.absolute:hover {
+  color: #185d51;
+  background: rgb(220 249 236 / 90%);
+}
+.awqaat-settings-panel > .space-y-5 > div {
+  border: 1px solid rgb(157 120 188 / 24%);
+  border-radius: 16px;
+  padding: 14px;
+  background: linear-gradient(134deg, rgb(255 255 255 / 81%), rgb(244 233 251 / 51%));
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 89%),
+    0 7px 17px -14px rgb(45 19 77 / 23%);
+}
+.awqaat-settings-panel > .space-y-5 > div > p:first-child {
+  color: #4a245d;
+  font-weight: 700;
+  letter-spacing: .012em;
+}
+.awqaat-settings-panel [data-state="on"][role="radio"],
+.awqaat-settings-panel [data-state="on"][role="button"],
+.awqaat-settings-panel button[data-state="on"] {
+  color: #ffffff;
+  background: linear-gradient(138deg, #188c76, #08654f);
+  border: 1px solid rgb(185 250 227 / 57%);
+  box-shadow:
+    0 5px 11px -7px rgb(6 89 71 / 56%),
+    inset 0 1px rgb(255 255 255 / 26%);
+  text-shadow: 0 1px rgb(1 50 39 / 26%);
+}
+.awqaat-settings-panel [role="combobox"] {
+  color: #3f2850;
+  background: rgb(255 255 255 / 77%);
+  border-color: rgb(164 128 182 / 37%);
+  box-shadow: inset 0 1px rgb(255 255 255 / 90%), 0 3px 8px -6px rgb(41 20 70 / 22%);
+}
+.awqaat-settings-panel .text-muted-foreground {
+  color: #665a72;
+}
+
+/* Settings tab's active state is distinguished by a jewel-emerald lens;
+   this does not add any click handler or change Sheet toggling behavior. */
+.glass-bottom-nav.settings-nav-open .glass-nav-indicator {
+  border-color: rgb(142 250 210 / 52%);
+  background: linear-gradient(145deg, rgb(216 255 244 / 27%), rgb(17 149 116 / 25%) 65%, rgb(255 255 255 / 11%));
+  box-shadow:
+    0 4px 14px -7px rgb(4 93 69 / 39%),
+    inset 0 1px 2px rgb(235 255 247 / 49%),
+    inset 0 -2px 4px rgb(8 91 70 / 18%);
+}
+.glass-bottom-nav [data-bottom-settings-button="true"][aria-expanded="true"] {
+  color: #067a62;
+  text-shadow: none;
+}
+.glass-bottom-nav [data-bottom-settings-button="true"][aria-expanded="true"] svg {
+  color: #0aaf88;
+  stroke-width: 2.9;
+  filter: drop-shadow(0 0 5px rgb(27 220 170 / 42%));
+}
+.dark .glass-bottom-nav [data-bottom-settings-button="true"][aria-expanded="true"] {
+  color: #e4fff5;
+}
+.dark .glass-bottom-nav [data-bottom-settings-button="true"][aria-expanded="true"] svg {
+  color: #aeffe4;
 }

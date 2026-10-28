@@ -151,6 +151,7 @@ function Index() {
           <Sheet modal={false} open={settingsOpen} onOpenChange={setSettingsOpen}>
             <SheetTrigger asChild><Button variant="ghost" size="icon" aria-label={t("settings")}><Settings /></Button></SheetTrigger>
             <SheetContent
+              className="awqaat-settings-panel"
               onInteractOutside={(event) => {
                 const target = event.target;
                 if (target instanceof Element && target.closest('[data-bottom-settings-button="true"]')) {
@@ -314,7 +315,7 @@ function Index() {
           <p>Architecture photography from <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Unsplash</a>.</p>
         </div>
       </footer>
-      <nav className="glass-bottom-nav" aria-label="Primary navigation">
+      <nav className={cn("glass-bottom-nav", settingsOpen && "settings-nav-open")} aria-label="Primary navigation">
         <span
           aria-hidden="true"
           className="glass-nav-indicator"
