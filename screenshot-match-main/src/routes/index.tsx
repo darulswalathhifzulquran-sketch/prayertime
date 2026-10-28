@@ -13,7 +13,7 @@ import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
 import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nextPrayer } from "@/lib/prayer";
-import { tr, arabicDistrictName, type Lang } from "@/lib/i18n";
+import { tr, arabicDistrictName, localizeDigits, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -107,7 +107,7 @@ function Index() {
   const showHome = activeTab === "home" || activeTab === "prayers";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-background to-background pb-28 dark:from-emerald-950/20 dark:via-background dark:to-background">
+    <div className={cn("min-h-screen bg-gradient-to-b from-emerald-50 via-background to-background pb-28 dark:from-emerald-950/20 dark:via-background dark:to-background", lang === "ar" && "awqaat-arabic-numerals")}>
       <header className="sticky top-0 z-20 border-b border-white/30 bg-background/70 shadow-sm backdrop-blur-xl dark:border-white/10">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <div className="mr-auto flex items-center gap-2">
@@ -172,13 +172,13 @@ function Index() {
                 <Field label={t("calculationMethod")}>
                   <Select value={String(method)} onValueChange={(v) => setMethod(Number(v))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{METHODS.map((m) => <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>)}</SelectContent>
+                    <SelectContent className="awqaat-settings-options">{METHODS.map((m) => <SelectItem key={m.id} value={String(m.id)}>{localizeDigits(m.name, lang)}</SelectItem>)}</SelectContent>
                   </Select>
                   <p className="mt-1 text-xs text-muted-foreground">{t("shafiiNote")}</p>
                 </Field>
                 <Field label={t("timeFormat")}>
                   <ToggleGroup type="single" value={h12 ? "12" : "24"} onValueChange={(v) => v && setH12(v === "12")}>
-                    <ToggleGroupItem value="12">{t("h12")}</ToggleGroupItem><ToggleGroupItem value="24">{t("h24")}</ToggleGroupItem>
+                    <ToggleGroupItem value="12">{localizeDigits(t("h12"), lang)}</ToggleGroupItem><ToggleGroupItem value="24">{localizeDigits(t("h24"), lang)}</ToggleGroupItem>
                   </ToggleGroup>
                 </Field>
                 <Field label={t("clock")}>
@@ -198,9 +198,9 @@ function Index() {
         {(gps.locating || gps.error || gps.location) && (
           <p className="pb-2 px-4 text-center text-xs text-muted-foreground" role="status" aria-live="polite" dir="auto">
             {gps.error
-              ? gps.error
+              ? localizeDigits(gps.error, lang)
               : gps.location
-                ? `${t("gpsActive")} · ${t("gpsAccuracy")} ±${Math.round(gps.location.accuracy)} m${gps.location.accuracy > 1000 ? ` · ${t("gpsApprox")}` : ""}`
+                ? localizeDigits(`${t("gpsActive")} · ${t("gpsAccuracy")} ±${Math.round(gps.location.accuracy)} m${gps.location.accuracy > 1000 ? ` · ${t("gpsApprox")}` : ""}`, lang)
                 : t("gpsRequest")}
           </p>
         )}
@@ -217,9 +217,9 @@ function Index() {
                   : districtLabel(district)}
               </p>
               <p className="mb-6 text-xs opacity-70">
-                {gps.location
+                {localizeDigits(gps.location
                   ? `${gps.location.latitude.toFixed(4)}°N, ${gps.location.longitude.toFixed(4)}°E · GPS accuracy ±${Math.round(gps.location.accuracy)} m`
-                  : `${district.hq} · ${district.lat.toFixed(4)}°N, ${district.lng.toFixed(4)}°E`}
+                  : `${district.hq} · ${district.lat.toFixed(4)}°N, ${district.lng.toFixed(4)}°E`, lang)}
               </p>
               {now ? <Clock now={now} mode={clockMode} h12={h12} lang={lang} /> : <div className="h-24" />}
             </div>
@@ -232,10 +232,10 @@ function Index() {
                   </p>
                   <p className="mt-1 font-display text-4xl font-bold leading-none tracking-wide text-white drop-shadow-sm">{next.key}</p>
                   <p className="mt-5 text-xs uppercase tracking-widest opacity-80" dir="auto">{t("remaining")}{next.tomorrow ? ` · ${t("tomorrow")}` : ""}</p>
-                  <p className="font-mono text-5xl font-extrabold tabular-nums">{formatHMS(next.secondsLeft)}</p>
+                  <p className="font-mono text-5xl font-extrabold tabular-nums" dir="ltr">{localizeDigits(formatHMS(next.secondsLeft), lang)}</p>
                 </>
               ) : (
-                <p className="mt-4 opacity-80">{pt.error ?? "Loading…"}</p>
+                <p className="mt-4 opacity-80">{pt.error ? localizeDigits(pt.error, lang) : "Loading…"}</p>
               )}
             </div>
           </div>
@@ -245,11 +245,11 @@ function Index() {
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
             <h2 className="font-display text-2xl font-semibold" dir="auto">{t("todays")}</h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {pt.fetchedAt && <span>{t("updated")}: {new Date(pt.fetchedAt).toLocaleString("en-IN", { timeZone: TZ })}{pt.fromCache ? ` (${t("cached")})` : ""}</span>}
+              {pt.fetchedAt && <span>{t("updated")}: {localizeDigits(new Date(pt.fetchedAt).toLocaleString(lang === "ar" ? "ar-SA-u-ca-gregory-nu-arab" : "en-IN", { timeZone: TZ }), lang)}{pt.fromCache ? ` (${t("cached")})` : ""}</span>}
               <Button variant="ghost" size="sm" onClick={pt.reload} disabled={pt.loading}><RefreshCw className={cn("h-3 w-3", pt.loading && "animate-spin")} />{t("retry")}</Button>
             </div>
           </div>
-          {pt.error && <p className="mb-4 rounded-xl border border-destructive/40 p-3 text-sm text-destructive">{pt.error}</p>}
+          {pt.error && <p className="mb-4 rounded-xl border border-destructive/40 p-3 text-sm text-destructive">{localizeDigits(pt.error, lang)}</p>}
           <div className="glass-inner mb-4 rounded-xl p-3 text-sm">
             <strong>{t("apiWarning")}</strong>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -276,8 +276,8 @@ function Index() {
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     {sunrise && <Sunrise className="h-5 w-5 text-amber-500" />}
-                    <p className="whitespace-nowrap font-mono text-xl font-bold tabular-nums sm:text-2xl">
-                      {displayedTimings ? formatTime(displayedTimings[c.key], h12) : "--:--"}
+                    <p className="whitespace-nowrap font-mono text-xl font-bold tabular-nums sm:text-2xl" dir="ltr">
+                      {displayedTimings ? localizeDigits(formatTime(displayedTimings[c.key], h12), lang) : "--:--"}
                     </p>
                   </div>
                 </article>
@@ -302,14 +302,14 @@ function Index() {
           />
         </section>
         <section id="stopwatch" className={cn("mx-auto max-w-xl scroll-mt-24", activeTab !== "stopwatch" && "hidden")}>
-          <Stopwatch title={t("stopwatch")} />
+          <Stopwatch title={t("stopwatch")} lang={lang} />
         </section>
       </main>
 
       <footer className="border-t">
         <div className="mx-auto max-w-6xl space-y-1 px-4 py-6 text-xs text-muted-foreground">
-          <p>{t("source")}: AlAdhan API (api.aladhan.com) · {t("method")}: {methodName} · Asr: Shafi'i · {t("timezone")}: {TZ}</p>
-          {pt.fetchedAt && <p>{t("updated")}: {new Date(pt.fetchedAt).toLocaleString("en-IN", { timeZone: TZ })}</p>}
+          <p>{t("source")}: AlAdhan API (api.aladhan.com) · {t("method")}: {localizeDigits(methodName, lang)} · Asr: Shafi'i · {t("timezone")}: {TZ}</p>
+          {pt.fetchedAt && <p>{t("updated")}: {localizeDigits(new Date(pt.fetchedAt).toLocaleString(lang === "ar" ? "ar-SA-u-ca-gregory-nu-arab" : "en-IN", { timeZone: TZ }), lang)}</p>}
           <p>{gps.location
             ? t("footerGps")
             : t("footerDistrict")}</p>

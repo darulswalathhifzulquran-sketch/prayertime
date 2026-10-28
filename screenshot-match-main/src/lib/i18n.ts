@@ -82,3 +82,12 @@ const DISTRICT_AR = {
   "ksd": "كاساراغود"
 } as const;
 export const arabicDistrictName = (id: string) => DISTRICT_AR[id as keyof typeof DISTRICT_AR] ?? id;
+
+/** Display only: standard Arabic-Indic numerals (٠١٢٣٤٥٦٧٨٩).
+ * Never convert API values, HTML attributes, IDs or stored settings. */
+export function localizeDigits(value: string | number, lang: Lang): string {
+  const text = String(value);
+  return lang === "ar"
+    ? text.replace(/[0-9]/g, (digit) => String.fromCharCode(0x0660 + Number(digit)))
+    : text;
+}

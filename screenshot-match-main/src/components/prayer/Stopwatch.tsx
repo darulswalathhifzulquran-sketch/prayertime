@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { localizeDigits, type Lang } from "@/lib/i18n";
 
 const fmt = (ms: number) => {
   const h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60, c = Math.floor(ms % 1000);
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${String(c).padStart(3, "0")}`;
 };
 
-export function Stopwatch({ title }: { title: string }) {
+export function Stopwatch({ title, lang }: { title: string; lang: Lang }) {
   // Elapsed = accumulated + (now - startedAt), using performance.now() so tab inactivity doesn't drift.
   const [acc, setAcc] = useState(0);
   const [startedAt, setStartedAt] = useState<number | null>(null);
@@ -25,7 +26,7 @@ export function Stopwatch({ title }: { title: string }) {
     <div className="glass-shell glass-tool-panel rounded-3xl p-6">
       <h3 className="font-display text-2xl font-semibold">{title}</h3>
       <div role="img" aria-label="Photograph of an ornate mosque interior" className="glass-tool-photo glass-timer-photo mt-3" />
-      <div className="my-6 text-center font-mono text-4xl tabular-nums sm:text-5xl">{fmt(elapsed)}</div>
+      <div className="my-6 text-center font-mono text-4xl tabular-nums sm:text-5xl" dir="ltr">{localizeDigits(fmt(elapsed), lang)}</div>
       <div className="flex flex-wrap justify-center gap-2">
         {!running ? (
           <Button onClick={() => setStartedAt(performance.now())}>{acc ? "Resume" : "Start"}</Button>
@@ -39,7 +40,7 @@ export function Stopwatch({ title }: { title: string }) {
         <ol className="mt-4 max-h-40 space-y-1 overflow-auto text-sm">
           {laps.map((l, i) => (
             <li key={i} className="flex justify-between border-b py-1 font-mono tabular-nums">
-              <span className="text-muted-foreground">Lap {laps.length - i}</span><span>{fmt(l)}</span>
+              <span className="text-muted-foreground">Lap {localizeDigits(laps.length - i, lang)}</span><span dir="ltr">{localizeDigits(fmt(l), lang)}</span>
             </li>
           ))}
         </ol>
