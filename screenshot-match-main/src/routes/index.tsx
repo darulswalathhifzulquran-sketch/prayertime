@@ -13,7 +13,7 @@ import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
 import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nextPrayer } from "@/lib/prayer";
-import { tr, type Lang } from "@/lib/i18n";
+import { tr, arabicDistrictName, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -38,6 +38,7 @@ function Index() {
   const [theme, setTheme] = usePersisted<"light" | "dark">("kpt:theme", "light");
   const [lang, setLang] = usePersisted<Lang>("kpt:lang", "en");
   const t = tr(lang);
+  const districtLabel = (d: (typeof DISTRICTS)[number]) => lang === "ar" ? arabicDistrictName(d.id) : lang === "ml" ? d.ml : d.en;
   const district = DISTRICTS.find((d) => d.id === districtId) ?? DISTRICTS[0];
   const gps = useDeviceLocation();
   // Round only for prayer-time lookup: ~11 m resolution, enough for minute-level calculations.
@@ -61,6 +62,7 @@ function Index() {
   const tomorrowFajr = pt.tomorrowFajr;
 
   useEffect(() => { document.documentElement.classList.toggle("dark", theme === "dark"); }, [theme]);
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   const next = now && displayedTimings ? nextPrayer(displayedTimings, istSecondsOfDay(now), tomorrowFajr) : null;
   const methodName = METHODS.find((m) => m.id === method)?.name ?? `Method ${method}`;
@@ -90,12 +92,12 @@ function Index() {
   };
 
   const navigation = [
-    { id: "home", name: "Home", icon: Home },
-    { id: "prayers", name: "Prayer", icon: BookOpen },
-    { id: "azan", name: "Azan", icon: Volume2 },
-    { id: "reminder", name: "Reminder", icon: Bell },
-    { id: "stopwatch", name: "Timer", icon: Timer },
-    { id: "settings", name: "Settings", icon: Settings },
+    { id: "home", name: t("navHome"), icon: Home },
+    { id: "prayers", name: t("navPrayer"), icon: BookOpen },
+    { id: "azan", name: t("navAzan"), icon: Volume2 },
+    { id: "reminder", name: t("navReminder"), icon: Bell },
+    { id: "stopwatch", name: t("navTimer"), icon: Timer },
+    { id: "settings", name: t("settings"), icon: Settings },
   ] as const;
   // The Settings sheet is an overlay. Its tab temporarily takes the active
   // indicator, which returns to the current page when the sheet closes.
@@ -116,8 +118,8 @@ function Index() {
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-56 justify-between" aria-label={t("district")}>
                 {gps.location
-                  ? (lang === "ml" ? "നിലവിലെ GPS സ്ഥാനം" : "Current GPS location")
-                  : lang === "ml" ? district.ml : district.en}
+                  ? t("gpsCurrent")
+                  : districtLabel(district)}
                 <ChevronsUpDown className="h-4 w-4 opacity-60" />
               </Button>
             </PopoverTrigger>
@@ -128,9 +130,9 @@ function Index() {
                   <CommandEmpty>—</CommandEmpty>
                   <CommandGroup>
                     {DISTRICTS.map((d) => (
-                      <CommandItem key={d.id} value={`${d.en} ${d.ml}`} onSelect={() => chooseDistrict(d.id)}>
+                      <CommandItem key={d.id} value={`${d.en} ${d.ml} ${arabicDistrictName(d.id)}`} onSelect={() => chooseDistrict(d.id)}>
                         <Check className={cn("h-4 w-4", d.id === district.id ? "opacity-100" : "opacity-0")} />
-                        {d.en} <span className="ml-auto font-ml text-xs text-muted-foreground">{d.ml}</span>
+                        {districtLabel(d)} <span className="ml-auto text-xs text-muted-foreground" dir="auto">{lang === "ar" ? d.en : lang === "ml" ? d.en : d.ml}</span>
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -142,16 +144,17 @@ function Index() {
             variant={gps.enabled ? "secondary" : "ghost"}
             size="icon"
             onClick={gps.toggle}
-            aria-label={gps.enabled ? "Turn off GPS location" : "Use my current GPS location"}
-            title={gps.enabled ? "Turn off GPS location" : "Use current GPS location for prayer times"}
+            aria-label={gps.enabled ? t("gpsEnabled") : t("gpsDisabled")}
+            title={gps.enabled ? t("gpsEnabled") : t("gpsDisabled")}
             aria-pressed={gps.enabled}
             className={gps.enabled ? "text-primary" : undefined}
           ><LocateFixed className={gps.locating ? "animate-pulse" : undefined} /></Button>
-          <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Theme">{theme === "dark" ? <Sun /> : <Moon />}</Button>
+          <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={t("theme")}>{theme === "dark" ? <Sun /> : <Moon />}</Button>
           <Sheet modal={false} open={settingsOpen} onOpenChange={setSettingsOpen}>
             <SheetTrigger asChild><Button variant="ghost" size="icon" aria-label={t("settings")}><Settings /></Button></SheetTrigger>
             <SheetContent
               className="awqaat-settings-panel"
+              dir={lang === "ar" ? "rtl" : "ltr"}
               onInteractOutside={(event) => {
                 const target = event.target;
                 if (target instanceof Element && target.closest('[data-bottom-settings-button="true"]')) {
@@ -161,31 +164,31 @@ function Index() {
             >
               <SheetHeader><SheetTitle>{t("settings")}</SheetTitle></SheetHeader>
               <div className="space-y-5 p-4 text-sm">
-                <Field label="Interface language">
+                <Field label={t("interfaceLanguage")}>
                   <ToggleGroup type="single" value={lang} onValueChange={(v) => v && setLang(v as Lang)}>
-                    <ToggleGroupItem value="en">English</ToggleGroupItem><ToggleGroupItem value="ml">മലയാളം</ToggleGroupItem>
+                    <ToggleGroupItem value="en">English</ToggleGroupItem><ToggleGroupItem value="ml">മലയാളം</ToggleGroupItem><ToggleGroupItem value="ar" className="font-arabic text-base" lang="ar" dir="rtl">العربية</ToggleGroupItem>
                   </ToggleGroup>
                 </Field>
-                <Field label="Calculation method">
+                <Field label={t("calculationMethod")}>
                   <Select value={String(method)} onValueChange={(v) => setMethod(Number(v))}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>{METHODS.map((m) => <SelectItem key={m.id} value={String(m.id)}>{m.name}</SelectItem>)}</SelectContent>
                   </Select>
-                  <p className="mt-1 text-xs text-muted-foreground">Asr is always Shafi'i (standard shadow).</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("shafiiNote")}</p>
                 </Field>
-                <Field label="Time format">
+                <Field label={t("timeFormat")}>
                   <ToggleGroup type="single" value={h12 ? "12" : "24"} onValueChange={(v) => v && setH12(v === "12")}>
-                    <ToggleGroupItem value="12">12-hour</ToggleGroupItem><ToggleGroupItem value="24">24-hour</ToggleGroupItem>
+                    <ToggleGroupItem value="12">{t("h12")}</ToggleGroupItem><ToggleGroupItem value="24">{t("h24")}</ToggleGroupItem>
                   </ToggleGroup>
                 </Field>
-                <Field label="Clock">
+                <Field label={t("clock")}>
                   <ToggleGroup type="single" value={clockMode} onValueChange={(v) => v && setClockMode(v as "digital" | "analog")}>
                     <ToggleGroupItem value="digital">{t("digital")}</ToggleGroupItem><ToggleGroupItem value="analog">{t("analog")}</ToggleGroupItem>
                   </ToggleGroup>
                 </Field>
-                <Field label="Theme">
+                <Field label={t("theme")}>
                   <ToggleGroup type="single" value={theme} onValueChange={(v) => v && setTheme(v as "light" | "dark")}>
-                    <ToggleGroupItem value="light">Light</ToggleGroupItem><ToggleGroupItem value="dark">Dark</ToggleGroupItem>
+                    <ToggleGroupItem value="light">{t("light")}</ToggleGroupItem><ToggleGroupItem value="dark">{t("dark")}</ToggleGroupItem>
                   </ToggleGroup>
                 </Field>
               </div>
@@ -193,12 +196,12 @@ function Index() {
           </Sheet>
         </div>
         {(gps.locating || gps.error || gps.location) && (
-          <p className="pb-2 px-4 text-center text-xs text-muted-foreground" role="status" aria-live="polite">
+          <p className="pb-2 px-4 text-center text-xs text-muted-foreground" role="status" aria-live="polite" dir="auto">
             {gps.error
               ? gps.error
               : gps.location
-                ? `GPS prayer times active · accuracy ±${Math.round(gps.location.accuracy)} m${gps.location.accuracy > 1000 ? " · Location is approximate; improve GPS accuracy for better results." : ""}`
-                : "Requesting precise location permission…"}
+                ? `${t("gpsActive")} · ${t("gpsAccuracy")} ±${Math.round(gps.location.accuracy)} m${gps.location.accuracy > 1000 ? ` · ${t("gpsApprox")}` : ""}`
+                : t("gpsRequest")}
           </p>
         )}
       </header>
@@ -208,10 +211,10 @@ function Index() {
           <div className="islamic-pattern absolute inset-0 opacity-60" aria-hidden />
           <div className="relative flex flex-col items-stretch gap-6">
             <div id="clock" className="scroll-mt-28 text-center">
-              <p className="text-sm uppercase tracking-[0.3em] text-gold">
+              <p className="text-sm uppercase tracking-[0.3em] text-gold" dir="auto">
                 {gps.location
-                  ? (lang === "ml" ? "നിങ്ങളുടെ ഇപ്പോഴത്തെ GPS സ്ഥാനം" : "Your current GPS location")
-                  : lang === "ml" ? district.ml : district.en}
+                  ? t("gpsYours")
+                  : districtLabel(district)}
               </p>
               <p className="mb-6 text-xs opacity-70">
                 {gps.location
@@ -221,14 +224,14 @@ function Index() {
               {now ? <Clock now={now} mode={clockMode} h12={h12} lang={lang} /> : <div className="h-24" />}
             </div>
             <div className="glass-on-dark rounded-3xl border border-white/25 p-5 text-center text-white backdrop-blur-xl">
-              <p className="text-sm uppercase tracking-widest text-gold">{t("next")}</p>
+              <p className="text-sm uppercase tracking-widest text-gold" dir="auto">{t("next")}</p>
               {next ? (
                 <>
                   <p className="mt-3 font-arabic text-4xl font-bold leading-tight text-white drop-shadow-sm sm:text-5xl" dir="rtl" lang="ar">
                     {CARDS.find((c) => c.key === next.key)?.ar}
                   </p>
                   <p className="mt-1 font-display text-4xl font-bold leading-none tracking-wide text-white drop-shadow-sm">{next.key}</p>
-                  <p className="mt-5 text-xs uppercase tracking-widest opacity-80">{t("remaining")}{next.tomorrow ? ` · ${t("tomorrow")}` : ""}</p>
+                  <p className="mt-5 text-xs uppercase tracking-widest opacity-80" dir="auto">{t("remaining")}{next.tomorrow ? ` · ${t("tomorrow")}` : ""}</p>
                   <p className="font-mono text-5xl font-extrabold tabular-nums">{formatHMS(next.secondsLeft)}</p>
                 </>
               ) : (
@@ -240,7 +243,7 @@ function Index() {
 
         <section id="prayers" className={cn("glass-shell scroll-mt-24 mx-auto max-w-xl rounded-[2rem] p-4 sm:p-6", !showHome && "hidden")}>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-            <h2 className="font-display text-2xl font-semibold">{t("todays")}</h2>
+            <h2 className="font-display text-2xl font-semibold" dir="auto">{t("todays")}</h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {pt.fetchedAt && <span>{t("updated")}: {new Date(pt.fetchedAt).toLocaleString("en-IN", { timeZone: TZ })}{pt.fromCache ? ` (${t("cached")})` : ""}</span>}
               <Button variant="ghost" size="sm" onClick={pt.reload} disabled={pt.loading}><RefreshCw className={cn("h-3 w-3", pt.loading && "animate-spin")} />{t("retry")}</Button>
@@ -248,10 +251,9 @@ function Index() {
           </div>
           {pt.error && <p className="mb-4 rounded-xl border border-destructive/40 p-3 text-sm text-destructive">{pt.error}</p>}
           <div className="glass-inner mb-4 rounded-xl p-3 text-sm">
-            <strong>API-calculated times — NOT verified local mosque times</strong>
+            <strong>{t("apiWarning")}</strong>
             <p className="mt-1 text-xs text-muted-foreground">
-              GPS identifies the location; it cannot verify the local mosque timetable.
-              Compare with your local masjid's approved calendar before relying on prayer times or Azan reminders.
+              {t("apiCaution")}
             </p>
           </div>
           <div className="flex flex-col gap-2">
@@ -288,10 +290,11 @@ function Index() {
         <section
           id="azan"
           className={cn("mx-auto max-w-xl scroll-mt-24", activeTab !== "azan" && activeTab !== "reminder" && "hidden")}
-          aria-label={activeTab === "reminder" ? "Azan reminders" : "Azan player"}
+          aria-label={activeTab === "reminder" ? t("azanReminders") : t("azan")}
         >
           <AzanPlayer
-            title={activeTab === "reminder" ? "Azan Reminders" : t("azan")}
+            title={activeTab === "reminder" ? t("azanReminders") : t("azan")}
+            lang={lang}
             view={activeTab === "reminder" ? "reminders" : "player"}
             standardSrc="/audio/al-hafiz-muhammed-noufal.mp3"
             now={now}
@@ -305,17 +308,17 @@ function Index() {
 
       <footer className="border-t">
         <div className="mx-auto max-w-6xl space-y-1 px-4 py-6 text-xs text-muted-foreground">
-          <p>Source: AlAdhan API (api.aladhan.com) · Method: {methodName} · Asr: Shafi'i · Timezone: {TZ}</p>
+          <p>{t("source")}: AlAdhan API (api.aladhan.com) · {t("method")}: {methodName} · Asr: Shafi'i · {t("timezone")}: {TZ}</p>
           {pt.fetchedAt && <p>{t("updated")}: {new Date(pt.fetchedAt).toLocaleString("en-IN", { timeZone: TZ })}</p>}
           <p>{gps.location
-            ? "Prayer times are calculated using your browser's GPS coordinates (shared with AlAdhan when requesting timings). GPS has an uncertainty radius and is not guaranteed to be exact. Coordinates are not saved in browser storage."
-            : "District times are calculated for each district headquarters. Use the location button for GPS-based timings."}</p>
-          <p>These are API-calculated estimates for the selected district or GPS location, not verified local mosque timetable times.</p>
-          <p>GPS-based API requests share browser-provided coordinates with AlAdhan, not our backend.</p>
-          <p>Architecture photography from <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Unsplash</a>.</p>
+            ? t("footerGps")
+            : t("footerDistrict")}</p>
+          <p>{t("footerEstimate")}</p>
+          <p>{t("footerSharing")}</p>
+          <p>{t("photography")} <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Unsplash</a>.</p>
         </div>
       </footer>
-      <nav className={cn("glass-bottom-nav", settingsOpen && "settings-nav-open")} aria-label="Primary navigation">
+      <nav className={cn("glass-bottom-nav", settingsOpen && "settings-nav-open")} aria-label={t("navHome") + " / " + t("settings")}>
         <span
           aria-hidden="true"
           className="glass-nav-indicator"

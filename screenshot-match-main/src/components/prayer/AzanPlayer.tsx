@@ -5,12 +5,14 @@ import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { FIVE, istDateKey, istSecondsOfDay, toMinutes, type PrayerKey, type Timings } from "@/lib/prayer";
 import { usePersisted } from "@/hooks/use-prayer-times";
+import { tr, type Lang } from "@/lib/i18n";
 
 /** Recorded Azan player. Audio source is the admin-uploaded recording (none until uploaded). */
-export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "player" }: {
+export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "player", lang }: {
   title: string; now: Date | null; timings?: Timings | undefined; standardSrc?: string | undefined; fajrSrc?: string | undefined;
-  view?: "player" | "reminders";
+  view?: "player" | "reminders"; lang: Lang;
 }) {
+  const t = tr(lang);
   const audio = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = usePersisted("kpt:vol", 0.8);
@@ -25,7 +27,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
   const play = async (src?: string) => {
     const a = audio.current; if (!a || !src) return;
     if (a.getAttribute("src") !== src) a.src = src;
-    try { await a.play(); setMsg(""); setPlaying(true); } catch { setMsg("Unable to play Azan. Check your browser sound permissions and try Play again."); }
+    try { await a.play(); setMsg(""); setPlaying(true); } catch { setMsg(t("playError")); }
   };
 
   const enable = async () => {
@@ -59,8 +61,8 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
   const hasAudio = !!standardSrc;
   return (
     <div className="glass-shell glass-tool-panel rounded-3xl p-6" data-view={view}>
-      <audio ref={audio} onEnded={() => setPlaying(false)} onPause={() => setPlaying(false)} onError={() => { setPlaying(false); setMsg("Azan recording could not be loaded. Please refresh and try again."); }} preload="metadata" aria-label="Azan recitation by AL HAFIZ MUHAMMED NOUFAL" />
-      <h3 className="font-display text-2xl font-semibold">{title}</h3>
+      <audio ref={audio} onEnded={() => setPlaying(false)} onPause={() => setPlaying(false)} onError={() => { setPlaying(false); setMsg(t("loadError")); }} preload="metadata" aria-label="Azan recitation by AL HAFIZ MUHAMMED NOUFAL" />
+      <h3 className="font-display text-2xl font-semibold" dir="auto">{title}</h3>
       <div role="img" aria-label="Photograph of a mosque minaret" className="glass-tool-photo glass-azan-photo mt-3" />
       {view === "player" && hasAudio && (
         <div className="glass-inner mt-3 flex items-center gap-3 rounded-2xl px-4 py-3">
@@ -68,14 +70,14 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
             <Volume2 className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">AZAN RECORDING</p>
-            <p className="text-sm font-extrabold tracking-wide">AL HAFIZ MUHAMMED NOUFAL</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">{t("record")}</p>
+            <p className="text-sm font-extrabold tracking-wide" dir="ltr">AL HAFIZ MUHAMMED NOUFAL</p>
           </div>
         </div>
       )}
       {!hasAudio && view === "player" && (
         <p className="glass-inner mt-2 rounded-xl p-3 text-sm text-muted-foreground">
-          No Azan recording has been uploaded yet. Reminders will still show a notification.
+          {t("noRecording")}
         </p>
       )}
       <div className={view === "player" ? "mt-4 flex flex-wrap gap-2" : "hidden"}>
@@ -89,16 +91,16 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
       </div>
       {view === "reminders" && (
       <div className="glass-inner mt-5 flex items-center justify-between gap-3 rounded-2xl p-3">
-        <div className="flex items-center gap-2 text-sm font-medium">{enabled ? <Bell className="h-4 w-4 text-gold" /> : <BellOff className="h-4 w-4" />} Azan reminders</div>
+        <div className="flex items-center gap-2 text-sm font-medium">{enabled ? <Bell className="h-4 w-4 text-gold" /> : <BellOff className="h-4 w-4" />} {t("azanReminders")}</div>
         {enabled && unlocked ? (
           <Button
             size="sm"
             variant="outline"
             className="reminder-turnoff-button rounded-full border-fuchsia-200/80 bg-fuchsia-100 px-4 font-semibold text-purple-950 shadow-sm hover:bg-white hover:text-purple-950 focus-visible:ring-fuchsia-300"
             onClick={() => { setEnabled(false); setUnlocked(false); }}
-          >Turn off</Button>
+          >{t("turnOff")}</Button>
         ) : (
-          <Button size="sm" onClick={enable}>{standardSrc ? "Enable Azan Audio" : "Enable Reminders"}</Button>
+          <Button size="sm" onClick={enable}>{standardSrc ? t("enableAzan") : t("enableReminder")}</Button>
         )}
       </div>
       )}
@@ -112,8 +114,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
       {msg && <p className="mt-3 text-sm text-destructive">{msg}</p>}
       {view === "reminders" && (
         <p className="mt-3 text-xs text-muted-foreground">
-          Azan notifications work only while this page is open with browser permission.
-          Audio playback also needs a recording and browser sound permission. No reminder or Azan plays at Sunrise.
+          {t("reminderCaution")}
         </p>
       )}
     </div>

@@ -1,8 +1,9 @@
 import { istParts, TZ } from "@/lib/prayer";
+import type { Lang } from "@/lib/i18n";
 
-export function Clock({ now, mode, h12, lang }: { now: Date; mode: "digital" | "analog"; h12: boolean; lang: "en" | "ml" }) {
+export function Clock({ now, mode, h12, lang }: { now: Date; mode: "digital" | "analog"; h12: boolean; lang: Lang }) {
   const p = istParts(now);
-  const date = new Intl.DateTimeFormat(lang === "ml" ? "ml-IN" : "en-IN", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(now);
+  const date = new Intl.DateTimeFormat(lang === "ml" ? "ml-IN" : lang === "ar" ? "ar-SA-u-ca-gregory-nu-latn" : "en-IN", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(now);
   const hh = h12 ? ((p.h + 11) % 12) + 1 : p.h;
   const pad = (n: number) => String(n).padStart(2, "0");
   return (
@@ -19,7 +20,7 @@ export function Clock({ now, mode, h12, lang }: { now: Date; mode: "digital" | "
       {mode === "analog" && (
         <div className="font-mono text-lg tabular-nums">{pad(hh)}:{pad(p.mi)}:{pad(p.s)} {h12 ? (p.h < 12 ? "AM" : "PM") : ""}</div>
       )}
-      <div className="text-sm opacity-80">{date}</div>
+      <div className="text-sm opacity-80" dir="auto">{date}</div>
     </div>
   );
 }
