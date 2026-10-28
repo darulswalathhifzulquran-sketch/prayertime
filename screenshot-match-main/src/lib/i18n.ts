@@ -1,6 +1,6 @@
 export type Lang = "en" | "ml";
 const dict = {
-  title: { en: "Kerala Prayer Times", ml: "കേരള നമസ്കാര സമയം" },
+  title: { en: "AWQAAT", ml: "AWQAAT" },
   district: { en: "District", ml: "ജില്ല" },
   search: { en: "Search district…", ml: "ജില്ല തിരയുക…" },
   locate: { en: "Use my location", ml: "എന്റെ സ്ഥാനം" },

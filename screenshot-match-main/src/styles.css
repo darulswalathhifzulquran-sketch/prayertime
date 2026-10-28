@@ -931,3 +931,16 @@
     transition: none;
   }
 }
+
+
+/* AWQAAT — refined classical wordmark. Existing icon and navigation preserved. */
+.brand-awqaat {
+  font-family: "Cinzel", "Cormorant Garamond", Georgia, serif;
+  font-weight: 600;
+  font-size: clamp(1.38rem, 3.6vw, 1.85rem);
+  line-height: 1.15;
+  letter-spacing: 0.095em;
+  text-transform: uppercase;
+  font-variant-ligatures: common-ligatures;
+  text-rendering: optimizeLegibility;
+}

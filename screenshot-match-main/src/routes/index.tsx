@@ -19,9 +19,9 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Kerala Prayer Times — All 14 Districts" },
+      { title: "AWQAAT — Kerala Prayer Times · All 14 Districts" },
       { name: "description", content: "Live Fajr, Dhuhr, Asr, Maghrib, Isha and Sunrise times for every Kerala district, with countdown, Azan reminders and stopwatch." },
-      { property: "og:title", content: "Kerala Prayer Times — All 14 Districts" },
+      { property: "og:title", content: "AWQAAT — Kerala Prayer Times · All 14 Districts" },
       { property: "og:description", content: "Daily prayer times for all 14 Kerala districts in English, Arabic and Malayalam." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -110,7 +110,7 @@ function Index() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <div className="mr-auto flex items-center gap-2">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-hero font-arabic text-lg text-gold">۞</span>
-            <span className="font-display text-2xl font-semibold">{t("title")}</span>
+            <span className="brand-awqaat">{t("title")}</span>
           </div>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
