@@ -24,8 +24,8 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
 
   const play = async (src?: string) => {
     const a = audio.current; if (!a || !src) return;
-    if (a.src !== src) a.src = src;
-    try { await a.play(); setPlaying(true); } catch { setMsg("The browser blocked sound. Tap Play to hear the Azan."); }
+    if (a.getAttribute("src") !== src) a.src = src;
+    try { await a.play(); setMsg(""); setPlaying(true); } catch { setMsg("Unable to play Azan. Check your browser sound permissions and try Play again."); }
   };
 
   const enable = async () => {
@@ -59,9 +59,20 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
   const hasAudio = !!standardSrc;
   return (
     <div className="glass-shell glass-tool-panel rounded-3xl p-6" data-view={view}>
-      <audio ref={audio} onEnded={() => setPlaying(false)} onPause={() => setPlaying(false)} preload="none" />
+      <audio ref={audio} onEnded={() => setPlaying(false)} onPause={() => setPlaying(false)} onError={() => { setPlaying(false); setMsg("Azan recording could not be loaded. Please refresh and try again."); }} preload="metadata" aria-label="Azan recitation by AL HAFIZ MUHAMMED NOUFAL" />
       <h3 className="font-display text-2xl font-semibold">{title}</h3>
       <div role="img" aria-label="Photograph of a mosque minaret" className="glass-tool-photo glass-azan-photo mt-3" />
+      {view === "player" && hasAudio && (
+        <div className="glass-inner mt-3 flex items-center gap-3 rounded-2xl px-4 py-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-fuchsia-200/40 bg-white/10" aria-hidden="true">
+            <Volume2 className="h-5 w-5" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">AZAN RECORDING</p>
+            <p className="text-sm font-extrabold tracking-wide">AL HAFIZ MUHAMMED NOUFAL</p>
+          </div>
+        </div>
+      )}
       {!hasAudio && view === "player" && (
         <p className="glass-inner mt-2 rounded-xl p-3 text-sm text-muted-foreground">
           No Azan recording has been uploaded yet. Reminders will still show a notification.

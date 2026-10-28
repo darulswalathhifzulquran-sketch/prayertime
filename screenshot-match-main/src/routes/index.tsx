@@ -292,6 +292,7 @@ function Index() {
           <AzanPlayer
             title={activeTab === "reminder" ? "Azan Reminders" : t("azan")}
             view={activeTab === "reminder" ? "reminders" : "player"}
+            standardSrc="/audio/al-hafiz-muhammed-noufal.mp3"
             now={now}
             timings={displayedTimings}
           />
