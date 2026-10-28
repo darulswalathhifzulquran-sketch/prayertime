@@ -13,7 +13,7 @@ import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
 import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nextPrayer } from "@/lib/prayer";
-import { tr, arabicDistrictName, localizeDigits, type Lang } from "@/lib/i18n";
+import { tr, localizeDigits, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -38,7 +38,7 @@ function Index() {
   const [theme, setTheme] = usePersisted<"light" | "dark">("kpt:theme", "light");
   const [lang, setLang] = usePersisted<Lang>("kpt:lang", "en");
   const t = tr(lang);
-  const districtLabel = (d: (typeof DISTRICTS)[number]) => lang === "ar" ? arabicDistrictName(d.id) : lang === "ml" ? d.ml : d.en;
+  const districtLabel = (d: (typeof DISTRICTS)[number]) => lang === "ml" ? d.ml : d.en;
   const district = DISTRICTS.find((d) => d.id === districtId) ?? DISTRICTS[0];
   const gps = useDeviceLocation();
   // Round only for prayer-time lookup: ~11 m resolution, enough for minute-level calculations.
@@ -125,14 +125,14 @@ function Index() {
             </PopoverTrigger>
             <PopoverContent className="w-64 p-0" align="end">
               <Command>
-                <CommandInput placeholder={t("search")} />
+                <CommandInput placeholder={lang === "ar" ? "Search district…" : t("search")} />
                 <CommandList>
                   <CommandEmpty>—</CommandEmpty>
                   <CommandGroup>
                     {DISTRICTS.map((d) => (
-                      <CommandItem key={d.id} value={`${d.en} ${d.ml} ${arabicDistrictName(d.id)}`} onSelect={() => chooseDistrict(d.id)}>
+                      <CommandItem key={d.id} value={`${d.en} ${d.ml}`} onSelect={() => chooseDistrict(d.id)}>
                         <Check className={cn("h-4 w-4", d.id === district.id ? "opacity-100" : "opacity-0")} />
-                        {districtLabel(d)} <span className="ml-auto text-xs text-muted-foreground" dir="auto">{lang === "ar" ? d.en : lang === "ml" ? d.en : d.ml}</span>
+                        {districtLabel(d)} <span className="ml-auto text-xs text-muted-foreground" dir="auto">{lang === "ml" ? d.en : d.ml}</span>
                       </CommandItem>
                     ))}
                   </CommandGroup>
