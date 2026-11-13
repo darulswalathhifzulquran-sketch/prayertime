@@ -50,7 +50,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
 
   const tryMirror = () => {
     if (!standardSrc || backupIndex.current >= AUDIO_BACKUPS.length) return false;
-    const next = AUDIO_BACKUPS[backupIndex.current];
+    const next = AUDIO_BACKUPS[backupIndex.current]!;
     backupIndex.current += 1;
     retryPlaybackAfterFallback.current = userRequestedPlay.current;
     setRecordingReady(false);
