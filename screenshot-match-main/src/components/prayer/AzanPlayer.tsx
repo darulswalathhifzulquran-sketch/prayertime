@@ -7,13 +7,22 @@ import { FIVE, istDateKey, istSecondsOfDay, toMinutes, type PrayerKey, type Timi
 import { usePersisted } from "@/hooks/use-prayer-times";
 import { tr, type Lang } from "@/lib/i18n";
 
-/** Recorded Azan player. Audio source is the admin-uploaded recording (none until uploaded). */
+/** Resilient Azan playback: prefer the site's MP3, fall back to the same
+ * public GitHub recording if the deployment fails to serve that static file. */
+const MIRROR_AUDIO_SRC =
+  "https://raw.githubusercontent.com/darulswalathhifzulquran-sketch/prayertime/main/screenshot-match-main/public/audio/al-hafiz-muhammed-noufal.mp3";
 export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "player", lang }: {
   title: string; now: Date | null; timings?: Timings | undefined; standardSrc?: string | undefined; fajrSrc?: string | undefined;
   view?: "player" | "reminders"; lang: Lang;
 }) {
   const t = tr(lang);
   const audio = useRef<HTMLAudioElement | null>(null);
+  const fallbackTried = useRef(false);
+  const userRequestedPlay = useRef(false);
+  const retryPlaybackAfterFallback = useRef(false);
+  const [currentSrc, setCurrentSrc] = useState(standardSrc ?? "");
+  const [recordingReady, setRecordingReady] = useState(false);
+  const [recordingFailed, setRecordingFailed] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = usePersisted("kpt:vol", 0.8);
   const [muted, setMuted] = usePersisted("kpt:muted", false);
@@ -24,18 +33,94 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
 
   useEffect(() => { if (audio.current) { audio.current.volume = volume; audio.current.muted = muted; } }, [volume, muted]);
 
+  // Reset the media source if an administrator changes the recording.
+  useEffect(() => {
+    fallbackTried.current = false;
+    userRequestedPlay.current = false;
+    retryPlaybackAfterFallback.current = false;
+    setCurrentSrc(standardSrc ?? "");
+    setRecordingReady(false);
+    setRecordingFailed(false);
+    setMsg("");
+  }, [standardSrc]);
+
+  const tryMirror = () => {
+    if (!standardSrc || fallbackTried.current) return false;
+    fallbackTried.current = true;
+    retryPlaybackAfterFallback.current = userRequestedPlay.current;
+    setRecordingReady(false);
+    setRecordingFailed(false);
+    setMsg("");
+    setCurrentSrc(MIRROR_AUDIO_SRC);
+    return true;
+  };
+
+  const handleReady = () => {
+    setRecordingReady(true);
+    setRecordingFailed(false);
+    if (!retryPlaybackAfterFallback.current) return;
+    retryPlaybackAfterFallback.current = false;
+    const a = audio.current;
+    if (!a || !userRequestedPlay.current) return;
+    void a.play().then(() => { setPlaying(true); setMsg(""); }).catch(() => {
+      userRequestedPlay.current = false;
+      setMsg(t("playError"));
+    });
+  };
+
+  const handleAudioError = () => {
+    setPlaying(false);
+    if (tryMirror()) return;
+    retryPlaybackAfterFallback.current = false;
+    userRequestedPlay.current = false;
+    setRecordingReady(false);
+    setRecordingFailed(true);
+    setMsg(t("audioUnavailable"));
+  };
+
+  const retryRecording = () => {
+    fallbackTried.current = false;
+    retryPlaybackAfterFallback.current = false;
+    userRequestedPlay.current = false;
+    setRecordingReady(false);
+    setRecordingFailed(false);
+    setMsg("");
+    // Trying the known public copy first avoids a cached 404 in the app domain.
+    fallbackTried.current = true;
+    setCurrentSrc(MIRROR_AUDIO_SRC);
+  };
+
   const play = async (src?: string) => {
-    const a = audio.current; if (!a || !src) return;
-    if (a.getAttribute("src") !== src) a.src = src;
-    try { await a.play(); setMsg(""); setPlaying(true); } catch { setMsg(t("playError")); }
+    const a = audio.current;
+    if (!a || !src || recordingFailed) return;
+    const effectiveSrc = src === standardSrc ? currentSrc : src;
+    if (a.getAttribute("src") !== effectiveSrc) a.src = effectiveSrc;
+    userRequestedPlay.current = true;
+    try {
+      await a.play();
+      setMsg("");
+      setPlaying(true);
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      if (error instanceof Error && error.name === "NotAllowedError") {
+        userRequestedPlay.current = false;
+        setMsg(t("playError"));
+        return;
+      }
+      if (tryMirror()) return;
+      // An existing media error handler may already be loading the mirror.
+      if (retryPlaybackAfterFallback.current) return;
+      userRequestedPlay.current = false;
+      setMsg(t("audioUnavailable"));
+    }
   };
 
   const enable = async () => {
     setEnabled(true);
     if ("Notification" in window && Notification.permission === "default") await Notification.requestPermission();
     const a = audio.current;
-    if (a && standardSrc) {
-      a.src = standardSrc; a.muted = true;
+    if (a && standardSrc && recordingReady) {
+      a.src = currentSrc; a.muted = true;
       try { await a.play(); a.pause(); a.currentTime = 0; setUnlocked(true); } catch { /* ignore */ }
       a.muted = muted;
     } else setUnlocked(true);
@@ -61,7 +146,16 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
   const hasAudio = !!standardSrc;
   return (
     <div className="glass-shell glass-tool-panel rounded-3xl p-6" data-view={view}>
-      <audio ref={audio} onEnded={() => setPlaying(false)} onPause={() => setPlaying(false)} onError={() => { setPlaying(false); setMsg(t("loadError")); }} preload="metadata" aria-label="Azan recitation by AL HAFIZ MUHAMMED NOUFAL" />
+      <audio
+        ref={audio}
+        src={currentSrc || undefined}
+        onCanPlay={handleReady}
+        onEnded={() => { userRequestedPlay.current = false; setPlaying(false); }}
+        onPause={() => { if (!retryPlaybackAfterFallback.current) userRequestedPlay.current = false; setPlaying(false); }}
+        onError={handleAudioError}
+        preload="auto"
+        aria-label="Azan recitation by AL HAFIZ MUHAMMED NOUFAL"
+      />
       <h3 className="font-display text-2xl font-semibold" dir="auto">{title}</h3>
       <div role="img" aria-label="Photograph of a mosque minaret" className="glass-tool-photo glass-azan-photo mt-3" />
       {view === "player" && hasAudio && (
@@ -80,12 +174,15 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
           {t("noRecording")}
         </p>
       )}
+      {hasAudio && view === "player" && !recordingReady && !recordingFailed && (
+        <p className="mt-2 text-xs text-muted-foreground" role="status">{t("audioLoading")}</p>
+      )}
       <div className={view === "player" ? "mt-4 flex flex-wrap gap-2" : "hidden"}>
-        <Button size="icon" disabled={!hasAudio} onClick={() => (playing ? audio.current?.pause() : play(standardSrc))} aria-label={playing ? "Pause" : "Play"}>
+        <Button size="icon" disabled={!hasAudio || !recordingReady || recordingFailed} onClick={() => (playing ? (userRequestedPlay.current = false, audio.current?.pause()) : play(standardSrc))} aria-label={playing ? "Pause" : "Play"}>
           {playing ? <Pause /> : <Play />}
         </Button>
-        <Button size="icon" variant="outline" disabled={!hasAudio} aria-label="Stop" onClick={() => { const a = audio.current; if (a) { a.pause(); a.currentTime = 0; } }}><Square /></Button>
-        <Button size="icon" variant="outline" disabled={!hasAudio} aria-label="Replay" onClick={() => { if (audio.current) audio.current.currentTime = 0; void play(standardSrc); }}><RotateCcw /></Button>
+        <Button size="icon" variant="outline" disabled={!hasAudio || !recordingReady || recordingFailed} aria-label="Stop" onClick={() => { userRequestedPlay.current = false; const a = audio.current; if (a) { a.pause(); a.currentTime = 0; } }}><Square /></Button>
+        <Button size="icon" variant="outline" disabled={!hasAudio || !recordingReady || recordingFailed} aria-label="Replay" onClick={() => { if (audio.current) audio.current.currentTime = 0; void play(standardSrc); }}><RotateCcw /></Button>
         <Button size="icon" variant="ghost" aria-label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX /> : <Volume2 />}</Button>
         <Slider className="w-32 self-center" value={[volume * 100]} max={100} onValueChange={(v) => setVolume((v[0] ?? 0) / 100)} aria-label="Volume" />
       </div>
@@ -111,7 +208,12 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
           </label>
         ))}
       </div>
-      {msg && <p className="mt-3 text-sm text-destructive">{msg}</p>}
+      {msg && <p className="mt-3 text-sm text-destructive" role="alert">{msg}</p>}
+      {recordingFailed && view === "player" && (
+        <Button variant="outline" size="sm" className="mt-2 rounded-full" onClick={retryRecording}>
+          <RotateCcw className="mr-1.5 h-3.5 w-3.5" />{t("retry")}
+        </Button>
+      )}
       {view === "reminders" && (
         <p className="mt-3 text-xs text-muted-foreground">
           {t("reminderCaution")}
