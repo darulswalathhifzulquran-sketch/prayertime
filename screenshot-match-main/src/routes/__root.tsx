@@ -74,8 +74,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AWQAAT — Kerala Prayer Times" },
-      { name: "description", content: "Daily Islamic prayer times for all 14 Kerala districts." },
+      { title: "AWQAAT — Prayer Times Across India" },
+      { name: "description", content: "Daily Islamic prayer times across all Indian states, union territories and districts with GPS, city lookup, Azan reminders and Shafi’i/Hanafi options." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
