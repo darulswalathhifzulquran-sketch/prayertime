@@ -1153,3 +1153,97 @@
 .awqaat-location-menu [cmdk-list] {
   overscroll-behavior: contain;
 }
+
+
+/*
+ * AWQAAT — 3D spring hover for all visible glass cards.
+ * Matches the prayer-row lift in the screen recording and extends it to
+ * Countdown, prayer schedule, Azan, Stopwatch, mini-tiles, and Settings.
+ * On desktop only. No movement on touch or reduced-motion devices.
+ * Pure CSS: cannot interfere with prayer, GPS, audio or button handlers.
+ */
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  /* Set the return animation on the resting card, not only on :hover.
+     Overshoot in the cubic-bezier curve makes a visible soft "jump" and settle. */
+  .violet-premium :is(
+    #home.glassy-hero,
+    #home .glass-on-dark,
+    #prayers.glass-shell,
+    #prayers .glass-inner,
+    #prayers .glassy-prayer-row,
+    #azan .glass-tool-panel,
+    #azan .glass-tool-panel .glass-inner,
+    #azan .glass-tool-panel .glass-tool-photo,
+    #stopwatch .glass-tool-panel,
+    #stopwatch .glass-tool-panel .glass-tool-photo
+  ),
+  .awqaat-settings-panel > .space-y-5 > div {
+    transition:
+      transform 570ms cubic-bezier(.18, 1.72, .34, 1),
+      filter 330ms ease,
+      border-color 330ms ease;
+    transform-origin: 50% 50%;
+    backface-visibility: hidden;
+  }
+
+  /* The six prayer tiles each spring up individually. */
+  .violet-premium #prayers .glassy-prayer-row:hover {
+    transform: translate3d(0, -9px, 0) scale(1.021);
+    filter: drop-shadow(0 12px 13px rgb(218 94 252 / 30%));
+    border-color: rgb(255 215 255 / 80%);
+    z-index: 8;
+  }
+
+  /* Large glass panels spring only on their own surface. When hovering a
+     nested row or recording/photo tile, don't bounce the outer panel too. */
+  .violet-premium #home.glassy-hero:not(:has(.glass-on-dark:hover)):hover,
+  .violet-premium #prayers.glass-shell:not(:has(.glassy-prayer-row:hover, .glass-inner:hover)):hover,
+  .violet-premium #azan .glass-tool-panel:not(:has(.glass-inner:hover, .glass-tool-photo:hover)):hover,
+  .violet-premium #stopwatch .glass-tool-panel:not(:has(.glass-tool-photo:hover)):hover {
+    transform: translate3d(0, -7px, 0) scale(1.012);
+    filter: drop-shadow(0 14px 19px rgb(193 67 232 / 21%));
+    border-color: rgb(255 206 255 / 69%);
+    z-index: 5;
+  }
+
+  /* Every smaller glass box has its own pleasant 3D bounce. */
+  .violet-premium #home .glass-on-dark:hover,
+  .violet-premium #prayers .glass-inner:hover,
+  .violet-premium #azan .glass-tool-panel .glass-inner:hover,
+  .violet-premium #azan .glass-tool-panel .glass-tool-photo:hover,
+  .violet-premium #stopwatch .glass-tool-panel .glass-tool-photo:hover {
+    transform: translate3d(0, -7px, 0) scale(1.015);
+    filter: drop-shadow(0 10px 13px rgb(217 86 249 / 25%));
+    border-color: rgb(255 218 255 / 76%);
+    z-index: 7;
+  }
+
+  /* Inverse-theme Settings keeps its existing dark/light colors. */
+  .awqaat-settings-panel > .space-y-5 > div:hover {
+    transform: translate3d(0, -6px, 0) scale(1.012);
+    filter: drop-shadow(0 10px 11px rgb(85 52 105 / 15%));
+    z-index: 4;
+  }
+}
+
+/* Accessibility and touch: no forced movement, no hover-based layout jumps. */
+@media (prefers-reduced-motion: reduce), (hover: none), (pointer: coarse) {
+  .violet-premium :is(
+    #home.glassy-hero,
+    #home .glass-on-dark,
+    #prayers.glass-shell,
+    #prayers .glass-inner,
+    #prayers .glassy-prayer-row,
+    #azan .glass-tool-panel,
+    #azan .glass-inner,
+    #azan .glass-tool-photo,
+    #stopwatch .glass-tool-panel,
+    #stopwatch .glass-tool-photo
+  ),
+  .awqaat-settings-panel > .space-y-5 > div {
+    transition: none;
+    animation: none;
+    transform: none;
+    filter: none;
+  }
+}
