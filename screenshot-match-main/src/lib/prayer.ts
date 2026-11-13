@@ -101,8 +101,26 @@ export function formatTime(hhmm: string, h12: boolean) {
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
 }
 
-export function apiUrl(dateKey: string, lat: number, lng: number, method: number) {
-  return `https://api.aladhan.com/v1/timings/${dateKey}?latitude=${lat}&longitude=${lng}&method=${method}&school=0&timezonestring=${encodeURIComponent(TZ)}`;
+/** Prayer lookup may use a verified reference point or a qualified Indian address. */
+export type PrayerLocation = { id: string; lat?: number; lng?: number; address?: string };
+export type AsrSchool = 0 | 1; // 0 = Shafi'i, 1 = Hanafi (AlAdhan convention)
+
+export function apiUrl(dateKey: string, location: PrayerLocation, method: number, school: AsrSchool) {
+  const params = new URLSearchParams({
+    method: String(method),
+    school: String(school),
+    timezonestring: TZ,
+  });
+  if (Number.isFinite(location.lat) && Number.isFinite(location.lng)) {
+    params.set("latitude", String(location.lat));
+    params.set("longitude", String(location.lng));
+    return `https://api.aladhan.com/v1/timings/${dateKey}?${params.toString()}`;
+  }
+  if (location.address?.trim()) {
+    params.set("address", location.address);
+    return `https://api.aladhan.com/v1/timingsByAddress/${dateKey}?${params.toString()}`;
+  }
+  throw new Error("No reliable coordinates or address for this location.");
 }
 
 export function nearestDistrict(lat: number, lng: number) {

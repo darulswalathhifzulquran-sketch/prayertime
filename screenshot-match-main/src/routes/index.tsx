@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Bell, BookOpen, Check, ChevronsUpDown, Home, LocateFixed, Moon, RefreshCw, Settings, Sun, Sunrise, Timer, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { INDIA_STATES, DEFAULT_STATE_ID, type IndiaDistrict } from "@/lib/india-locations";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -12,17 +13,17 @@ import { Stopwatch } from "@/components/prayer/Stopwatch";
 import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
-import { CARDS, DEFAULT_METHOD, DISTRICTS, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nextPrayer } from "@/lib/prayer";
+import { CARDS, DEFAULT_METHOD, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nextPrayer, type AsrSchool, type PrayerLocation } from "@/lib/prayer";
 import { tr, localizeDigits, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AWQAAT — Kerala Prayer Times · All 14 Districts" },
-      { name: "description", content: "Live Fajr, Dhuhr, Asr, Maghrib, Isha and Sunrise times for every Kerala district, with countdown, Azan reminders and stopwatch." },
-      { property: "og:title", content: "AWQAAT — Kerala Prayer Times · All 14 Districts" },
-      { property: "og:description", content: "Daily prayer times for all 14 Kerala districts in English, Arabic and Malayalam." },
+      { title: "AWQAAT — Prayer Times Across India" },
+      { name: "description", content: "Daily calculated Fajr, Dhuhr, Asr, Maghrib, Isha and Sunrise times across India with State/UT and district selection, GPS, Azan reminders and stopwatch." },
+      { property: "og:title", content: "AWQAAT — Prayer Times Across India" },
+      { property: "og:description", content: "Calculated prayer times throughout India in English, Arabic and Malayalam." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -31,27 +32,43 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const [stateId, setStateId] = usePersisted("kpt:state", DEFAULT_STATE_ID);
+  // Retain the old Kerala district IDs and existing user preference.
   const [districtId, setDistrictId] = usePersisted("kpt:district", "tvm");
+  const [city, setCity] = useState("");
+  const [cityDraft, setCityDraft] = useState("");
   const [method, setMethod] = usePersisted("kpt:method", DEFAULT_METHOD);
+  const [school, setSchool] = usePersisted<AsrSchool>("kpt:asrSchool", 0);
   const [h12, setH12] = usePersisted("kpt:h12", true);
   const [clockMode, setClockMode] = usePersisted<"digital" | "analog">("kpt:clock", "digital");
   const [theme, setTheme] = usePersisted<"light" | "dark">("kpt:theme", "light");
   const [lang, setLang] = usePersisted<Lang>("kpt:lang", "en");
   const t = tr(lang);
-  const districtLabel = (d: (typeof DISTRICTS)[number]) => lang === "ml" ? d.ml : d.en;
-  const district = DISTRICTS.find((d) => d.id === districtId) ?? DISTRICTS[0];
+  const state = INDIA_STATES.find((s) => s.id === stateId) ?? INDIA_STATES.find((s) => s.id === DEFAULT_STATE_ID)!;
+  const district = state.districts.find((d) => d.id === districtId) ?? state.districts[0]!;
+  // Kerala retains Malayalam district names. Across India, never translate
+  // district names into Arabic (as requested for the current AWQAAT selector).
+  const districtLabel = (d: IndiaDistrict) => lang === "ml" && d.ml ? d.ml : d.name;
+  const locationLabel = city ? `${city}, ${districtLabel(district)}` : districtLabel(district);
   const gps = useDeviceLocation();
   // Round only for prayer-time lookup: ~11 m resolution, enough for minute-level calculations.
   // Browser-supplied GPS coordinates are never written to localStorage.
   const gpsLat = gps.location ? Number(gps.location.latitude.toFixed(4)) : null;
   const gpsLng = gps.location ? Number(gps.location.longitude.toFixed(4)) : null;
-  const prayerLocation = useMemo(
-    () => gpsLat !== null && gpsLng !== null
-      ? { id: "gps", lat: gpsLat, lng: gpsLng }
-      : district,
-    [district, gpsLat, gpsLng],
-  );
-  const pt = usePrayerTimes(prayerLocation, method);
+  const prayerLocation = useMemo<PrayerLocation>(() => {
+    if (gpsLat !== null && gpsLng !== null) return { id: "gps", lat: gpsLat, lng: gpsLng };
+    // Optional town is resolved by qualified district/state address; no coords
+    // or prayer schedule are invented for it.
+    if (city) return {
+      id: `city:${state.id}:${district.id}:${city.toLowerCase()}`,
+      address: `${city}, ${district.name}, ${state.name}, India`,
+    };
+    if (district.lat !== undefined && district.lng !== undefined) {
+      return { id: district.id, lat: district.lat, lng: district.lng };
+    }
+    return { id: district.id, address: `${district.name}, ${state.name}, India` };
+  }, [gpsLat, gpsLng, state.id, state.name, district, city]);
+  const pt = usePrayerTimes(prayerLocation, method, school);
   const now = useNow();
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -67,9 +84,27 @@ function Index() {
   const next = now && displayedTimings ? nextPrayer(displayedTimings, istSecondsOfDay(now), tomorrowFajr) : null;
   const methodName = METHODS.find((m) => m.id === method)?.name ?? `Method ${method}`;
 
+  const chooseState = (id: string) => {
+    const nextState = INDIA_STATES.find((s) => s.id === id);
+    if (!nextState?.districts.length) return;
+    gps.disable();
+    setStateId(nextState.id);
+    setDistrictId(nextState.districts[0]!.id);
+    setCity("");
+    setCityDraft("");
+  };
   const chooseDistrict = (id: string) => {
     gps.disable();
     setDistrictId(id);
+    setCity("");
+    setCityDraft("");
+    setOpen(false);
+  };
+  const applyCity = () => {
+    const town = cityDraft.trim();
+    if (!town) return;
+    gps.disable();
+    setCity(town);
     setOpen(false);
   };
 
@@ -116,28 +151,73 @@ function Index() {
           </div>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-56 justify-between" aria-label={t("district")}>
-                {gps.location
-                  ? t("gpsCurrent")
-                  : districtLabel(district)}
-                <ChevronsUpDown className="h-4 w-4 opacity-60" />
+              <Button variant="outline" className="w-56 max-w-full justify-between gap-2" aria-label={t("district")}>
+                <span className="min-w-0 truncate text-left" dir="auto">
+                  {gps.location ? t("gpsCurrent") : `${state.name} · ${locationLabel}`}
+                </span>
+                <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-60" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-64 p-0" align="end">
-              <Command>
-                <CommandInput placeholder={lang === "ar" ? "Search district…" : t("search")} />
-                <CommandList>
-                  <CommandEmpty>—</CommandEmpty>
-                  <CommandGroup>
-                    {DISTRICTS.map((d) => (
-                      <CommandItem key={d.id} value={`${d.en} ${d.ml}`} onSelect={() => chooseDistrict(d.id)}>
-                        <Check className={cn("h-4 w-4", d.id === district.id ? "opacity-100" : "opacity-0")} />
-                        {districtLabel(d)} <span className="ml-auto text-xs text-muted-foreground" dir="auto">{lang === "ml" ? d.en : d.ml}</span>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
+            <PopoverContent className="awqaat-location-menu w-[min(92vw,380px)] p-3" align="end">
+              <div className="mb-3 flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                <LocateFixed className="h-4 w-4" />
+                {t("chooseLocation")}
+              </div>
+              <div className="mb-3 space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground">{t("state")}</label>
+                <Select value={state.id} onValueChange={chooseState}>
+                  <SelectTrigger className="w-full rounded-xl bg-background/80">
+                    <SelectValue placeholder={t("state")} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64">
+                    {INDIA_STATES.map((s) =>
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="mb-3 space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground">{t("district")}</label>
+                <Command className="overflow-hidden rounded-xl border bg-background/70">
+                  <CommandInput placeholder={lang === "ar" ? "Search district…" : t("search")} />
+                  <CommandList className="max-h-48">
+                    <CommandEmpty>{t("noDistrict")}</CommandEmpty>
+                    <CommandGroup>
+                      {state.districts.map((d) => (
+                        <CommandItem key={d.id} value={`${d.name} ${d.ml ?? ""}`} onSelect={() => chooseDistrict(d.id)}>
+                          <Check className={cn("mr-2 h-4 w-4 shrink-0", d.id === district.id ? "opacity-100" : "opacity-0")} />
+                          <span className="truncate">{districtLabel(d)}</span>
+                          {d.ml && lang !== "ml" &&
+                            <span className="ml-auto pl-2 font-ml text-xs text-muted-foreground">{d.ml}</span>}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-muted-foreground">{t("cityOptional")}</label>
+                <div className="flex gap-2">
+                  <input
+                    className="min-w-0 flex-1 rounded-xl border bg-background/80 px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                    value={cityDraft}
+                    onChange={(event) => setCityDraft(event.target.value)}
+                    onKeyDown={(event) => { if (event.key === "Enter") applyCity(); }}
+                    placeholder={t("cityPlaceholder")}
+                    aria-label={t("cityOptional")}
+                    maxLength={80}
+                  />
+                  <Button size="sm" className="rounded-xl" disabled={!cityDraft.trim()} onClick={applyCity}>
+                    {t("applyCity")}
+                  </Button>
+                </div>
+                {city && (
+                  <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground" onClick={() => { setCity(""); setCityDraft(""); }}>
+                    {t("clearCity")}
+                  </Button>
+                )}
+              </div>
+              <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">{t("locationHelp")}</p>
             </PopoverContent>
           </Popover>
           <Button
@@ -176,6 +256,13 @@ function Index() {
                   </Select>
                   <p className="mt-1 text-xs text-muted-foreground">{t("shafiiNote")}</p>
                 </Field>
+                <Field label={t("asrSchool")}>
+                  <ToggleGroup type="single" value={String(school)} onValueChange={(value) => { if (value) setSchool(Number(value) as AsrSchool); }}>
+                    <ToggleGroupItem value="0">{t("shafii")}</ToggleGroupItem>
+                    <ToggleGroupItem value="1">{t("hanafi")}</ToggleGroupItem>
+                  </ToggleGroup>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("asrExplanation")}</p>
+                </Field>
                 <Field label={t("timeFormat")}>
                   <ToggleGroup type="single" value={h12 ? "12" : "24"} onValueChange={(v) => v && setH12(v === "12")}>
                     <ToggleGroupItem value="12">{localizeDigits(t("h12"), lang)}</ToggleGroupItem><ToggleGroupItem value="24">{localizeDigits(t("h24"), lang)}</ToggleGroupItem>
@@ -212,14 +299,15 @@ function Index() {
           <div className="relative flex flex-col items-stretch gap-6">
             <div id="clock" className="scroll-mt-28 text-center">
               <p className="text-sm uppercase tracking-[0.3em] text-gold" dir="auto">
-                {gps.location
-                  ? t("gpsYours")
-                  : districtLabel(district)}
+                {gps.location ? t("gpsYours") : locationLabel}
               </p>
               <p className="mb-6 text-xs opacity-70">
                 {localizeDigits(gps.location
                   ? `${gps.location.latitude.toFixed(4)}°N, ${gps.location.longitude.toFixed(4)}°E · GPS accuracy ±${Math.round(gps.location.accuracy)} m`
-                  : `${district.hq} · ${district.lat.toFixed(4)}°N, ${district.lng.toFixed(4)}°E`, lang)}
+                  : city ? `${city}, ${district.name}, ${state.name} · ${t("addressEstimate")}`
+                  : district.lat !== undefined && district.lng !== undefined
+                    ? `${state.name} · ${district.lat.toFixed(4)}°N, ${district.lng.toFixed(4)}°E · ${district.mode === "hq" ? t("hqReference") : t("districtCentre")}`
+                    : `${district.name}, ${state.name} · ${t("addressEstimate")}`, lang)}
               </p>
               {now ? <Clock now={now} mode={clockMode} h12={h12} lang={lang} /> : <div className="h-24" />}
             </div>
@@ -253,7 +341,7 @@ function Index() {
           <div className="glass-inner mb-4 rounded-xl p-3 text-sm">
             <strong>{t("apiWarning")}</strong>
             <p className="mt-1 text-xs text-muted-foreground">
-              {t("apiCaution")}
+              {t("apiCaution")} {!gps.location && (city || district.mode !== "hq") && t("approxWarning")}
             </p>
           </div>
           <div className="flex flex-col gap-2">
@@ -308,13 +396,14 @@ function Index() {
 
       <footer className="border-t">
         <div className="mx-auto max-w-6xl space-y-1 px-4 py-6 text-xs text-muted-foreground">
-          <p>{t("source")}: AlAdhan API (api.aladhan.com) · {t("method")}: {localizeDigits(methodName, lang)} · Asr: Shafi'i · {t("timezone")}: {TZ}</p>
+          <p>{t("source")}: AlAdhan API (api.aladhan.com) · {t("method")}: {localizeDigits(methodName, lang)} · Asr: {school === 0 ? t("shafii") : t("hanafi")} · {t("timezone")}: {TZ}</p>
           {pt.fetchedAt && <p>{t("updated")}: {localizeDigits(new Date(pt.fetchedAt).toLocaleString(lang === "ar" ? "ar-SA-u-ca-gregory-nu-arab" : "en-IN", { timeZone: TZ }), lang)}</p>}
           <p>{gps.location
             ? t("footerGps")
             : t("footerDistrict")}</p>
           <p>{t("footerEstimate")}</p>
           <p>{t("footerSharing")}</p>
+          <p>{t("districtSource")} <a href="https://github.com/kalyangupta12/indian-cities-data" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">LGD data (MIT)</a> · <a href="https://github.com/open-admin-data/india-administrative-divisions" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Open Admin Data (CC BY 4.0)</a> · <a href="https://github.com/infenia/indian-district-coordinates" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Infenia centroids (MIT)</a>.</p>
           <p>{t("photography")} <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Unsplash</a>.</p>
         </div>
       </footer>
