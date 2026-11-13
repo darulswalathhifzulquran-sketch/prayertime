@@ -1213,3 +1213,27 @@
     z-index: 2;
   }
 }
+
+
+/*
+ * AWQAAT — premium mouse-following line and circle ornament.
+ * The ornamental layer alone glides behind the clock and countdown; 
+ * the outer panel, countdown card and text do not move.
+ */
+.violet-premium #home .awqaat-cursor-pattern {
+  position: absolute;
+  inset: -18px;
+  z-index: 0;
+  pointer-events: none;
+  transform: translate3d(var(--pattern-move-x, 0px), var(--pattern-move-y, 0px), 0);
+  transition: transform 360ms cubic-bezier(.19, .75, .27, 1);
+  will-change: transform;
+}
+
+@media (hover: none), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .violet-premium #home .awqaat-cursor-pattern {
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
+}
