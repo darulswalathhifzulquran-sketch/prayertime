@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, BellOff, Pause, Play, RotateCcw, Square, Volume2, VolumeX } from "lucide-react";
+import { Bell, BellOff, LoaderCircle, Pause, Play, RotateCcw, Square, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
@@ -7,22 +7,25 @@ import { FIVE, istDateKey, istSecondsOfDay, toMinutes, type PrayerKey, type Timi
 import { usePersisted } from "@/hooks/use-prayer-times";
 import { tr, type Lang } from "@/lib/i18n";
 
-/** Resilient Azan playback: prefer the site's MP3, fall back to the same
- * public GitHub recording if the deployment fails to serve that static file. */
-const MIRROR_AUDIO_SRC =
-  "https://raw.githubusercontent.com/darulswalathhifzulquran-sketch/prayertime/main/screenshot-match-main/public/audio/al-hafiz-muhammed-noufal.mp3";
+/** Same uploaded recording, served through two independent public mirrors
+ * when the site's static asset cannot be loaded. No third-party Azan substituted. */
+const AUDIO_BACKUPS = [
+  "https://raw.githubusercontent.com/darulswalathhifzulquran-sketch/prayertime/main/screenshot-match-main/public/audio/al-hafiz-muhammed-noufal.mp3",
+  "https://cdn.jsdelivr.net/gh/darulswalathhifzulquran-sketch/prayertime@main/screenshot-match-main/public/audio/al-hafiz-muhammed-noufal.mp3",
+] as const;
 export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "player", lang }: {
   title: string; now: Date | null; timings?: Timings | undefined; standardSrc?: string | undefined; fajrSrc?: string | undefined;
   view?: "player" | "reminders"; lang: Lang;
 }) {
   const t = tr(lang);
   const audio = useRef<HTMLAudioElement | null>(null);
-  const fallbackTried = useRef(false);
+  const backupIndex = useRef(0);
   const userRequestedPlay = useRef(false);
   const retryPlaybackAfterFallback = useRef(false);
   const [currentSrc, setCurrentSrc] = useState(standardSrc ?? "");
   const [recordingReady, setRecordingReady] = useState(false);
   const [recordingFailed, setRecordingFailed] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = usePersisted("kpt:vol", 0.8);
   const [muted, setMuted] = usePersisted("kpt:muted", false);
@@ -35,27 +38,31 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
 
   // Reset the media source if an administrator changes the recording.
   useEffect(() => {
-    fallbackTried.current = false;
+    backupIndex.current = 0;
     userRequestedPlay.current = false;
     retryPlaybackAfterFallback.current = false;
     setCurrentSrc(standardSrc ?? "");
     setRecordingReady(false);
     setRecordingFailed(false);
+    setLoading(false);
     setMsg("");
   }, [standardSrc]);
 
   const tryMirror = () => {
-    if (!standardSrc || fallbackTried.current) return false;
-    fallbackTried.current = true;
+    if (!standardSrc || backupIndex.current >= AUDIO_BACKUPS.length) return false;
+    const next = AUDIO_BACKUPS[backupIndex.current];
+    backupIndex.current += 1;
     retryPlaybackAfterFallback.current = userRequestedPlay.current;
     setRecordingReady(false);
     setRecordingFailed(false);
+    setLoading(true);
     setMsg("");
-    setCurrentSrc(MIRROR_AUDIO_SRC);
+    setCurrentSrc(next);
     return true;
   };
 
   const handleReady = () => {
+    setLoading(false);
     setRecordingReady(true);
     setRecordingFailed(false);
     if (!retryPlaybackAfterFallback.current) return;
@@ -75,20 +82,40 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
     userRequestedPlay.current = false;
     setRecordingReady(false);
     setRecordingFailed(true);
+    setLoading(false);
     setMsg(t("audioUnavailable"));
   };
 
   const retryRecording = () => {
-    fallbackTried.current = false;
+    backupIndex.current = 0;
     retryPlaybackAfterFallback.current = false;
     userRequestedPlay.current = false;
     setRecordingReady(false);
     setRecordingFailed(false);
+    setLoading(false);
+    setPlaying(false);
     setMsg("");
-    // Trying the known public copy first avoids a cached 404 in the app domain.
-    fallbackTried.current = true;
-    setCurrentSrc(MIRROR_AUDIO_SRC);
+    // Retry starts fresh; the Play button remains active even before preload.
+    setCurrentSrc(standardSrc ?? "");
   };
+
+  // Browsers (especially mobile and data-saver modes) often skip media preload.
+  // Never wait forever for onCanPlay. Load on click and fail over after a stall.
+  useEffect(() => {
+    if (!standardSrc || !currentSrc || !loading || recordingReady || recordingFailed) return;
+    const timeout = window.setTimeout(() => {
+      if (audio.current && audio.current.readyState >= HTMLMediaElement.HAVE_METADATA) {
+        handleReady();
+      } else if (!tryMirror()) {
+        retryPlaybackAfterFallback.current = false;
+        userRequestedPlay.current = false;
+        setLoading(false);
+        setRecordingFailed(true);
+        setMsg(t("audioUnavailable"));
+      }
+    }, 9000);
+    return () => window.clearTimeout(timeout);
+  }, [standardSrc, currentSrc, loading, recordingReady, recordingFailed, lang]);
 
   const play = async (src?: string) => {
     const a = audio.current;
@@ -96,21 +123,27 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
     const effectiveSrc = src === standardSrc ? currentSrc : src;
     if (a.getAttribute("src") !== effectiveSrc) a.src = effectiveSrc;
     userRequestedPlay.current = true;
+    setLoading(true);
+    setMsg("");
     try {
       await a.play();
+      setLoading(false);
+      setRecordingReady(true);
       setMsg("");
       setPlaying(true);
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return;
       if (error instanceof Error && error.name === "NotAllowedError") {
         userRequestedPlay.current = false;
+        setLoading(false);
         setMsg(t("playError"));
         return;
       }
       if (tryMirror()) return;
-      // An existing media error handler may already be loading the mirror.
-      if (retryPlaybackAfterFallback.current) return;
       userRequestedPlay.current = false;
+      retryPlaybackAfterFallback.current = false;
+      setLoading(false);
+      setRecordingFailed(true);
       setMsg(t("audioUnavailable"));
     }
   };
@@ -149,11 +182,12 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
       <audio
         ref={audio}
         src={currentSrc || undefined}
+        onLoadedMetadata={handleReady}
         onCanPlay={handleReady}
         onEnded={() => { userRequestedPlay.current = false; setPlaying(false); }}
         onPause={() => { if (!retryPlaybackAfterFallback.current) userRequestedPlay.current = false; setPlaying(false); }}
         onError={handleAudioError}
-        preload="auto"
+        preload="none"
         aria-label="Azan recitation by AL HAFIZ MUHAMMED NOUFAL"
       />
       <h3 className="font-display text-2xl font-semibold" dir="auto">{title}</h3>
@@ -175,10 +209,13 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
         </p>
       )}
       {hasAudio && view === "player" && !recordingReady && !recordingFailed && (
-        <p className="mt-2 text-xs text-muted-foreground" role="status">{t("audioLoading")}</p>
+        <p className="mt-2 flex items-center gap-2 text-xs text-fuchsia-100/85" role="status" aria-live="polite">
+          {loading ? <LoaderCircle className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Play className="h-3.5 w-3.5" aria-hidden="true" />}
+          {loading ? t("audioLoading") : t("audioTapToPlay")}
+        </p>
       )}
       <div className={view === "player" ? "mt-4 flex flex-wrap gap-2" : "hidden"}>
-        <Button size="icon" disabled={!hasAudio || !recordingReady || recordingFailed} onClick={() => (playing ? (userRequestedPlay.current = false, audio.current?.pause()) : play(standardSrc))} aria-label={playing ? "Pause" : "Play"}>
+        <Button size="icon" disabled={!hasAudio || recordingFailed} onClick={() => (playing ? (userRequestedPlay.current = false, audio.current?.pause()) : play(standardSrc))} aria-label={playing ? "Pause" : "Play"}>
           {playing ? <Pause /> : <Play />}
         </Button>
         <Button size="icon" variant="outline" disabled={!hasAudio || !recordingReady || recordingFailed} aria-label="Stop" onClick={() => { userRequestedPlay.current = false; const a = audio.current; if (a) { a.pause(); a.currentTime = 0; } }}><Square /></Button>
