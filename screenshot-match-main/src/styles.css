@@ -1213,3 +1213,70 @@
     z-index: 2;
   }
 }
+
+
+/* AWQAAT Qibla — original silver/black/red compass photo stays unchanged.
+ * Only surrounding card uses established purple-glass material. */
+.glass-bottom-nav { grid-template-columns: repeat(7,minmax(0,1fr)); width: min(calc(100% - 20px),650px); }
+.glass-bottom-nav .glass-nav-indicator { width: calc((100% - 20px) / 7); }
+@media (max-width:420px) {
+  .glass-bottom-nav .glass-nav-item { font-size:9px; letter-spacing:-.02em; }
+}
+@media (max-width:360px) {
+  .glass-bottom-nav .glass-nav-indicator { width: calc((100% - 12px) / 7); }
+  .glass-bottom-nav .glass-nav-item { font-size:8px; gap:3px; }
+  .glass-bottom-nav .glass-nav-item svg { width:17px; height:17px; }
+}
+.violet-premium .qibla-panel {
+  color:#fff8ff; border:2px solid rgb(249 203 255 / 48%);
+  background:linear-gradient(150deg,#602075,#370750 57%,#1c0736 100%);
+  box-shadow:0 5px 0 rgb(26 0 45 / 24%),0 18px 34px -20px rgb(24 0 48 / 60%),inset 0 2px rgb(255 255 255 / 18%);
+}
+.qibla-heading-icon {
+  display:grid; place-items:center; width:45px; height:45px; flex-shrink:0;
+  border:1px solid rgb(250 224 255 / 50%); border-radius:15px; color:#f2d8ff;
+  background:linear-gradient(145deg,rgb(255 255 255 / 20%),rgb(124 34 152 / 40%));
+  box-shadow:inset 1px 2px rgb(255 255 255 / 15%);
+}
+.qibla-dial-frame { margin:0 auto; width:min(100%,410px); }
+.qibla-photo-wrap {
+  position:relative; isolation:isolate; aspect-ratio:1; width:100%;
+  border-radius:50%; padding:5px; border:2px solid #cfbacb;
+  background:linear-gradient(135deg,#f1edf1,#a0a0a0 45%,#d4d4d4);
+  box-shadow:0 5px 0 #421555,0 18px 32px -14px rgb(0 0 0 / 52%),inset 0 2px #fff;
+}
+.qibla-photo { width:100%; height:100%; display:block; object-fit:contain; border-radius:50%; user-select:none; background:#f5f5f5; }
+.qibla-bearing-rotor { pointer-events:none; position:absolute; inset:5px; border-radius:50%; transition:transform 260ms ease-out; }
+.qibla-bearing-tip {
+  position:absolute; left:50%; top:1.4%; width:17px; height:25px;
+  transform:translateX(-50%); clip-path:polygon(50% 0%,100% 100%,50% 79%,0 100%);
+  background:linear-gradient(90deg,#a00000,#f62821 46%,#980c0c);
+  border:1px solid #780606; filter:drop-shadow(0 0 3px rgb(75 0 0 / 50%));
+}
+.qibla-photo-legend { display:flex; align-items:center; justify-content:center; gap:7px; padding:14px 5px 4px; color:#f3daee; font-size:11px; line-height:1.45; text-align:center; }
+.qibla-legend-dot { display:inline-block; flex:0 0 9px; width:9px; height:9px; border-radius:2px; background:#d91e1e; border:1px solid #ffe0e0; }
+.qibla-data-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:15px 0 10px; }
+.qibla-stat {
+  display:flex; flex-direction:column; align-items:center; gap:4px; padding:13px 8px 11px; text-align:center;
+  border:1px solid rgb(248 211 255 / 43%); border-radius:18px;
+  background:linear-gradient(135deg,rgb(255 244 255 / 15%),rgb(255 255 255 / 5%));
+  box-shadow:inset 0 1px rgb(255 255 255 / 14%),0 7px 12px -11px #12001d;
+}
+.qibla-stat > span { font-size:12px; color:#f2daf7; font-weight:600; }
+.qibla-stat strong { font-size:clamp(22px,7vw,32px); color:#fff; font-weight:800; }
+.qibla-stat small { font-size:10px; color:#ead0f0; }
+.qibla-location-line { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:7px; padding:10px 6px; color:#f4e2f5; font-size:12px; text-align:center; }
+.qibla-source { border:1px solid rgb(255 255 255 / 28%); padding:3px 8px; border-radius:999px; color:#f2d6fb; }
+.qibla-actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:9px; }
+.qibla-actions button { min-width:0; height:auto; min-height:43px; white-space:normal; font-size:12px; line-height:1.25; padding:8px; }
+.qibla-gps-button { background:#135e53; color:#fff; border:1px solid #95d8c7; }
+.qibla-gps-button:hover { background:#0d715e; color:#fff; }
+.qibla-sensor-button { background:rgb(255 255 255 / 12%); color:#fff; border:1px solid rgb(255 239 255 / 49%); }
+.qibla-sensor-button:hover { background:rgb(255 255 255 / 20%); color:#fff; }
+.qibla-guidance,.qibla-note {
+  margin-top:12px; padding:12px; border-radius:13px; font-size:12px; line-height:1.6;
+  background:rgb(39 6 51 / 52%); color:#f1e2f4; border:1px solid rgb(241 199 255 / 19%);
+}
+.qibla-note { display:flex; align-items:flex-start; gap:8px; }
+@media (max-width:360px) { .qibla-panel { padding:13px; } }
+@media (prefers-reduced-motion:reduce) { .qibla-bearing-rotor { transition:none; } }

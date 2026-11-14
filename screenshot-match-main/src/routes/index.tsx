@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Bell, BookOpen, Check, ChevronsUpDown, Home, LocateFixed, Moon, RefreshCw, Settings, Sun, Sunrise, Timer, Volume2 } from "lucide-react";
+import { Bell, BookOpen, Check, ChevronsUpDown, Compass, Home, LocateFixed, Moon, RefreshCw, Settings, Sun, Sunrise, Timer, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { INDIA_STATES, DEFAULT_STATE_ID, type IndiaDistrict } from "@/lib/india-locations";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Clock } from "@/components/prayer/Clock";
 import { Stopwatch } from "@/components/prayer/Stopwatch";
+import { QiblaCompass } from "@/components/prayer/QiblaCompass";
 import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
@@ -129,6 +130,7 @@ function Index() {
   const navigation = [
     { id: "home", name: t("navHome"), icon: Home },
     { id: "prayers", name: t("navPrayer"), icon: BookOpen },
+    { id: "qibla", name: t("navQibla"), icon: Compass },
     { id: "azan", name: t("navAzan"), icon: Volume2 },
     { id: "reminder", name: t("navReminder"), icon: Bell },
     { id: "stopwatch", name: t("navTimer"), icon: Timer },
@@ -140,6 +142,19 @@ function Index() {
     ? navigation.length - 1
     : navigation.findIndex((item) => item.id === activeTab);
   const showHome = activeTab === "home" || activeTab === "prayers";
+  // Never substitute a district's coordinates for a manually entered city.
+  // City and address-only districts use the API's verified-in-India coordinates.
+  const qiblaPosition = gps.location
+    ? { lat: gps.location.latitude, lng: gps.location.longitude, source: "gps" as const }
+    : city
+      ? pt.resolvedCoordinates
+        ? { lat: pt.resolvedCoordinates.lat, lng: pt.resolvedCoordinates.lng, source: "address" as const }
+        : null
+      : district.lat !== undefined && district.lng !== undefined
+        ? { lat: district.lat, lng: district.lng, source: "district" as const }
+        : pt.resolvedCoordinates
+          ? { lat: pt.resolvedCoordinates.lat, lng: pt.resolvedCoordinates.lng, source: "address" as const }
+          : null;
 
   return (
     <div className={cn("min-h-screen bg-gradient-to-b from-emerald-50 via-background to-background pb-28 dark:from-emerald-950/20 dark:via-background dark:to-background", lang === "ar" && "awqaat-arabic-numerals")}>
@@ -373,6 +388,19 @@ function Index() {
             })}
           </div>
         </section>
+
+        {activeTab === "qibla" && (
+          <QiblaCompass
+            active={true}
+            lang={lang}
+            position={qiblaPosition}
+            locationName={gps.location ? t("gpsYours") : city ? city + ", " + district.name + ", " + state.name : district.name + ", " + state.name}
+            gpsEnabled={gps.enabled}
+            gpsLocating={gps.locating}
+            gpsError={gps.error}
+            onGpsClick={gps.toggle}
+          />
+        )}
 
         {/* Keep both tools mounted while navigating: audio scheduling and running stopwatch persist. */}
         <section

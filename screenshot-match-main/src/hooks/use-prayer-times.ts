@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl, istDateKey, type AsrSchool, type PrayerLocation, type Timings } from "@/lib/prayer";
 
-type Entry = { timings: Timings; fetchedAt: number };
+type Entry = { timings: Timings; fetchedAt: number; resolvedCoordinates?: { lat: number; lng: number } };
 type State = {
   today?: Timings | undefined; tomorrowFajr?: string | undefined; dateKey: string;
   fetchedAt?: number | undefined; fromCache: boolean; loading: boolean; error?: string | undefined;
   locationKey?: string;
+  resolvedCoordinates?: { lat: number; lng: number };
 };
 
 const cacheKey = (id: string, date: string, method: number, school: AsrSchool) => `kpt:v2:${id}:${date}:m${method}:asr${school}`;
@@ -28,7 +29,13 @@ async function fetchDay(d: PrayerLocation, date: string, method: number, school:
     return time;
   };
   const timings = { Fajr: pick("Fajr"), Sunrise: pick("Sunrise"), Dhuhr: pick("Dhuhr"), Asr: pick("Asr"), Maghrib: pick("Maghrib"), Isha: pick("Isha") };
-  return { timings, fetchedAt: Date.now() };
+  const resolvedCoordinates = Number.isFinite(metaLat) && Number.isFinite(metaLng)
+    && metaLat >= 6 && metaLat <= 39 && metaLng >= 68 && metaLng <= 98
+      ? { lat: metaLat, lng: metaLng }
+      : d.lat !== undefined && d.lng !== undefined
+        ? { lat: d.lat, lng: d.lng }
+        : undefined;
+  return { timings, fetchedAt: Date.now(), ...(resolvedCoordinates ? { resolvedCoordinates } : {}) };
 }
 
 async function getDay(d: PrayerLocation, date: string, method: number, school: AsrSchool, force: boolean) {
@@ -68,6 +75,7 @@ export function usePrayerTimes(district: PrayerLocation | undefined, method: num
       if (id !== reqId.current) return;
       setS({
         today: today.timings, tomorrowFajr, dateKey, locationKey, fetchedAt: today.fetchedAt, fromCache: today.fromCache,
+        ...(today.resolvedCoordinates ? { resolvedCoordinates: today.resolvedCoordinates } : {}),
         loading: false, error: "err" in today ? "Could not refresh — showing saved times." : undefined,
       });
     } catch (e) {
@@ -95,6 +103,7 @@ export function usePrayerTimes(district: PrayerLocation | undefined, method: num
     ...s,
     today: current ? s.today : undefined,
     tomorrowFajr: current ? s.tomorrowFajr : undefined,
+    resolvedCoordinates: current ? s.resolvedCoordinates : undefined,
     fetchedAt: current ? s.fetchedAt : undefined,
     error: current ? s.error : undefined,
     loading: !current || s.loading,
