@@ -353,12 +353,6 @@ function Index() {
             </div>
           </div>
           {pt.error && <p className="mb-4 rounded-xl border border-destructive/40 p-3 text-sm text-destructive">{localizeDigits(pt.error, lang)}</p>}
-          <div className="glass-inner mb-4 rounded-xl p-3 text-sm">
-            <strong>{t("apiWarning")}</strong>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {t("apiCaution")} {!gps.location && (city || district.mode !== "hq") && t("approxWarning")}
-            </p>
-          </div>
           <div className="flex flex-col gap-2">
             {CARDS.map((c) => {
               const isNext = next?.key === c.key;
@@ -422,17 +416,22 @@ function Index() {
         </section>
       </main>
 
-      <footer className="border-t">
-        <div className="mx-auto max-w-6xl space-y-1 px-4 py-6 text-xs text-muted-foreground">
-          <p>{t("source")}: AlAdhan API (api.aladhan.com) · {t("method")}: {localizeDigits(methodName, lang)} · Asr: {school === 0 ? t("shafii") : t("hanafi")} · {t("timezone")}: {TZ}</p>
-          {pt.fetchedAt && <p>{t("updated")}: {localizeDigits(new Date(pt.fetchedAt).toLocaleString(lang === "ar" ? "ar-SA-u-ca-gregory-nu-arab" : "en-IN", { timeZone: TZ }), lang)}</p>}
-          <p>{gps.location
-            ? t("footerGps")
-            : t("footerDistrict")}</p>
-          <p>{t("footerEstimate")}</p>
-          <p>{t("footerSharing")}</p>
-          <p>{t("districtSource")} <a href="https://github.com/kalyangupta12/indian-cities-data" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">LGD data (MIT)</a> · <a href="https://github.com/open-admin-data/india-administrative-divisions" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Open Admin Data (CC BY 4.0)</a> · <a href="https://github.com/infenia/indian-district-coordinates" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Infenia centroids (MIT)</a>.</p>
-          <p>{t("photography")} <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Unsplash</a>.</p>
+      <footer className="border-t border-white/10">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-5 gap-y-2 px-4 py-5 text-xs text-muted-foreground">
+          <p className="font-semibold tracking-wide">AWQAAT <span aria-hidden="true">·</span> {t("footerBrand")}</p>
+          <details className="group max-w-full text-right">
+            <summary className="cursor-pointer select-none rounded-lg px-2 py-1 text-[11px] underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+              {t("infoCredits")}
+            </summary>
+            <div className="mt-3 max-w-xl space-y-2 rounded-xl border border-white/15 bg-background/60 p-3 text-left text-[11px] leading-relaxed">
+              <p>{t("apiWarning")}. {t("apiCaution")} {!gps.location && (city || district.mode !== "hq") && t("approxWarning")}</p>
+              <p>{t("source")}: AlAdhan API (api.aladhan.com) · {t("method")}: {localizeDigits(methodName, lang)} · Asr: {school === 0 ? t("shafii") : t("hanafi")} · {t("timezone")}: {TZ}</p>
+              <p>{gps.location ? t("footerGps") : t("footerDistrict")}</p>
+              <p>{t("footerSharing")}</p>
+              <p>{t("districtSource")} <a href="https://github.com/kalyangupta12/indian-cities-data" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">LGD data (MIT)</a> · <a href="https://github.com/open-admin-data/india-administrative-divisions" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Open Admin Data (CC BY 4.0)</a> · <a href="https://github.com/infenia/indian-district-coordinates" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Infenia centroids (MIT)</a>.</p>
+              <p>{t("photography")} <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Unsplash</a>.</p>
+            </div>
+          </details>
         </div>
       </footer>
       <nav className={cn("glass-bottom-nav", settingsOpen && "settings-nav-open")} aria-label={t("navHome") + " / " + t("settings")}>

@@ -361,10 +361,6 @@ export function QiblaCompass({
           <div className="qibla-vector-wrap">
             <CompassDial bearing={bearing} heading={heading} lang={lang} alt={t("qiblaTitle")} />
           </div>
-          <p className="qibla-photo-legend" dir="auto">
-            <span className="qibla-legend-dot" />
-            {heading ? t("qiblaLivePointerInfo") : t("qiblaStaticPointerInfo")}
-          </p>
         </div>
 
         <div className="qibla-data-grid">
@@ -411,11 +407,12 @@ export function QiblaCompass({
         {aligned && sensorStatus === "live" && (
           <p className="qibla-aligned" role="status"><CheckCircle2 size={18}/>{t("qiblaAligned")}</p>
         )}
-        <p className="qibla-guidance" role="status" aria-live="polite" dir="auto">{sensorMessage}</p>
+        {sensorStatus !== "idle" && sensorStatus !== "live" && (
+          <p className="qibla-guidance" role="status" aria-live="polite" dir="auto">{sensorMessage}</p>
+        )}
         {unstable && (
           <p className="qibla-note" role="alert"><ShieldAlert size={16}/>{t("qiblaSensorUnstable")}</p>
         )}
-        <p className="qibla-how-it-works" dir="auto">{t("qiblaHowItWorks")}</p>
       </div>
     </section>
   );

@@ -18,6 +18,8 @@ const dict = {
   retry: { en: "Retry", ml: "വീണ്ടും", ar: "إعادة المحاولة" },
   digital: { en: "Digital", ml: "ഡിജിറ്റൽ", ar: "رقمية" },
   analog: { en: "Analog", ml: "അനലോഗ്", ar: "عقارب" },
+  footerBrand: { en: "All India Prayer Times", ml: "അഖിലേന്ത്യാ നിസ്കാര സമയങ്ങൾ", ar: "مواقيت الصلاة في الهند" },
+  infoCredits: { en: "Info & Credits", ml: "വിവരങ്ങളും കടപ്പാടുകളും", ar: "المعلومات والمصادر" },
   navHome: { en: "Home", ml: "ഹോം", ar: "الرئيسية" },
   navQibla: { en: "Qibla", ml: "ഖിബ്‌ല", ar: "القبلة" },
   qiblaLivePointerInfo: { en: "Red needle points towards the Kaaba as you turn your phone.", ml: "ഫോൺ തിരിക്കുമ്പോൾ ചുവന്ന സൂചി കഅ്ബയുടെ ദിശയിലേക്ക് തിരിയും.", ar: "تشير الإبرة الحمراء إلى الكعبة عند تدوير الهاتف." },
