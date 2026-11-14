@@ -251,11 +251,6 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
           <RotateCcw className="mr-1.5 h-3.5 w-3.5" />{t("retry")}
         </Button>
       )}
-      {view === "reminders" && (
-        <p className="mt-3 text-xs text-muted-foreground">
-          {t("reminderCaution")}
-        </p>
-      )}
     </div>
   );
 }
