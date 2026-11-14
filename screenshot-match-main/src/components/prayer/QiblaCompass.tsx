@@ -128,41 +128,139 @@ export function QiblaCompass({
   const [heading, setHeading] = useState<Heading | null>(null);
   const headingRef = useRef<Heading | null>(null);
   const lastEventRef = useRef(0);
+  const lastReliableRef = useRef(0);
   const sawRelativeRef = useRef(false);
+  // A single absolute-heading source is used at a time. Mixing the two
+  // browser orientation event streams makes a compass oscillate badly.
+  const sourceRef = useRef<"webkit" | "absolute-event" | "absolute" | null>(null);
+  const sourceSeenRef = useRef(0);
+  const readingsRef = useRef<number[]>([]);
+  const previousRawRef = useRef<{ value: number; at: number } | null>(null);
+  const jumpCountRef = useRef(0);
+  const stableCountRef = useRef(0);
+  const alignmentStartRef = useRef<number | null>(null);
+  const [stableAligned, setStableAligned] = useState(false);
+  const [unstable, setUnstable] = useState(false);
   const bearing = useMemo(
     () => position ? qiblaBearing(position.lat, position.lng) : null,
     [position?.lat, position?.lng],
   );
+  // The alignment indicator uses a time-based hold and a wider exit threshold:
+  // a momentary sensor spike cannot make it flash on/off.
   const relative = heading && bearing !== null ? normalize(bearing - heading.value) : null;
-  const aligned = relative !== null && Math.min(relative, 360 - relative) < 8;
+  const aligned = stableAligned && !unstable && sensorStatus === "live" && relative !== null &&
+    Math.min(relative, 360 - relative) <= 10;
 
   useEffect(() => {
     if (!active || !sensorEnabled) return;
+
     const onOrientation = (raw: DeviceOrientationEvent) => {
       const event = raw as CompassOrientation;
       let value: number | null = null;
-      if (typeof event.webkitCompassHeading === "number" && Number.isFinite(event.webkitCompassHeading)) {
+      let source: "webkit" | "absolute-event" | "absolute" | null = null;
+      if (typeof event.webkitCompassHeading === "number" &&
+          Number.isFinite(event.webkitCompassHeading)) {
         value = event.webkitCompassHeading;
-      } else if (event.absolute === true && event.alpha !== null && Number.isFinite(event.alpha)) {
+        source = "webkit";
+      } else if (event.alpha !== null && Number.isFinite(event.alpha) &&
+                 (raw.type === "deviceorientationabsolute" || event.absolute === true)) {
         value = normalize(360 - event.alpha);
+        source = raw.type === "deviceorientationabsolute" ? "absolute-event" : "absolute";
       }
-      if (value === null) {
+      if (value === null || source === null) {
         sawRelativeRef.current = true;
         return;
       }
+
       const now = performance.now();
-      if (now - lastEventRef.current < 60) return;
+      const priority = { webkit: 3, "absolute-event": 2, absolute: 1 };
+      const previousSource = sourceRef.current;
+      // Chrome may dispatch both deviceorientation and deviceorientationabsolute.
+      // Those streams can disagree, so choose the higher-quality source and
+      // ignore its lower-priority counterpart while data is arriving.
+      if (previousSource && source !== previousSource) {
+        if (priority[source] <= priority[previousSource] &&
+            now - sourceSeenRef.current < 2300) return;
+        readingsRef.current = [];
+        previousRawRef.current = null;
+      }
+      sourceRef.current = source;
+      sourceSeenRef.current = now;
+
+      // At most 8 heading updates per second. A constant high-frequency sensor
+      // feed is not a reason to repaint the complete 120-tick SVG repeatedly.
+      if (now - lastEventRef.current < 125) return;
       lastEventRef.current = now;
+      lastReliableRef.current = now;
+
       const normalized = normalize(value);
+      const priorRaw = previousRawRef.current;
+      const abrupt = priorRaw !== null && now - priorRaw.at < 350 &&
+        Math.abs(shortestChange(normalized, priorRaw.value)) > 35;
+      previousRawRef.current = { value: normalized, at: now };
+      if (abrupt) {
+        jumpCountRef.current = Math.min(jumpCountRef.current + 2, 8);
+        stableCountRef.current = 0;
+      } else {
+        jumpCountRef.current = Math.max(0, jumpCountRef.current - 1);
+        stableCountRef.current += 1;
+      }
+
+      const accuracy = typeof event.webkitCompassAccuracy === "number" &&
+        Number.isFinite(event.webkitCompassAccuracy) ? event.webkitCompassAccuracy : undefined;
+      const poorAccuracy = accuracy !== undefined && accuracy > 25;
+      const unreliable = poorAccuracy || jumpCountRef.current >= 4;
+      // Sensor instability must not falsely certify "Facing Qibla".
+      setUnstable(unreliable);
+      if (unreliable) {
+        alignmentStartRef.current = null;
+        setStableAligned(false);
+      }
+
+      // Circular median over the five most recent readings removes spikes
+      // across the 359°/0° boundary without introducing 180° wrap errors.
+      const window = readingsRef.current;
+      window.push(normalized);
+      if (window.length > 5) window.shift();
       const prev = headingRef.current;
+      const anchor = prev?.value ?? normalized;
+      const offsets = window.map((angle) => shortestChange(angle, anchor))
+        .sort((a, b) => a - b);
+      const median = offsets[Math.floor(offsets.length / 2)] ?? 0;
+      const delta = prev ? median : 0;
+      // Adaptive circular low-pass: almost static phones use strong damping,
+      // but deliberate rotations still catch up smoothly.
+      const gain = Math.abs(delta) > 20 ? 0.5 : Math.abs(delta) > 8 ? 0.35 : 0.22;
+      const step = Math.max(-18, Math.min(18, delta * gain));
+      const nextContinuous = prev ? prev.continuous + (Math.abs(delta) < 1.5 ? 0 : step) : normalized;
+      const nextValue = normalize(nextContinuous);
       const next: Heading = {
-        value: normalized,
-        continuous: prev ? prev.continuous + shortestChange(normalized, prev.value) : normalized,
-        ...(typeof event.webkitCompassAccuracy === "number" &&
-          Number.isFinite(event.webkitCompassAccuracy) ? { accuracy: event.webkitCompassAccuracy } : {}),
+        value: nextValue,
+        continuous: nextContinuous,
+        ...(accuracy === undefined ? {} : { accuracy }),
       };
-      headingRef.current = next;
-      setHeading(next);
+
+      // Even if the needle is inside the 1.5° deadband, incoming samples are
+      // counted for steady alignment; the marker itself stays still.
+      if (bearing !== null && !unreliable) {
+        const error = Math.abs(shortestChange(bearing, nextValue));
+        if (error <= 5) {
+          if (alignmentStartRef.current === null) alignmentStartRef.current = now;
+          if (now - alignmentStartRef.current >= 750) setStableAligned(true);
+        } else if (error >= 10) {
+          alignmentStartRef.current = null;
+          setStableAligned(false);
+        }
+      } else {
+        alignmentStartRef.current = null;
+        setStableAligned(false);
+      }
+
+      if (!prev || Math.abs(nextContinuous - prev.continuous) >= 0.1 ||
+          (prev.accuracy !== accuracy)) {
+        headingRef.current = next;
+        setHeading(next);
+      }
       setSensorStatus("live");
     };
     window.addEventListener("deviceorientation", onOrientation);
@@ -171,7 +269,21 @@ export function QiblaCompass({
       window.removeEventListener("deviceorientation", onOrientation);
       window.removeEventListener("deviceorientationabsolute", onOrientation as EventListener);
     };
-  }, [active, sensorEnabled]);
+  }, [active, sensorEnabled, bearing]);
+
+  // Do not keep reporting a live working compass when device readings stop.
+  useEffect(() => {
+    if (!active || sensorStatus !== "live") return;
+    const timer = window.setInterval(() => {
+      if (performance.now() - lastReliableRef.current < 4000) return;
+      setSensorStatus("no-events");
+      setStableAligned(false);
+      alignmentStartRef.current = null;
+      headingRef.current = null;
+      setHeading(null);
+    }, 1500);
+    return () => window.clearInterval(timer);
+  }, [active, sensorStatus]);
 
   useEffect(() => {
     if (!active || !sensorEnabled || sensorStatus !== "waiting") return;
@@ -206,6 +318,16 @@ export function QiblaCompass({
       sawRelativeRef.current = false;
       headingRef.current = null;
       lastEventRef.current = 0;
+      lastReliableRef.current = 0;
+      sourceRef.current = null;
+      sourceSeenRef.current = 0;
+      readingsRef.current = [];
+      previousRawRef.current = null;
+      jumpCountRef.current = 0;
+      stableCountRef.current = 0;
+      alignmentStartRef.current = null;
+      setStableAligned(false);
+      setUnstable(false);
       setHeading(null);
       setSensorEnabled(true);
       setSensorStatus("waiting");
@@ -290,8 +412,8 @@ export function QiblaCompass({
           <p className="qibla-aligned" role="status"><CheckCircle2 size={18}/>{t("qiblaAligned")}</p>
         )}
         <p className="qibla-guidance" role="status" aria-live="polite" dir="auto">{sensorMessage}</p>
-        {heading?.accuracy !== undefined && heading.accuracy > 25 && (
-          <p className="qibla-note"><ShieldAlert size={16}/>{t("qiblaCalibrate")}</p>
+        {unstable && (
+          <p className="qibla-note" role="alert"><ShieldAlert size={16}/>{t("qiblaSensorUnstable")}</p>
         )}
         <p className="qibla-how-it-works" dir="auto">{t("qiblaHowItWorks")}</p>
       </div>
