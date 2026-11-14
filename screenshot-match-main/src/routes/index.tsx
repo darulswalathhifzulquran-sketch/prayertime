@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bell, BookOpen, Check, ChevronsUpDown, Home, LocateFixed, Moon, RefreshCw, Settings, Sun, Sunrise, Timer, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { INDIA_STATES, DEFAULT_STATE_ID, type IndiaDistrict } from "@/lib/india-locations";
@@ -73,24 +73,6 @@ function Index() {
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
-  const heroPatternRef = useRef<HTMLDivElement>(null);
-
-  // Only the decorative circles and lines move. No React state/rerenders.
-  const moveHeroPattern = (event: ReactPointerEvent<HTMLElement>) => {
-    if (event.pointerType !== "mouse" || !heroPatternRef.current) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width - 0.5;
-    const y = (event.clientY - rect.top) / rect.height - 0.5;
-    heroPatternRef.current.style.setProperty("--pattern-move-x", `${(x * 27).toFixed(1)}px`);
-    heroPatternRef.current.style.setProperty("--pattern-move-y", `${(y * 27).toFixed(1)}px`);
-  };
-
-  const resetHeroPattern = () => {
-    const pattern = heroPatternRef.current;
-    if (!pattern) return;
-    pattern.style.setProperty("--pattern-move-x", "0px");
-    pattern.style.setProperty("--pattern-move-y", "0px");
-  };
   // Always show the live timing for the selected district or GPS coordinates.
   // Past locally-entered reference times never override another location or date.
   const displayedTimings = pt.today;
@@ -312,8 +294,8 @@ function Index() {
       </header>
 
       <main className="violet-premium mx-auto max-w-5xl space-y-6 px-4 py-8">
-        <section id="home" className={cn("glassy-hero scroll-mt-24 relative mx-auto max-w-xl overflow-hidden rounded-[2rem] p-6 text-white shadow-soft sm:p-8", !showHome && "hidden")} onPointerMove={moveHeroPattern} onPointerLeave={resetHeroPattern} onPointerCancel={resetHeroPattern}>
-          <div ref={heroPatternRef} className="islamic-pattern awqaat-cursor-pattern absolute opacity-60" aria-hidden="true" />
+        <section id="home" className={cn("glassy-hero scroll-mt-24 relative mx-auto max-w-xl overflow-hidden rounded-[2rem] p-6 text-white shadow-soft sm:p-8", !showHome && "hidden")}>
+          <div className="islamic-pattern absolute inset-0 opacity-60" aria-hidden />
           <div className="relative flex flex-col items-stretch gap-6">
             <div id="clock" className="scroll-mt-28 text-center">
               <p className="text-sm uppercase tracking-[0.3em] text-gold" dir="auto">
