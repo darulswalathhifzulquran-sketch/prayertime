@@ -407,7 +407,7 @@ export function QiblaCompass({
         {aligned && sensorStatus === "live" && (
           <p className="qibla-aligned" role="status"><CheckCircle2 size={18}/>{t("qiblaAligned")}</p>
         )}
-        {sensorStatus !== "idle" && sensorStatus !== "live" && (
+        {sensorStatus !== "idle" && sensorStatus !== "live" && sensorStatus !== "relative-only" && (
           <p className="qibla-guidance" role="status" aria-live="polite" dir="auto">{sensorMessage}</p>
         )}
         {unstable && (
