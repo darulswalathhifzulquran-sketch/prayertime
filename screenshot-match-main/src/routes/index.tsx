@@ -18,10 +18,25 @@ import { CARDS, DEFAULT_METHOD, METHODS, TZ, formatHMS, formatTime, istSecondsOf
 import { tr, localizeDigits, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-// Deterministic A–Z order for every State/UT and its districts, including
-// filtered search results. Sorting display copies never changes source IDs,
-// coordinates, saved district selection, or prayer-time calculation.
+// State/UT names stay A–Z. Kerala's districts follow the requested
+// geographic south-to-north map order; other districts remain A–Z.
+// Sorting only copies for display and never changes source IDs, GPS,
+// prayer-time coordinates or persisted user selection.
 const LOCATION_ORDER = new Intl.Collator("en", { sensitivity: "base", numeric: true, ignorePunctuation: true });
+const KERALA_SOUTH_TO_NORTH = [
+  "tvm", "klm", "pta", "alp", "ktm", "idk", "ekm",
+  "tsr", "pkd", "mlp", "kkd", "wyd", "knr", "ksd",
+] as const;
+const KERALA_RANK = new Map<string, number>(
+  KERALA_SOUTH_TO_NORTH.map((id, index) => [id, index]),
+);
+const orderDistricts = (state: { id: string; districts: IndiaDistrict[] }): IndiaDistrict[] =>
+  [...state.districts].sort((a, b) =>
+    state.id === DEFAULT_STATE_ID
+      ? (KERALA_RANK.get(a.id) ?? 99) - (KERALA_RANK.get(b.id) ?? 99) ||
+        LOCATION_ORDER.compare(a.name, b.name)
+      : LOCATION_ORDER.compare(a.name, b.name),
+  );
 const ORDERED_STATES = [...INDIA_STATES].sort((a, b) => LOCATION_ORDER.compare(a.name, b.name));
 
 export const Route = createFileRoute("/")({
@@ -57,10 +72,7 @@ function Index() {
   // Kerala retains Malayalam district names. Across India, never translate
   // district names into Arabic (as requested for the current AWQAAT selector).
   const districtLabel = (d: IndiaDistrict) => lang === "ml" && d.ml ? d.ml : d.name;
-  const orderedDistricts = useMemo(
-    () => [...state.districts].sort((a, b) => LOCATION_ORDER.compare(a.name, b.name)),
-    [state],
-  );
+  const orderedDistricts = useMemo(() => orderDistricts(state), [state]);
   const visibleDistricts = useMemo(() => {
     const search = districtSearch.trim().toLocaleLowerCase("en");
     if (!search) return orderedDistricts;
@@ -108,7 +120,7 @@ function Index() {
     if (!nextState?.districts.length) return;
     gps.disable();
     setStateId(nextState.id);
-    setDistrictId([...nextState.districts].sort((a, b) => LOCATION_ORDER.compare(a.name, b.name))[0]!.id);
+    setDistrictId(orderDistricts(nextState)[0]!.id);
     setCity("");
     setCityDraft("");
     setDistrictSearch("");
@@ -212,7 +224,7 @@ function Index() {
                 </Select>
               </div>
               <div className="mb-3 space-y-1.5">
-                <label className="flex items-center justify-between text-xs font-bold text-muted-foreground"><span>{t("district")}</span><span className="font-semibold tracking-[0.1em] text-emerald-700/80 dark:text-emerald-200/80">A–Z</span></label>
+                <label className="flex items-center justify-between text-xs font-bold text-muted-foreground"><span>{t("district")}</span><span className="font-semibold tracking-[0.1em] text-emerald-700/80 dark:text-emerald-200/80">{state.id === DEFAULT_STATE_ID ? "South → North" : "A–Z"}</span></label>
                 <Command shouldFilter={false} className="overflow-hidden rounded-xl border bg-background/70">
                   <CommandInput
                     value={districtSearch}
