@@ -4,7 +4,7 @@ import { Bell, BookOpen, Check, ChevronsUpDown, Compass, Home, LocateFixed, Moon
 import { Button } from "@/components/ui/button";
 import { INDIA_STATES, DEFAULT_STATE_ID, type IndiaDistrict } from "@/lib/india-locations";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -17,6 +17,12 @@ import { useDeviceLocation } from "@/hooks/use-device-location";
 import { CARDS, DEFAULT_METHOD, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nextPrayer, type AsrSchool, type PrayerLocation } from "@/lib/prayer";
 import { tr, localizeDigits, type Lang } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+
+// Deterministic A–Z order for every State/UT and its districts, including
+// filtered search results. Sorting display copies never changes source IDs,
+// coordinates, saved district selection, or prayer-time calculation.
+const LOCATION_ORDER = new Intl.Collator("en", { sensitivity: "base", numeric: true, ignorePunctuation: true });
+const ORDERED_STATES = [...INDIA_STATES].sort((a, b) => LOCATION_ORDER.compare(a.name, b.name));
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -38,6 +44,7 @@ function Index() {
   const [districtId, setDistrictId] = usePersisted("kpt:district", "tvm");
   const [city, setCity] = useState("");
   const [cityDraft, setCityDraft] = useState("");
+  const [districtSearch, setDistrictSearch] = useState("");
   const [method, setMethod] = usePersisted("kpt:method", DEFAULT_METHOD);
   const [school, setSchool] = usePersisted<AsrSchool>("kpt:asrSchool", 0);
   const [h12, setH12] = usePersisted("kpt:h12", true);
@@ -45,11 +52,22 @@ function Index() {
   const [theme, setTheme] = usePersisted<"light" | "dark">("kpt:theme", "light");
   const [lang, setLang] = usePersisted<Lang>("kpt:lang", "en");
   const t = tr(lang);
-  const state = INDIA_STATES.find((s) => s.id === stateId) ?? INDIA_STATES.find((s) => s.id === DEFAULT_STATE_ID)!;
+  const state = ORDERED_STATES.find((s) => s.id === stateId) ?? ORDERED_STATES.find((s) => s.id === DEFAULT_STATE_ID)!;
   const district = state.districts.find((d) => d.id === districtId) ?? state.districts[0]!;
   // Kerala retains Malayalam district names. Across India, never translate
   // district names into Arabic (as requested for the current AWQAAT selector).
   const districtLabel = (d: IndiaDistrict) => lang === "ml" && d.ml ? d.ml : d.name;
+  const orderedDistricts = useMemo(
+    () => [...state.districts].sort((a, b) => LOCATION_ORDER.compare(a.name, b.name)),
+    [state],
+  );
+  const visibleDistricts = useMemo(() => {
+    const search = districtSearch.trim().toLocaleLowerCase("en");
+    if (!search) return orderedDistricts;
+    return orderedDistricts.filter((district) =>
+      `${district.name} ${district.ml ?? ""}`.toLocaleLowerCase("en").includes(search),
+    );
+  }, [districtSearch, orderedDistricts]);
   const locationLabel = city ? `${city}, ${districtLabel(district)}` : districtLabel(district);
   const gps = useDeviceLocation();
   // Round only for prayer-time lookup: ~11 m resolution, enough for minute-level calculations.
@@ -86,19 +104,21 @@ function Index() {
   const methodName = METHODS.find((m) => m.id === method)?.name ?? `Method ${method}`;
 
   const chooseState = (id: string) => {
-    const nextState = INDIA_STATES.find((s) => s.id === id);
+    const nextState = ORDERED_STATES.find((s) => s.id === id);
     if (!nextState?.districts.length) return;
     gps.disable();
     setStateId(nextState.id);
-    setDistrictId(nextState.districts[0]!.id);
+    setDistrictId([...nextState.districts].sort((a, b) => LOCATION_ORDER.compare(a.name, b.name))[0]!.id);
     setCity("");
     setCityDraft("");
+    setDistrictSearch("");
   };
   const chooseDistrict = (id: string) => {
     gps.disable();
     setDistrictId(id);
     setCity("");
     setCityDraft("");
+    setDistrictSearch("");
     setOpen(false);
   };
   const applyCity = () => {
@@ -164,7 +184,7 @@ function Index() {
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-hero font-arabic text-lg text-gold">۞</span>
             <span className="brand-awqaat">{t("title")}</span>
           </div>
-          <Popover open={open} onOpenChange={setOpen}>
+          <Popover open={open} onOpenChange={(nextOpen) => { setOpen(nextOpen); if (!nextOpen) setDistrictSearch(""); }}>
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-56 max-w-full justify-between gap-2" aria-label={t("district")}>
                 <span className="min-w-0 truncate text-left" dir="auto">
@@ -185,28 +205,35 @@ function Index() {
                     <SelectValue placeholder={t("state")} />
                   </SelectTrigger>
                   <SelectContent className="max-h-64">
-                    {INDIA_STATES.map((s) =>
+                    {ORDERED_STATES.map((s) =>
                       <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                     )}
                   </SelectContent>
                 </Select>
               </div>
               <div className="mb-3 space-y-1.5">
-                <label className="text-xs font-bold text-muted-foreground">{t("district")}</label>
-                <Command className="overflow-hidden rounded-xl border bg-background/70">
-                  <CommandInput placeholder={lang === "ar" ? "Search district…" : t("search")} />
+                <label className="flex items-center justify-between text-xs font-bold text-muted-foreground"><span>{t("district")}</span><span className="font-semibold tracking-[0.1em] text-emerald-700/80 dark:text-emerald-200/80">A–Z</span></label>
+                <Command shouldFilter={false} className="overflow-hidden rounded-xl border bg-background/70">
+                  <CommandInput
+                    value={districtSearch}
+                    onValueChange={setDistrictSearch}
+                    placeholder={lang === "ar" ? "Search district…" : t("search")}
+                  />
                   <CommandList className="max-h-48">
-                    <CommandEmpty>{t("noDistrict")}</CommandEmpty>
-                    <CommandGroup>
-                      {state.districts.map((d) => (
-                        <CommandItem key={d.id} value={`${d.name} ${d.ml ?? ""}`} onSelect={() => chooseDistrict(d.id)}>
-                          <Check className={cn("mr-2 h-4 w-4 shrink-0", d.id === district.id ? "opacity-100" : "opacity-0")} />
-                          <span className="truncate">{districtLabel(d)}</span>
-                          {d.ml && lang !== "ml" &&
-                            <span className="ml-auto pl-2 font-ml text-xs text-muted-foreground">{d.ml}</span>}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
+                    {visibleDistricts.length === 0 ? (
+                      <div role="status" className="px-3 py-6 text-center text-sm text-muted-foreground">{t("noDistrict")}</div>
+                    ) : (
+                      <CommandGroup>
+                        {visibleDistricts.map((d) => (
+                          <CommandItem key={d.id} value={`${d.name} ${d.ml ?? ""}`} onSelect={() => chooseDistrict(d.id)}>
+                            <Check className={cn("mr-2 h-4 w-4 shrink-0", d.id === district.id ? "opacity-100" : "opacity-0")} />
+                            <span className="truncate">{districtLabel(d)}</span>
+                            {d.ml && lang !== "ml" &&
+                              <span className="ml-auto pl-2 font-ml text-xs text-muted-foreground">{d.ml}</span>}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
                   </CommandList>
                 </Command>
               </div>
