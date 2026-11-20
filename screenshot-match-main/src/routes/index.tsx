@@ -109,6 +109,14 @@ function Index() {
   // Past locally-entered reference times never override another location or date.
   const displayedTimings = pt.today;
   const tomorrowFajr = pt.tomorrowFajr;
+  // Read-only GPS/location metadata: preserve GPS watch and selection behavior.
+  const shownPosition = gps.location
+    ? { lat: gps.location.latitude, lng: gps.location.longitude }
+    : city
+      ? pt.resolvedCoordinates
+      : district.lat !== undefined && district.lng !== undefined
+        ? { lat: district.lat, lng: district.lng }
+        : pt.resolvedCoordinates;
   const lastFeedbackRef = useRef<string | null>(null);
 
   // A browser permits audible feedback after the user has interacted with the
@@ -305,6 +313,28 @@ function Index() {
                 )}
               </div>
               <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">{t("locationHelp")}</p>
+              {shownPosition && (
+                <div className="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3" role="status">
+                  <p className="text-[11px] font-semibold tracking-wide text-emerald-700 dark:text-emerald-200" dir="auto">
+                    {gps.location ? t("geoLive") : t("geoReference")}
+                  </p>
+                  <dl className="mt-2 grid grid-cols-2 gap-2">
+                    <div className="min-w-0">
+                      <dt className="text-[10px] text-muted-foreground">{t("geoLatitude")}</dt>
+                      <dd className="font-mono text-xs font-semibold tabular-nums" dir="ltr">{shownPosition.lat.toFixed(5)}° N</dd>
+                    </div>
+                    <div className="min-w-0">
+                      <dt className="text-[10px] text-muted-foreground">{t("geoLongitude")}</dt>
+                      <dd className="font-mono text-xs font-semibold tabular-nums" dir="ltr">{shownPosition.lng.toFixed(5)}° E</dd>
+                    </div>
+                  </dl>
+                  {gps.location && (
+                    <p className="mt-2 text-[11px] text-muted-foreground" dir="auto">
+                      {t("geoAccuracy")}: ±{Math.round(gps.location.accuracy)} m
+                    </p>
+                  )}
+                </div>
+              )
             </PopoverContent>
           </Popover>
           <Button
