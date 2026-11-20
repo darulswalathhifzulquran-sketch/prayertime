@@ -180,7 +180,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
 
   const hasAudio = !!standardSrc;
   return (
-    <div className="glass-shell glass-tool-panel rounded-3xl p-6" data-view={view}>
+    <div className="glass-shell glass-tool-panel awqaat-azan-panel rounded-3xl p-6" data-view={view}>
       <audio
         ref={audio}
         src={currentSrc || undefined}
@@ -201,7 +201,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
           </div>
           <div className="min-w-0">
             <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">{t("record")}</p>
-            <p className="text-sm font-extrabold tracking-wide" dir="ltr">AL HAFIZ MUHAMMED NOUFAL</p>
+            <p className="awqaat-recording-name text-sm font-extrabold tracking-wide" dir="ltr">AL HAFIZ MUHAMMED NOUFAL</p>
           </div>
         </div>
       )}
@@ -216,14 +216,14 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
           {loading ? t("audioLoading") : t("audioTapToPlay")}
         </p>
       )}
-      <div className={view === "player" ? "mt-4 flex flex-wrap gap-2" : "hidden"}>
+      <div className={view === "player" ? "awqaat-azan-controls mt-4 flex flex-wrap items-center gap-2" : "hidden"}>
         <Button size="icon" disabled={!hasAudio || recordingFailed} onClick={() => (playing ? (userRequestedPlay.current = false, audio.current?.pause()) : play(standardSrc))} aria-label={playing ? "Pause" : "Play"}>
           {playing ? <Pause /> : <Play />}
         </Button>
         <Button size="icon" variant="outline" disabled={!hasAudio || !recordingReady || recordingFailed} aria-label="Stop" onClick={() => { userRequestedPlay.current = false; const a = audio.current; if (a) { a.pause(); a.currentTime = 0; } }}><Square /></Button>
         <Button size="icon" variant="outline" disabled={!hasAudio || !recordingReady || recordingFailed} aria-label="Replay" onClick={() => { if (audio.current) audio.current.currentTime = 0; void play(standardSrc); }}><RotateCcw /></Button>
         <Button size="icon" variant="ghost" aria-label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX /> : <Volume2 />}</Button>
-        <Slider className="w-32 self-center" value={[volume * 100]} max={100} onValueChange={(v) => setVolume((v[0] ?? 0) / 100)} aria-label="Volume" />
+        <Slider className="awqaat-azan-volume w-32 self-center" value={[volume * 100]} max={100} onValueChange={(v) => setVolume((v[0] ?? 0) / 100)} aria-label="Volume" />
       </div>
       {view === "reminders" && (
       <div className="glass-inner mt-5 flex items-center justify-between gap-3 rounded-2xl p-3">
