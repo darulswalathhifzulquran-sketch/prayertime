@@ -1,6 +1,6 @@
 export type Lang = "en" | "ml" | "ar";
 const dict = {
-  title: { en: "AWQAAT", ml: "AWQAAT", ar: "أوقات" },
+  title: { en: "JAMIA AWQAAT", ml: "JAMIA AWQAAT", ar: "جامعـة أوقات" },
   district: { en: "District", ml: "ജില്ല", ar: "المنطقة" },
   search: { en: "Search district…", ml: "ജില്ല തിരയുക…", ar: "ابحث عن المنطقة…" },
   locate: { en: "Use my location", ml: "എന്റെ സ്ഥാനം", ar: "استخدم موقعي" },
