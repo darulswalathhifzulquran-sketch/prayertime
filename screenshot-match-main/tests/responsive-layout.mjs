@@ -61,7 +61,12 @@ try {
         [4, "reminder"], [5, "stopwatch"], [0, "home"],
       ]) {
         await navButtons.nth(index).click();
-        await page.waitForTimeout(80);
+        // TanStack navigation is hydrated; measure the destination only after
+        // the routed panel has become visible, not during its initial transition.
+        const sectionId = index === 2 ? "#qibla" : index === 3 || index === 4 ? "#azan" :
+          index === 5 ? "#stopwatch" : "#home";
+        await page.locator(sectionId).waitFor({ state: "visible", timeout: 5000 });
+        await page.waitForTimeout(120);
         await measure(name);
       }
 
@@ -77,7 +82,10 @@ try {
       await page.keyboard.press("Escape");
 
       await navButtons.nth(6).click();
-      await page.locator(".awqaat-settings-panel").waitFor();
+      await page.locator(".awqaat-settings-panel").waitFor({ state: "visible" });
+      // Radix Sheet animates in from the right for up to 500 ms.
+      // An off-screen initial animation frame is not a layout overflow.
+      await page.waitForTimeout(750);
       const settings = await page.locator(".awqaat-settings-panel").evaluate((node) => {
         const r = node.getBoundingClientRect();
         return { left: r.left, right: r.right, width: r.width, window: innerWidth, scroll: node.scrollWidth - node.clientWidth };
