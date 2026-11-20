@@ -230,23 +230,24 @@ function Index() {
           : null;
 
   return (
-    <div className={cn("min-h-screen bg-gradient-to-b from-emerald-50 via-background to-background pb-28 dark:from-emerald-950/20 dark:via-background dark:to-background", lang === "ar" && "awqaat-arabic-numerals")}>
-      <header className="sticky top-0 z-20 border-b border-white/30 bg-background/70 shadow-sm backdrop-blur-xl dark:border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
-          <div className="mr-auto flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-hero font-arabic text-lg text-gold">۞</span>
+    <div className={cn("awqaat-app min-h-screen bg-gradient-to-b from-emerald-50 via-background to-background pb-28 dark:from-emerald-950/20 dark:via-background dark:to-background", lang === "ar" && "awqaat-arabic-numerals")}>
+      <header className="awqaat-topbar sticky top-0 z-20 border-b border-white/30 bg-background/70 shadow-sm backdrop-blur-xl dark:border-white/10">
+        <div className="awqaat-header-layout mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+          <div className="awqaat-header-brand flex min-w-0 items-center gap-2">
+            <span className="awqaat-brand-emblem grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-hero font-arabic text-lg text-gold">۞</span>
             <span className="brand-awqaat">{t("title")}</span>
           </div>
-          <Popover open={open} onOpenChange={(nextOpen) => { setOpen(nextOpen); if (!nextOpen) setDistrictSearch(""); }}>
+          <div className="awqaat-header-actions">
+            <Popover open={open} onOpenChange={(nextOpen) => { setOpen(nextOpen); if (!nextOpen) setDistrictSearch(""); }}>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-56 max-w-full justify-between gap-2" aria-label={t("district")}>
+              <Button variant="outline" className="awqaat-location-trigger w-56 max-w-full justify-between gap-2" aria-label={t("district")}>
                 <span className="min-w-0 truncate text-left" dir="auto">
                   {gps.location ? t("gpsCurrent") : `${state.name} · ${locationLabel}`}
                 </span>
                 <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-60" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="awqaat-location-menu w-[min(92vw,380px)] p-3" align="end">
+            <PopoverContent className="awqaat-location-menu w-[min(92vw,380px)] max-h-[min(78dvh,680px)] overflow-y-auto overscroll-contain p-3" align="end">
               <div className="mb-3 flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-300">
                 <LocateFixed className="h-4 w-4" />
                 {t("chooseLocation")}
@@ -398,6 +399,7 @@ function Index() {
               </div>
             </SheetContent>
           </Sheet>
+          </div>
         </div>
         {(gps.locating || gps.error || gps.location) && (
           <p className="pb-2 px-4 text-center text-xs text-muted-foreground" role="status" aria-live="polite" dir="auto">
@@ -410,11 +412,11 @@ function Index() {
         )}
       </header>
 
-      <main className="violet-premium mx-auto max-w-5xl space-y-6 px-4 py-8">
-        <section id="home" className={cn("glassy-hero scroll-mt-24 relative mx-auto max-w-xl overflow-hidden rounded-[2rem] p-6 text-white shadow-soft sm:p-8", !showHome && "hidden")}>
+      <main className="violet-premium awqaat-main mx-auto w-full max-w-6xl space-y-6 px-4 py-8">
+        <section id="home" className={cn("glassy-hero awqaat-hero scroll-mt-24 relative mx-auto max-w-xl overflow-hidden rounded-[2rem] p-6 text-white shadow-soft sm:p-8", !showHome && "hidden")}>
           <div className="islamic-pattern absolute inset-0 opacity-60" aria-hidden />
           <div className="relative flex flex-col items-stretch gap-6">
-            <div id="clock" className="scroll-mt-28 text-center">
+            <div id="clock" className="awqaat-clock-block scroll-mt-28 text-center">
               <p className="text-sm uppercase tracking-[0.3em] text-gold" dir="auto">
                 {gps.location ? t("gpsYours") : locationLabel}
               </p>
@@ -437,7 +439,7 @@ function Index() {
                   </p>
                   <p className="mt-1 font-display text-4xl font-bold leading-none tracking-wide text-white drop-shadow-sm">{next.key}</p>
                   <p className="mt-5 text-xs uppercase tracking-widest opacity-80" dir="auto">{t("remaining")}{next.tomorrow ? ` · ${t("tomorrow")}` : ""}</p>
-                  <p className="font-mono text-5xl font-extrabold tabular-nums" dir="ltr">{localizeDigits(formatHMS(next.secondsLeft), lang)}</p>
+                  <p className="awqaat-countdown font-mono font-extrabold tabular-nums" dir="ltr">{localizeDigits(formatHMS(next.secondsLeft), lang)}</p>
                 </>
               ) : (
                 <p className="mt-4 opacity-80">{pt.error ? localizeDigits(pt.error, lang) : "Loading…"}</p>
@@ -446,7 +448,7 @@ function Index() {
           </div>
         </section>
 
-        <section id="prayers" className={cn("glass-shell scroll-mt-24 mx-auto max-w-xl rounded-[2rem] p-4 sm:p-6", !showHome && "hidden")}>
+        <section id="prayers" className={cn("glass-shell awqaat-prayer-panel scroll-mt-24 mx-auto max-w-xl rounded-[2rem] p-4 sm:p-6", !showHome && "hidden")}>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
             <h2 className="font-display text-2xl font-semibold" dir="auto">{t("todays")}</h2>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
