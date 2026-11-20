@@ -42,9 +42,9 @@ const ORDERED_STATES = [...INDIA_STATES].sort((a, b) => LOCATION_ORDER.compare(a
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AWQAAT — Prayer Times Across India" },
-      { name: "description", content: "Daily calculated Fajr, Dhuhr, Asr, Maghrib, Isha and Sunrise times across India with State/UT and district selection, GPS, Azan reminders and stopwatch." },
-      { property: "og:title", content: "AWQAAT — Prayer Times Across India" },
+      { title: "JAMIA AWQAAT — Islamic Prayer Times Across India" },
+      { name: "description", content: "JAMIA AWQAAT (also known as AWQAAT): calculated Fajr, Dhuhr, Asr, Maghrib, Isha and Sunrise prayer times across India, with GPS, district selection, Azan reminders and stopwatch." },
+      { property: "og:title", content: "JAMIA AWQAAT — Islamic Prayer Times Across India" },
       { property: "og:description", content: "Calculated prayer times throughout India in English, Arabic and Malayalam." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -457,7 +457,7 @@ function Index() {
 
       <footer className="border-t border-white/10">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-5 gap-y-2 px-4 py-5 text-xs text-muted-foreground">
-          <p className="font-semibold tracking-wide">AWQAAT <span aria-hidden="true">·</span> {t("footerBrand")}</p>
+          <p className="font-semibold tracking-wide">JAMIA AWQAAT <span aria-hidden="true">·</span> {t("footerBrand")}</p>
           <details className="group max-w-full text-right">
             <summary className="cursor-pointer select-none rounded-lg px-2 py-1 text-[11px] underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
               {t("infoCredits")}

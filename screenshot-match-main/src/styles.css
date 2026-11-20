@@ -942,9 +942,9 @@
 .brand-awqaat {
   font-family: "Cinzel", "Cormorant Garamond", Georgia, serif;
   font-weight: 600;
-  font-size: clamp(1.38rem, 3.6vw, 1.85rem);
+  font-size: clamp(1rem, 2.5vw, 1.65rem);
   line-height: 1.15;
-  letter-spacing: 0.095em;
+  letter-spacing: 0.055em;
   text-transform: uppercase;
   font-variant-ligatures: common-ligatures;
   text-rendering: optimizeLegibility;
