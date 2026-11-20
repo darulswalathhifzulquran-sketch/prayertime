@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Bell, BookOpen, Check, ChevronsUpDown, Compass, Home, LocateFixed, Moon, RefreshCw, Settings, Sun, Sunrise, Timer, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { INDIA_STATES, DEFAULT_STATE_ID, type IndiaDistrict } from "@/lib/india-locations";
@@ -14,8 +14,9 @@ import { QiblaCompass } from "@/components/prayer/QiblaCompass";
 import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
-import { CARDS, DEFAULT_METHOD, METHODS, TZ, formatHMS, formatTime, istSecondsOfDay, nextPrayer, type AsrSchool, type PrayerLocation } from "@/lib/prayer";
+import { CARDS, DEFAULT_METHOD, METHODS, TZ, formatHMS, formatTime, istDateKey, istSecondsOfDay, nextPrayer, type AsrSchool, type PrayerLocation } from "@/lib/prayer";
 import { tr, localizeDigits, type Lang } from "@/lib/i18n";
+import { prayerDueThisMinute, signalPrayerTime, unlockPrayerBeep } from "@/lib/prayer-feedback";
 import { cn } from "@/lib/utils";
 
 // State/UT names stay A–Z. Kerala's districts follow the requested
@@ -108,6 +109,38 @@ function Index() {
   // Past locally-entered reference times never override another location or date.
   const displayedTimings = pt.today;
   const tomorrowFajr = pt.tomorrowFajr;
+  const lastFeedbackRef = useRef<string | null>(null);
+
+  // A browser permits audible feedback after the user has interacted with the
+  // installed web app. No new preference, switch or notification prompt needed.
+  useEffect(() => {
+    const arm = () => unlockPrayerBeep();
+    document.addEventListener("pointerdown", arm, { passive: true });
+    document.addEventListener("keydown", arm);
+    return () => {
+      document.removeEventListener("pointerdown", arm);
+      document.removeEventListener("keydown", arm);
+    };
+  }, []);
+
+  // Automatic signal at each of the five prayers, independent of Azan playback
+  // and reminder switches. Once per prayer and IST date across page reloads.
+  // Only runs while this web app has an active JavaScript page context.
+  useEffect(() => {
+    if (!now || !displayedTimings || pt.dateKey !== istDateKey(now)) return;
+    const prayer = prayerDueThisMinute(now, displayedTimings);
+    if (!prayer) return;
+    const firedKey = `kpt:prayer-feedback:${istDateKey(now)}:${prayer}`;
+    if (lastFeedbackRef.current === firedKey) return;
+    lastFeedbackRef.current = firedKey;
+    try {
+      if (window.localStorage.getItem(firedKey)) return;
+      window.localStorage.setItem(firedKey, "1");
+    } catch {
+      // Feedback still runs once per page session if storage is unavailable.
+    }
+    signalPrayerTime();
+  }, [now, displayedTimings, pt.dateKey]);
 
   useEffect(() => { document.documentElement.classList.toggle("dark", theme === "dark"); }, [theme]);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
