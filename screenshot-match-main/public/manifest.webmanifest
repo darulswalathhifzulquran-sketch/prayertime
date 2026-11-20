@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "JAMIA AWQAAT — Islamic Prayer Times",
+  "short_name": "JAMIA AWQAAT",
+  "description": "JAMIA AWQAAT, formerly AWQAAT: Islamic prayer times across India.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#061b17",
+  "theme_color": "#064e3b",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}
