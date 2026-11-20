@@ -3,7 +3,7 @@ import { apiUrl, DISTRICTS } from "./prayer";
 
 describe("GPS prayer-time URLs", () => {
   it("uses supplied GPS coordinates rather than the district headquarters", () => {
-    const url = new URL(apiUrl("23-10-2026", 11.2333, 75.8122, 1));
+    const url = new URL(apiUrl("23-10-2026", { id: "gps", lat: 11.2333, lng: 75.8122 }, 1, 0));
     expect(url.searchParams.get("latitude")).toBe("11.2333");
     expect(url.searchParams.get("longitude")).toBe("75.8122");
     expect(url.searchParams.get("timezonestring")).toBe("Asia/Kolkata");
