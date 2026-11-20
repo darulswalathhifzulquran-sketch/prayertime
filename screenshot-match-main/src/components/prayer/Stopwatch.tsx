@@ -25,7 +25,9 @@ export function Stopwatch({ title, lang }: { title: string; lang: Lang }) {
   return (
     <div className="glass-shell glass-tool-panel rounded-3xl p-6">
       <h3 className="font-display text-2xl font-semibold">{title}</h3>
-      <video aria-label="Islamic stopwatch animation" className="glass-tool-photo mt-3 w-full bg-black object-contain" src="/videos/stopwatch-animation.mp4" autoPlay muted loop playsInline preload="metadata" />
+      <div className="glass-tool-photo mt-3 overflow-hidden">
+        <video aria-label="Islamic stopwatch animation" className="block h-full w-full object-cover object-center" src="/videos/stopwatch-animation.mp4" autoPlay muted loop playsInline preload="metadata" />
+      </div>
       <div className="my-6 text-center font-mono text-4xl tabular-nums sm:text-5xl" dir="ltr">{localizeDigits(fmt(elapsed), lang)}</div>
       <div className="flex flex-wrap justify-center gap-2">
         {!running ? (
