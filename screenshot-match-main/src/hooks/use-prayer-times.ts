@@ -9,7 +9,7 @@ type State = {
   resolvedCoordinates?: { lat: number; lng: number };
 };
 
-const cacheKey = (id: string, date: string, method: number, school: AsrSchool) => `kpt:v2:${id}:${date}:m${method}:asr${school}`;
+const cacheKey = (id: string, date: string, method: number, school: AsrSchool) => `kpt:v3:${id}:${date}:m${method}:asr${school}`;
 
 async function fetchDay(d: PrayerLocation, date: string, method: number, school: AsrSchool): Promise<Entry> {
   const res = await fetch(apiUrl(date, d, method, school));
@@ -17,8 +17,13 @@ async function fetchDay(d: PrayerLocation, date: string, method: number, school:
   const j = await res.json();
   const x = j?.data?.timings;
   if (!x?.Fajr) throw new Error("The prayer service could not resolve this Indian district or town. Try GPS or a nearby city.");
-  const metaLat = Number(j?.data?.meta?.latitude);
-  const metaLng = Number(j?.data?.meta?.longitude);
+  // A null/missing geocoding coordinate is not zero degrees latitude.
+  // Keep failed/ambiguous address geocoding explicit, never switch GPS mode.
+  const coord = (value: unknown): number =>
+    typeof value === "number" ? value :
+    typeof value === "string" && value.trim() ? Number(value) : Number.NaN;
+  const metaLat = coord(j?.data?.meta?.latitude);
+  const metaLng = coord(j?.data?.meta?.longitude);
   if (d.address && Number.isFinite(metaLat) && Number.isFinite(metaLng) &&
       (metaLat < 6 || metaLat > 39 || metaLng < 68 || metaLng > 98)) {
     throw new Error("The prayer service resolved a location outside India. Try GPS instead.");
