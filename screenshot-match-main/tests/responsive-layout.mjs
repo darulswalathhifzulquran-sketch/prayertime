@@ -23,6 +23,10 @@ try {
       const response = await page.goto(base, { waitUntil: "domcontentloaded", timeout: 30000 });
       if (!response || response.status() >= 400) throw new Error("Page did not load: " + response?.status());
       await page.locator(".glass-bottom-nav .glass-nav-item").first().waitFor({ timeout: 25000 });
+      // SSR markup appears before React event handlers are hydrated.
+      // Wait for the document's JS resources before exercising navigation.
+      await page.waitForLoadState("load", { timeout: 20000 });
+      await page.waitForTimeout(1600);
 
       // All seven navigation items are present and reachable, even on small phones.
       const navButtons = page.locator(".glass-bottom-nav .glass-nav-item");
