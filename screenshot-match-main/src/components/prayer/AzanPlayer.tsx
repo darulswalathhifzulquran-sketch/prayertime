@@ -6,6 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { FIVE, istDateKey, istSecondsOfDay, toMinutes, type PrayerKey, type Timings } from "@/lib/prayer";
 import { usePersisted } from "@/hooks/use-prayer-times";
 import { tr, type Lang } from "@/lib/i18n";
+import { signalReminderChanged } from "@/lib/prayer-feedback";
 
 /** Same uploaded recording, served through two independent public mirrors
  * when the site's static asset cannot be loaded. No third-party Azan substituted. */
@@ -149,6 +150,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
   };
 
   const enable = async () => {
+    signalReminderChanged();
     setEnabled(true);
     if ("Notification" in window && Notification.permission === "default") await Notification.requestPermission();
     const a = audio.current;
@@ -231,7 +233,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
             size="sm"
             variant="outline"
             className="reminder-turnoff-button rounded-full border-fuchsia-200/80 bg-fuchsia-100 px-4 font-semibold text-purple-950 shadow-sm hover:bg-white hover:text-purple-950 focus-visible:ring-fuchsia-300"
-            onClick={() => { setEnabled(false); setUnlocked(false); }}
+            onClick={() => { signalReminderChanged(); setEnabled(false); setUnlocked(false); }}
           >{t("turnOff")}</Button>
         ) : (
           <Button size="sm" onClick={enable}>{standardSrc ? t("enableAzan") : t("enableReminder")}</Button>
@@ -241,7 +243,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
       <div className={view === "reminders" ? "mt-3 flex flex-col gap-2" : "hidden"}>
         {FIVE.map((k) => (
           <label key={k} className="glass-inner flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm">
-            {k}<Switch checked={!!toggles[k]} onCheckedChange={(c) => setToggles({ ...toggles, [k]: c })} />
+            {k}<Switch checked={!!toggles[k]} onCheckedChange={(c) => { signalReminderChanged(); setToggles({ ...toggles, [k]: c }); }} />
           </label>
         ))}
       </div>
