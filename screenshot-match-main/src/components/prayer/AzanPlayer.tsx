@@ -191,7 +191,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
         aria-label="Azan recitation by AL HAFIZ MUHAMMED NOUFAL"
       />
       <h3 className="font-display text-2xl font-semibold" dir="auto">{title}</h3>
-      <div role="img" aria-label="Photograph of a mosque minaret" className="glass-tool-photo glass-azan-photo mt-3" />
+      <div role="img" aria-label="Golden mosque minaret at sunset beneath a purple sky" className="glass-tool-photo glass-azan-photo mt-3" />
       {view === "player" && hasAudio && (
         <div className="glass-inner mt-3 flex items-center gap-3 rounded-2xl px-4 py-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-fuchsia-200/40 bg-white/10" aria-hidden="true">
