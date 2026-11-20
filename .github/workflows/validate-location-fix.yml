@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/validate-location-fix.yml'
+      - 'screenshot-match-main/src/**'
+      - 'screenshot-match-main/package.json'
+      - 'screenshot-match-main/bun.lock'
 
 permissions:
   contents: read
