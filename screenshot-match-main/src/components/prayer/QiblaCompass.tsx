@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle2, Compass, LocateFixed, MapPin, RotateCw, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { localizeDigits, tr, type Lang } from "@/lib/i18n";
+import { signalQiblaAligned } from "@/lib/prayer-feedback";
 
 type Position = { lat: number; lng: number; source: "gps" | "district" | "address" };
 type CompassOrientation = DeviceOrientationEvent & {
@@ -141,6 +142,7 @@ export function QiblaCompass({
   const alignmentStartRef = useRef<number | null>(null);
   const [stableAligned, setStableAligned] = useState(false);
   const [unstable, setUnstable] = useState(false);
+  const alignmentBuzzArmed = useRef(true);
   const bearing = useMemo(
     () => position ? qiblaBearing(position.lat, position.lng) : null,
     [position?.lat, position?.lng],
@@ -150,6 +152,22 @@ export function QiblaCompass({
   const relative = heading && bearing !== null ? normalize(bearing - heading.value) : null;
   const aligned = stableAligned && !unstable && sensorStatus === "live" && relative !== null &&
     Math.min(relative, 360 - relative) <= 10;
+
+  // A single haptic confirmation when a reliable compass first aligns.
+  // Re-arm only after moving clearly away from Qibla (12 degrees), preventing
+  // continual buzzing from small sensor oscillations near the target.
+  useEffect(() => {
+    if (!active || sensorStatus !== "live" || unstable || !heading || bearing === null) {
+      alignmentBuzzArmed.current = true;
+      return;
+    }
+    if (Math.abs(shortestChange(bearing, heading.value)) >= 12) {
+      alignmentBuzzArmed.current = true;
+    } else if (aligned && alignmentBuzzArmed.current) {
+      alignmentBuzzArmed.current = false;
+      signalQiblaAligned();
+    }
+  }, [active, aligned, bearing, heading, sensorStatus, unstable]);
 
   useEffect(() => {
     if (!active || !sensorEnabled) return;
@@ -335,6 +353,15 @@ export function QiblaCompass({
       setSensorStatus("denied");
     }
   };
+
+  // Android/other platforms without an explicit permission prompt can start
+  // the compass automatically upon opening this tab. On iOS the existing
+  // sensor permission button is still required by the operating system.
+  useEffect(() => {
+    if (!active || sensorEnabled || sensorStatus !== "idle" || !window.isSecureContext) return;
+    const ctor = (window as Window & { DeviceOrientationEvent?: PermissionOrientation }).DeviceOrientationEvent;
+    if (ctor && typeof ctor.requestPermission !== "function") void enableSensor();
+  }, [active, sensorEnabled, sensorStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sensorMessage =
     sensorStatus === "denied" ? t("qiblaSensorDenied")
