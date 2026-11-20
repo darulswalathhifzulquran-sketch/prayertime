@@ -321,11 +321,11 @@ function Index() {
                   <dl className="mt-2 grid grid-cols-2 gap-2">
                     <div className="min-w-0">
                       <dt className="text-[10px] text-muted-foreground">{t("geoLatitude")}</dt>
-                      <dd className="font-mono text-xs font-semibold tabular-nums" dir="ltr">{shownPosition.lat.toFixed(5)}° N</dd>
+                      <dd className="font-mono text-xs font-semibold tabular-nums" dir="ltr">{Math.abs(shownPosition.lat).toFixed(5)}° {shownPosition.lat >= 0 ? "N" : "S"}</dd>
                     </div>
                     <div className="min-w-0">
                       <dt className="text-[10px] text-muted-foreground">{t("geoLongitude")}</dt>
-                      <dd className="font-mono text-xs font-semibold tabular-nums" dir="ltr">{shownPosition.lng.toFixed(5)}° E</dd>
+                      <dd className="font-mono text-xs font-semibold tabular-nums" dir="ltr">{Math.abs(shownPosition.lng).toFixed(5)}° {shownPosition.lng >= 0 ? "E" : "W"}</dd>
                     </div>
                   </dl>
                   {gps.location && (
