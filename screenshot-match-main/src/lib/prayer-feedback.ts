@@ -29,7 +29,7 @@ function vibrate(pattern: number | number[]) {
 export function unlockPrayerBeep() {
   if (typeof window === "undefined") return;
   const audioWindow = window as Window & { webkitAudioContext?: typeof AudioContext };
-  const AudioCtor = audioWindow.AudioContext ?? audioWindow.webkitAudioContext;
+  const AudioCtor = (typeof AudioContext !== "undefined" ? AudioContext : undefined) ?? audioWindow.webkitAudioContext;
   if (!AudioCtor) return;
   try {
     if (!alertContext || alertContext.state === "closed") alertContext = new AudioCtor();
