@@ -1512,7 +1512,7 @@
   .awqaat-main > #stopwatch { max-width: 720px; }
 }
 
-@media (max-width: 859px) {
+@media (max-width: 640px) {
   .awqaat-header-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -1525,6 +1525,12 @@
   .awqaat-location-trigger { width: 100%; flex: 1 1 0%; }
   .awqaat-main { padding-top: clamp(14px, 3vw, 24px); }
   .awqaat-hero, .awqaat-prayer-panel { margin-inline: auto; }
+}
+@media (min-width: 641px) and (max-width: 859px) {
+  .awqaat-header-layout { gap: 10px; }
+  .awqaat-header-actions { gap: 5px; }
+  .awqaat-location-trigger { width: 180px; flex-basis: 180px; }
+  .awqaat-main { padding-top: 22px; }
 }
 
 @media (max-width: 540px) {
@@ -1597,3 +1603,17 @@
 @media (prefers-reduced-motion: reduce) {
   .awqaat-app { scroll-behavior: auto; }
 }
+
+/* Short iPhone landscape and split-screen devices: reclaim vertical space. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .awqaat-topbar { position: relative; }
+  .awqaat-header-layout { display:flex; flex-wrap:wrap; justify-content:space-between; }
+  .awqaat-header-brand { flex:0 1 auto; }
+  .awqaat-header-actions { flex:1 1 270px; }
+  .glass-bottom-nav, .dark .glass-bottom-nav { bottom: 3px; padding-block: 3px; }
+  .glass-bottom-nav .glass-nav-indicator { top: 3px; bottom: 3px; }
+  .glass-bottom-nav .glass-nav-item { min-height: 39px; gap: 1px; }
+  .glass-bottom-nav .glass-nav-item svg { width: 17px; height: 17px; }
+  .awqaat-main { padding-top: 12px; }
+}
+.awqaat-settings-panel { z-index: 70; }
