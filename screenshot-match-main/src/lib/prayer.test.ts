@@ -19,7 +19,7 @@ describe("prayer rules", () => {
 describe("independent times per selected district", () => {
   it("maps all 14 districts to different coordinates when asking the prayer API", () => {
     const urls = DISTRICTS.map((district) => apiUrl(
-      "24-10-2026", district.lat, district.lng, 1,
+      "24-10-2026", { id: district.id, lat: district.lat, lng: district.lng }, 1, 0,
     ));
     expect(new Set(urls).size).toBe(14);
   });
