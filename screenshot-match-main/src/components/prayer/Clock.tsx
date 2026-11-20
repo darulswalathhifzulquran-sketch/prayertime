@@ -7,12 +7,12 @@ export function Clock({ now, mode, h12, lang }: { now: Date; mode: "digital" | "
   const hh = h12 ? ((p.h + 11) % 12) + 1 : p.h;
   const pad = (n: number) => localizeDigits(String(n).padStart(2, "0"), lang);
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="awqaat-clock-face flex min-w-0 flex-col items-center gap-3">
       {mode === "digital" ? (
-        <div className="flex items-baseline gap-2 font-mono tabular-nums" dir="ltr">
-          <span className="text-6xl font-semibold sm:text-7xl">{pad(hh)}:{pad(p.mi)}</span>
-          <span className="text-3xl text-gold">{pad(p.s)}</span>
-          {h12 && <span className="ml-1 text-xl font-sans font-semibold text-gold">{p.h < 12 ? "AM" : "PM"}</span>}
+        <div className="awqaat-clock-display flex items-baseline gap-2 font-mono tabular-nums" dir="ltr">
+          <span className="awqaat-clock-primary font-semibold">{pad(hh)}:{pad(p.mi)}</span>
+          <span className="awqaat-clock-seconds text-gold">{pad(p.s)}</span>
+          {h12 && <span className="awqaat-clock-meridiem font-sans font-semibold text-gold">{p.h < 12 ? "AM" : "PM"}</span>}
         </div>
       ) : (
         <Analog h={p.h} m={p.mi} s={p.s} />
@@ -30,7 +30,7 @@ function Analog({ h, m, s }: { h: number; m: number; s: number }) {
     <line x1="100" y1="100" x2="100" y2={100 - len} strokeWidth={w} strokeLinecap="round" className={cls} transform={`rotate(${deg} 100 100)`} />
   );
   return (
-    <svg viewBox="0 0 200 200" className="h-48 w-48" role="img" aria-label="Analog clock">
+    <svg viewBox="0 0 200 200" className="awqaat-analog-clock h-48 w-48" role="img" aria-label="Analog clock">
       <circle cx="100" cy="100" r="94" className="fill-none stroke-gold" strokeWidth="2" />
       {Array.from({ length: 12 }).map((_, i) => (
         <line key={i} x1="100" y1="12" x2="100" y2={i % 3 ? 20 : 26} className="stroke-current" strokeWidth={i % 3 ? 2 : 3} transform={`rotate(${i * 30} 100 100)`} />

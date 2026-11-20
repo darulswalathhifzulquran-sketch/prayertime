@@ -1310,3 +1310,310 @@
   padding:12px 14px; border-left:3px solid #d18ddf;
   background:rgb(255 255 255 / 6%); border-radius:0 12px 12px 0;
 }
+
+
+/* JAMIA AWQAAT — adaptive layout across phones, tablets, laptops and desktops.
+   Presentation-only rules; GPS, calculation, Azan, compass and timer logic remain unchanged. */
+.awqaat-app {
+  width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+  padding-bottom: calc(98px + env(safe-area-inset-bottom, 0px));
+}
+.awqaat-app *, .awqaat-app *::before, .awqaat-app *::after { box-sizing: border-box; }
+.awqaat-topbar { width: 100%; min-width: 0; }
+.awqaat-header-layout { width: 100%; min-width: 0; }
+.awqaat-header-brand {
+  flex: 0 0 auto;
+  max-width: 100%;
+  white-space: nowrap;
+}
+.awqaat-header-brand .brand-awqaat {
+  min-width: 0;
+  font-size: clamp(1.05rem, 1.95vw, 1.65rem);
+  letter-spacing: clamp(.012em, .22vw, .055em);
+}
+.awqaat-header-actions {
+  display: flex;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  align-items: center;
+  min-width: 0;
+  gap: clamp(4px, .85vw, 11px);
+}
+.awqaat-header-actions > button {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  touch-action: manipulation;
+}
+.awqaat-location-trigger {
+  width: clamp(150px, 23vw, 260px);
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 260px;
+  overflow: hidden;
+  font-size: 12px;
+  touch-action: manipulation;
+}
+.awqaat-location-trigger > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.awqaat-main { min-width: 0; }
+.awqaat-main > section { min-width: 0; width: 100%; }
+.awqaat-main > section.hidden { display: none; }
+.awqaat-hero, .awqaat-prayer-panel { min-width: 0; width: min(100%, 576px); }
+.awqaat-hero > .relative, .awqaat-clock-block, .awqaat-clock-face { min-width: 0; }
+.awqaat-clock-block > p { overflow-wrap: anywhere; }
+.awqaat-clock-display {
+  max-width: 100%;
+  min-width: 0;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: clamp(3px, 1vw, 9px);
+  white-space: nowrap;
+}
+.awqaat-clock-primary {
+  font-size: clamp(2.15rem, 8.4vw, 4.45rem);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.03em;
+}
+.awqaat-clock-seconds { font-size: clamp(1.15rem, 3.45vw, 1.95rem); }
+.awqaat-clock-meridiem {
+  margin-left: clamp(0px, .45vw, 4px);
+  font-size: clamp(.72rem, 2.8vw, 1.15rem);
+}
+.awqaat-clock-face > div:last-child { max-width: 100%; line-height: 1.6; overflow-wrap: anywhere; }
+.awqaat-analog-clock { width: min(48vw, 192px); height: auto; aspect-ratio: 1; }
+.awqaat-countdown {
+  display: block;
+  max-width: 100%;
+  font-size: clamp(1.65rem, 7.45vw, 3.1rem);
+  line-height: 1.18;
+  letter-spacing: -.025em;
+  white-space: nowrap;
+}
+.awqaat-prayer-panel .glassy-prayer-row { min-width: 0; }
+.awqaat-prayer-panel .glassy-prayer-row > div:first-child { min-width: 0; }
+.awqaat-prayer-panel .glassy-prayer-row > div:last-child { min-width: 0; }
+.awqaat-prayer-panel .glassy-prayer-row > div:last-child p {
+  font-size: clamp(.93rem, 2.8vw, 1.48rem);
+  letter-spacing: -.028em;
+}
+.awqaat-prayer-panel .glassy-prayer-row h3 { font-size: clamp(1.22rem, 3.6vw, 1.5rem); }
+.awqaat-prayer-panel .glassy-prayer-row > div:first-child p { overflow-wrap: break-word; }
+.awqaat-stopwatch-panel, .awqaat-azan-panel { min-width: 0; }
+.awqaat-stopwatch-readout {
+  font-size: clamp(1.32rem, 6.35vw, 3rem);
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.036em;
+  white-space: nowrap;
+}
+#stopwatch .glass-tool-panel > .flex.flex-wrap.justify-center { min-width: 0; }
+#stopwatch .glass-tool-panel > .flex.flex-wrap.justify-center button { touch-action: manipulation; }
+.awqaat-azan-controls { min-width: 0; }
+.awqaat-azan-volume { flex: 1 1 110px; min-width: 74px; max-width: 200px; }
+.awqaat-recording-name { overflow-wrap: anywhere; }
+#azan .glass-tool-panel .glass-inner { min-width: 0; }
+#azan .glass-tool-panel .glass-inner > div { min-width: 0; }
+.glass-tool-photo { display: block; width: 100%; max-width: 100%; height: clamp(100px, 22vw, 132px); }
+#stopwatch .glass-tool-photo video { max-width: 100%; }
+#azan video.glass-tool-photo { object-position: center; }
+.qibla-section { width: 100%; min-width: 0; }
+.qibla-section .qibla-panel { min-width: 0; }
+.qibla-section .qibla-dial-frame { width: min(100%, 410px); }
+.qibla-section .qibla-data-grid { min-width: 0; }
+.qibla-section .qibla-stat { min-width: 0; }
+.qibla-section .qibla-stat strong {
+  max-width: 100%;
+  font-size: clamp(1.1rem, 4vw, 1.85rem);
+  overflow-wrap: anywhere;
+}
+.qibla-section .qibla-actions button { overflow-wrap: anywhere; touch-action: manipulation; }
+.awqaat-location-menu {
+  max-width: calc(100vw - 20px);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.awqaat-location-menu input {
+  min-width: 0;
+  font-size: max(16px, 1rem);
+}
+.awqaat-settings-panel {
+  width: min(100vw, 430px) !important;
+  max-width: 100vw !important;
+  min-width: 0;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.awqaat-settings-panel > .space-y-5 { min-width: 0; }
+.awqaat-settings-panel > .space-y-5 > div { min-width: 0; }
+.awqaat-settings-panel [role="combobox"] {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  text-align: start;
+}
+.awqaat-settings-panel [role="group"] { max-width: 100%; }
+.awqaat-settings-panel [role="group"] > button { min-width: 0; }
+.awqaat-settings-options { max-width: calc(100vw - 22px); }
+.awqaat-settings-options [role="option"] { white-space: normal; overflow-wrap: anywhere; }
+.glass-bottom-nav,
+.dark .glass-bottom-nav {
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+  width: min(calc(100% - 24px), 670px);
+  max-width: calc(100vw - 12px);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  padding-bottom: 9px;
+}
+.glass-bottom-nav .glass-nav-indicator {
+  bottom: 9px;
+  width: calc((100% - 20px) / 7);
+}
+.glass-bottom-nav .glass-nav-item {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 53px;
+  padding-inline: 1px;
+  touch-action: manipulation;
+}
+.glass-bottom-nav .glass-nav-item > span {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+  line-height: 1.25;
+}
+.awqaat-app footer { max-width: 100%; }
+.awqaat-app footer details { min-width: 0; max-width: 100%; }
+.awqaat-app footer details > div { overflow-wrap: anywhere; }
+
+@media (min-width: 860px) {
+  .awqaat-main:has(> #home:not(.hidden)) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: clamp(16px, 2vw, 28px);
+  }
+  .awqaat-main:has(> #home:not(.hidden)) > #home,
+  .awqaat-main:has(> #home:not(.hidden)) > #prayers {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    margin-block: 0;
+  }
+  .awqaat-main:has(> #home:not(.hidden)) > #home > .relative { justify-content: center; }
+  .awqaat-main > #qibla,
+  .awqaat-main > #azan,
+  .awqaat-main > #stopwatch { max-width: 720px; }
+}
+
+@media (max-width: 640px) {
+  .awqaat-header-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    padding-block: 9px;
+  }
+  .awqaat-header-brand { width: max-content; max-width: 100%; }
+  .awqaat-header-actions { width: 100%; justify-content: space-between; }
+  .awqaat-location-trigger { width: 100%; flex: 1 1 0%; }
+  .awqaat-main { padding-top: clamp(14px, 3vw, 24px); }
+  .awqaat-hero, .awqaat-prayer-panel { margin-inline: auto; }
+}
+@media (min-width: 641px) and (max-width: 859px) {
+  .awqaat-header-layout { gap: 10px; }
+  .awqaat-header-actions { gap: 5px; }
+  .awqaat-location-trigger { width: 180px; flex-basis: 180px; }
+  .awqaat-main { padding-top: 22px; }
+}
+
+@media (max-width: 540px) {
+  .awqaat-header-layout { padding-inline: 12px; }
+  .awqaat-header-brand .brand-awqaat { font-size: clamp(1.1rem, 5.5vw, 1.5rem); letter-spacing: .018em; }
+  .awqaat-brand-emblem { width: 31px; height: 31px; }
+  .awqaat-header-actions { gap: 3px; }
+  .awqaat-header-actions > button { width: 39px; height: 39px; flex-basis: 39px; }
+  .awqaat-location-trigger { min-height: 39px; padding-inline: 9px; font-size: 11px; }
+  .awqaat-main { padding: 15px clamp(9px, 3vw, 16px) 22px; }
+  .awqaat-hero, .awqaat-prayer-panel { border-radius: 23px; padding: clamp(13px, 3.7vw, 20px); }
+  .awqaat-hero > .relative { gap: 14px; }
+  .awqaat-clock-block > p:first-child { font-size: 11px; letter-spacing: .12em; }
+  .awqaat-clock-block > p:nth-child(2) { margin-bottom: 15px; font-size: 10px; line-height: 1.6; }
+  .awqaat-hero .glass-on-dark { padding: clamp(13px, 4vw, 20px); }
+  .awqaat-prayer-panel .glassy-prayer-row { gap: 7px; padding: 10px 11px; border-radius: 14px; }
+  .awqaat-prayer-panel .glassy-prayer-row > div:last-child { gap: 4px; }
+  .awqaat-prayer-panel .glassy-prayer-row > div:first-child p { font-size: 11px; line-height: 1.4; }
+  .awqaat-stopwatch-panel, .awqaat-azan-panel { padding: clamp(13px, 4vw, 22px); }
+  .awqaat-stopwatch-panel h3, .awqaat-azan-panel h3 { overflow-wrap: anywhere; }
+  .awqaat-azan-panel .glass-inner { padding: 11px 12px; }
+  .awqaat-azan-controls { justify-content: center; gap: 9px; }
+  .qibla-section .qibla-panel { padding: 13px; }
+  .qibla-section .qibla-data-grid { gap: 7px; }
+  .qibla-section .qibla-stat { padding: 11px 5px; border-radius: 13px; }
+  .qibla-section .qibla-actions { gap: 7px; }
+  .awqaat-settings-panel { padding: 12px; }
+  .awqaat-settings-panel > .space-y-5 { padding: 7px; }
+  .awqaat-settings-panel > .space-y-5 > div { padding: 11px; }
+  .awqaat-settings-panel > div:first-of-type { margin-right: 17px; }
+  .glass-bottom-nav, .dark .glass-bottom-nav {
+    width: calc(100% - 12px);
+    border-radius: 21px;
+    padding: 6px;
+    padding-bottom: 6px;
+    gap: 0;
+  }
+  .glass-bottom-nav .glass-nav-indicator {
+    left: 6px;
+    top: 6px;
+    bottom: 6px;
+    width: calc((100% - 12px) / 7);
+  }
+  .glass-bottom-nav .glass-nav-item {
+    min-height: 48px;
+    gap: 3px;
+    font-size: clamp(8px, 2.15vw, 10px);
+    letter-spacing: -.025em;
+    border-radius: 14px;
+  }
+  .glass-bottom-nav .glass-nav-item svg { width: 19px; height: 19px; }
+  .awqaat-app footer > div { justify-content: center; text-align: center; }
+  .awqaat-app footer details { text-align: center; }
+}
+
+@media (max-width: 365px) {
+  .awqaat-header-layout { padding-inline: 9px; }
+  .awqaat-header-actions > button { width: 36px; height: 38px; flex-basis: 36px; }
+  .awqaat-location-trigger { padding-inline: 6px; }
+  .awqaat-prayer-panel .glassy-prayer-row { padding-inline: 8px; }
+  .awqaat-prayer-panel .glassy-prayer-row > div:last-child p { font-size: .9rem; }
+  .awqaat-prayer-panel .glassy-prayer-row h3 { font-size: 1.12rem; }
+  .awqaat-stopwatch-readout { font-size: clamp(1.16rem, 6.05vw, 1.32rem); }
+  .qibla-section .qibla-actions { grid-template-columns: 1fr; }
+  .glass-bottom-nav .glass-nav-item { font-size: 8px; }
+  .glass-bottom-nav .glass-nav-item svg { width: 17px; height: 17px; }
+}
+
+/* Preserve accessibility and keyboard focus at all widths. */
+@media (prefers-reduced-motion: reduce) {
+  .awqaat-app { scroll-behavior: auto; }
+}
+
+/* Short iPhone landscape and split-screen devices: reclaim vertical space. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .awqaat-topbar { position: relative; }
+  .awqaat-header-layout { display:flex; flex-wrap:wrap; justify-content:space-between; }
+  .awqaat-header-brand { flex:0 1 auto; }
+  .awqaat-header-actions { flex:1 1 270px; }
+  .glass-bottom-nav, .dark .glass-bottom-nav { bottom: 3px; padding-block: 3px; }
+  .glass-bottom-nav .glass-nav-indicator { top: 3px; bottom: 3px; }
+  .glass-bottom-nav .glass-nav-item { min-height: 39px; gap: 1px; }
+  .glass-bottom-nav .glass-nav-item svg { width: 17px; height: 17px; }
+  .awqaat-main { padding-top: 12px; }
+}
+.awqaat-settings-panel { z-index: 70; }
