@@ -1,0 +1,46 @@
+name: Import original AWQAAT animation videos
+on:
+  push:
+    paths:
+      - .github/workflows/import-awqaat-videos.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-videos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout existing website
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: true
+
+      - name: Download and verify the two user-provided MP4 assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p screenshot-match-main/public/videos
+          curl --fail --location --silent --show-error --retry 3 --max-time 60 \
+            "https://d2ol7oe51mr4n9.cloudfront.net/user_3JYNl2hCPmpaieDc5ea98RVQw88/08124444-4bfa-4cc5-8c3d-7fa93671ca82.mp4" \
+            --output screenshot-match-main/public/videos/stopwatch-animation.mp4
+          curl --fail --location --silent --show-error --retry 3 --max-time 60 \
+            "https://d2ol7oe51mr4n9.cloudfront.net/user_3JYNl2hCPmpaieDc5ea98RVQw88/0c84f17e-8591-47b2-9259-4598438711ec.mp4" \
+            --output screenshot-match-main/public/videos/azan-minaret-animation.mp4
+          echo "62aeea0fe57717dc8e445ae6d06ed8ffa4bc2ea3856a73df98f851c84602b3b0  screenshot-match-main/public/videos/stopwatch-animation.mp4" | sha256sum --check
+          echo "5077792fcae766274c7e5997f12c10e387708d4d492563a926a892dbd97a55aa  screenshot-match-main/public/videos/azan-minaret-animation.mp4" | sha256sum --check
+
+      - name: Commit original videos to website repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add screenshot-match-main/public/videos/*.mp4
+          if git diff --cached --quiet; then
+            echo "Original MP4 assets already committed"
+            exit 0
+          fi
+          git commit -m "Add original Stopwatch and Azan animation videos"
+          git push
