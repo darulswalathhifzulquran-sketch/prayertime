@@ -143,7 +143,7 @@ export function PrayerNotificationsSetup({
           <p className="text-sm font-semibold text-white">Dhuhr at 12:58</p>
           <p className="text-xs text-white/85">It's time to pray!</p>
         </div>
-        <span className="text-[10px] text-blue-200">preview</span>
+        <span className="text-[10px] text-blue-200">{t("pushPreview")}</span>
       </div>
       {!supported ? (
         <p className="mt-3 text-xs text-amber-200">{t("pushUnsupported")}</p>
@@ -153,8 +153,8 @@ export function PrayerNotificationsSetup({
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {status === "background" ? (
             <>
-              <p className="mr-auto inline-flex items-center gap-1 text-xs text-emerald-200"><CheckCircle2 size={15}/>{t("pushGranted")}</p>
-              <Button variant="outline" size="sm" onClick={() => void disable()}>Disable</Button>
+              <p className="mr-auto inline-flex items-center gap-1 text-xs text-emerald-200"><CheckCircle2 size={15}/>{t("pushBackgroundActive")}</p>
+              <Button variant="outline" size="sm" onClick={() => void disable()}>{t("pushDisable")}</Button>
             </>
           ) : (
             <Button size="sm" onClick={() => void grant()} disabled={status === "enabling"}>
@@ -167,7 +167,7 @@ export function PrayerNotificationsSetup({
       {!installed && <p className="mt-3 text-[11px] leading-relaxed text-blue-100">{t("pushInstallHint")}</p>}
       {feedback && <p className="mt-3 text-[11px] text-amber-200">{feedback}</p>}
       {!ready && <p className="mt-3 text-[11px] leading-relaxed text-blue-200/85">{t("pushBackendMissing")}</p>}
-      <p className="mt-2 text-[10px] leading-relaxed text-blue-200/65">Background opt-in stores an approximate location and push subscription. Lock-screen presentation, sound and delivery are controlled by your phone.</p>
+      <p className="mt-2 text-[10px] leading-relaxed text-blue-200/65">{t("pushPrivacy")}</p>
     </section>
   );
 }
