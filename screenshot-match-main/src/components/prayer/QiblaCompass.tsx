@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { localizeDigits, tr, type Lang } from "@/lib/i18n";
 import { signalQiblaAligned } from "@/lib/prayer-feedback";
 
-type Position = { lat: number; lng: number; source: "gps" | "district" | "address" };
+type Position = { lat: number; lng: number; altitude?: number | null; source: "gps" | "district" | "address" };
 type CompassOrientation = DeviceOrientationEvent & {
   webkitCompassHeading?: number;
   webkitCompassAccuracy?: number;
@@ -429,6 +429,7 @@ export function QiblaCompass({
         {position && (
           <div className="qibla-ios-coordinates" dir="ltr">
             {position.lat.toFixed(5)}°, {position.lng.toFixed(5)}°
+            {position.altitude !== undefined && position.altitude !== null && <span> · {t("qiblaElevation")}: {Math.round(position.altitude)} m</span>}
             {heading?.accuracy !== undefined && <span> · {t("qiblaSensorAccuracy")} ±{Math.round(heading.accuracy)}°</span>}
           </div>
         )}
