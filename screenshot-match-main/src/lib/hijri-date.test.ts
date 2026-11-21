@@ -26,6 +26,23 @@ describe("Hijri date for JAMIA AWQAAT", () => {
       .not.toBe(formatHijriDate(before, "en", "18:10"));
   });
 
+  it("uses full month names with clear Arabic numerals and AH", () => {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      calendar: "islamic-umalqura", timeZone: "Asia/Kolkata",
+      day: "numeric", month: "numeric", year: "numeric",
+    });
+    // Find a date in Jumada Al-Akhirah without relying on an external sighting.
+    const date = Array.from({ length: 40 }, (_, i) =>
+      new Date(Date.UTC(2026, 10, 1 + i, 6))
+    ).find((day) => {
+      const parts = formatter.formatToParts(day);
+      return parts.find(p => p.type === "month")?.value === "6" &&
+        parts.find(p => p.type === "day")?.value === "11";
+    });
+    expect(date).toBeDefined();
+    expect(formatHijriDate(date!, "en", undefined)).toBe("Jumada Al-Akhirah 11, 1448 AH");
+  });
+
   it("correctly interprets the Indian timezone even on UTC-hosted servers", () => {
     const nearMaghrib = new Date("2026-11-21T12:45:00Z"); // 18:15 IST
     expect(hijriDisplayInstant(nearMaghrib, "18:10").getTime())

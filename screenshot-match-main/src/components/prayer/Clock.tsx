@@ -1,5 +1,5 @@
 import { istParts, TZ } from "@/lib/prayer";
-import { MoonStar } from "lucide-react";
+import { CalendarDays, MoonStar } from "lucide-react";
 import { formatHijriDate, type HijriAdjustment } from "@/lib/hijri-date";
 import { localizeDigits, tr, type Lang } from "@/lib/i18n";
 
@@ -24,13 +24,16 @@ export function Clock({ now, mode, h12, lang, maghrib, hijriCorrection }: { now:
       {mode === "analog" && (
         <div className="font-mono text-lg tabular-nums" dir="ltr">{pad(hh)}:{pad(p.mi)}:{pad(p.s)} {h12 ? (p.h < 12 ? "AM" : "PM") : ""}</div>
       )}
-      <div className="text-sm opacity-80" dir="auto">{localizeDigits(date, lang)}</div>
-      <div className="awqaat-hijri-date mt-1 inline-flex max-w-full flex-col items-center gap-1.5 rounded-2xl border border-amber-200/30 bg-white/10 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.13)] backdrop-blur-lg">
-        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.18em] text-amber-200">
-          <MoonStar className="h-3.5 w-3.5" aria-hidden="true" />{t("hijriLabel")}
+      <div className="awqaat-hijri-date awqaat-dual-date" lang={lang}>
+        <div className="awqaat-date-gregorian" dir="auto">
+          <CalendarDays size={15} aria-hidden="true" />
+          <span>{localizeDigits(date, lang)}</span>
+        </div>
+        <div className="awqaat-date-divider" aria-hidden="true" />
+        <span className="awqaat-date-hijri-label" dir="auto">
+          <MoonStar size={14} aria-hidden="true" />{t("hijriLabel")}
         </span>
-        <span className="font-display text-base font-semibold leading-snug text-white sm:text-lg" dir="auto">{hijriDate}</span>
-        <span className="text-center text-[10px] leading-relaxed text-white/70" dir="auto">{t("hijriEstimate")}</span>
+        <span className="awqaat-date-hijri-value" dir="auto">{hijriDate}</span>
       </div>
     </div>
   );
