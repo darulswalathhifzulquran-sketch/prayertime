@@ -1259,7 +1259,7 @@
 }
 .qibla-rose-rotation, .qibla-needle-rotation {
   transform-origin: 180px 180px;
-  transition: transform 230ms cubic-bezier(.2, .72, .27, 1);
+  transition: transform 25ms linear;
   will-change: transform;
 }
 .qibla-photo-legend {

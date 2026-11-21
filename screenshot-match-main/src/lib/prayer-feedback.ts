@@ -17,11 +17,12 @@ export function prayerDueThisMinute(now: Date, timings: Timings): PrayerKey | nu
 }
 
 function vibrate(pattern: number | number[]) {
-  if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
+  if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return false;
   try {
-    navigator.vibrate(pattern);
+    return navigator.vibrate(pattern);
   } catch {
     // Some devices block vibration, even when the browser exposes the API.
+    return false;
   }
 }
 
@@ -44,17 +45,18 @@ export function unlockPrayerBeep() {
 }
 
 /** A short, clear two-tone beep without touching the existing Azan recording. */
-function beep() {
+function beep(single = false) {
   const ctx = alertContext;
   if (!ctx || ctx.state !== "running") return;
   const origin = ctx.currentTime + 0.025;
-  for (const [delay, frequency] of [[0, 740], [0.25, 925]] as const) {
+  const notes = single ? [[0, 925]] as const : [[0, 740], [0.25, 925]] as const;
+  for (const [delay, frequency] of notes) {
     const oscillator = ctx.createOscillator();
     const gain = ctx.createGain();
     oscillator.type = "sine";
     oscillator.frequency.setValueAtTime(frequency, origin + delay);
     gain.gain.setValueAtTime(0.001, origin + delay);
-    gain.gain.exponentialRampToValueAtTime(0.13, origin + delay + 0.025);
+    gain.gain.exponentialRampToValueAtTime(single ? 0.055 : 0.13, origin + delay + 0.025);
     gain.gain.exponentialRampToValueAtTime(0.001, origin + delay + 0.20);
     oscillator.connect(gain);
     gain.connect(ctx.destination);
@@ -69,7 +71,8 @@ export function signalPrayerTime() {
 }
 
 export function signalQiblaAligned() {
-  vibrate([160, 80, 210]);
+  // A short confirmation pulse; use a quiet tone if the browser rejects haptics.
+  if (!vibrate(180)) beep(true);
 }
 
 export function signalReminderChanged() {
