@@ -1792,3 +1792,32 @@
   .qibla-ios .qibla-data-grid { gap: 7px; }
   .qibla-ios .qibla-stat { padding: 10px 6px; }
 }
+
+
+/* Prayer notifications: native iOS-style visual preview (system owns Lock Screen). */
+.awqaat-push-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(151, 186, 228, .34);
+  background:
+    radial-gradient(ellipse at 5% 0%, rgba(44, 107, 171, .47), transparent 60%),
+    linear-gradient(145deg, #092345, #0a1a33 58%, #07162d);
+  box-shadow: 0 17px 43px -23px rgba(0,0,0,.7), inset 0 1px rgba(255,255,255,.17);
+}
+.awqaat-push-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(241, 215, 150, .26);
+  background: rgba(8, 27, 56, .8);
+  color: #f0ca83;
+}
+.awqaat-push-preview {
+  background: rgba(115, 167, 228, .30);
+  border: 1px solid rgba(200, 225, 253, .2);
+  backdrop-filter: blur(14px);
+}
+.awqaat-push-card button { touch-action: manipulation; }
