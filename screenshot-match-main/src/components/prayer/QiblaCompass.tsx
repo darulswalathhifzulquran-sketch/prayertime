@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CheckCircle2, Compass, LocateFixed, MapPin, RotateCw, ShieldAlert } from "lucide-react";
+import { CheckCircle2, Compass, LocateFixed, RotateCw, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { localizeDigits, tr, type Lang } from "@/lib/i18n";
 import { signalQiblaAligned } from "@/lib/prayer-feedback";
 
-type Position = { lat: number; lng: number; altitude?: number | null; source: "gps" | "district" | "address" };
+type Position = { lat: number; lng: number };
 type CompassOrientation = DeviceOrientationEvent & {
   webkitCompassHeading?: number;
   webkitCompassAccuracy?: number;
@@ -111,19 +111,56 @@ function CompassDial({ bearing, heading, lang, alt }: {
   );
 }
 
-export function QiblaCompass({
-  active, lang, position, locationName, gpsEnabled, gpsLocating, gpsError, onGpsClick,
-}: {
-  active: boolean;
-  lang: Lang;
-  position: Position | null;
-  locationName: string;
-  gpsEnabled: boolean;
-  gpsLocating: boolean;
-  gpsError: string;
-  onGpsClick: () => void;
-}) {
+export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) {
   const t = tr(lang);
+  // Compass positioning is intentionally independent of prayer settings.
+  // Coordinates are used only in memory, and only while this tab is open.
+  const [position, setPosition] = useState<Position | null>(null);
+  const [gpsEnabled, setGpsEnabled] = useState(false);
+  const [gpsLocating, setGpsLocating] = useState(false);
+  const [gpsFailed, setGpsFailed] = useState(false);
+  const [gpsAttempt, setGpsAttempt] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    let cancelled = false;
+    // Automatically start on devices that already granted location permission.
+    navigator.permissions?.query({ name: "geolocation" }).then((permission) => {
+      if (!cancelled && permission.state === "granted") setGpsEnabled(true);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [active]);
+  useEffect(() => {
+    if (!active || !gpsEnabled) return;
+    if (!navigator.geolocation) { setGpsFailed(true); setGpsLocating(false); return; }
+    let cancelled = false;
+    setGpsLocating(true);
+    setGpsFailed(false);
+    const watch = navigator.geolocation.watchPosition(({ coords }) => {
+      if (cancelled) return;
+      if (!Number.isFinite(coords.latitude) || !Number.isFinite(coords.longitude) ||
+          Math.abs(coords.latitude) > 90 || Math.abs(coords.longitude) > 180) {
+        setPosition(null);
+        setGpsFailed(true);
+      } else {
+        setPosition({ lat: coords.latitude, lng: coords.longitude });
+        setGpsFailed(false);
+      }
+      setGpsLocating(false);
+    }, () => {
+      if (cancelled) return;
+      setPosition(null);
+      setGpsFailed(true);
+      setGpsLocating(false);
+    }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+    return () => {
+      cancelled = true;
+      navigator.geolocation.clearWatch(watch);
+    };
+  }, [active, gpsEnabled, gpsAttempt]);
+  const requestCompassPosition = () => {
+    setGpsEnabled(true);
+    setGpsAttempt((attempt) => attempt + 1);
+  };
   const [sensorEnabled, setSensorEnabled] = useState(false);
   const [sensorStatus, setSensorStatus] = useState<SensorStatus>("idle");
   const [heading, setHeading] = useState<Heading | null>(null);
@@ -426,31 +463,22 @@ export function QiblaCompass({
           </div>
         </div>
 
-        {position && (
-          <div className="qibla-ios-coordinates" dir="ltr">
-            {position.lat.toFixed(5)}°, {position.lng.toFixed(5)}°
-            {position.altitude !== undefined && position.altitude !== null && <span> · {t("qiblaElevation")}: {Math.round(position.altitude)} m</span>}
-            {heading?.accuracy !== undefined && <span> · {t("qiblaSensorAccuracy")} ±{Math.round(heading.accuracy)}°</span>}
-          </div>
+        {heading?.accuracy !== undefined && (
+          <p className="qibla-ios-coordinates" dir="auto">{t("qiblaSensorAccuracy")} ±{Math.round(heading.accuracy)}°</p>
         )}
-        <div className="qibla-location-line" dir="auto">
-          <MapPin size={16} aria-hidden="true"/>
-          <span>{locationName}</span>
-          <span className="qibla-source">
-            {position?.source === "gps" ? "GPS" : position?.source === "address" ?
-              t("qiblaAddressSource") : t("qiblaDistrictSource")}
-          </span>
-        </div>
-
-        {!position && <p className="qibla-note" role="status"><ShieldAlert size={16}/>{t("qiblaLocationNeeded")}</p>}
-        {gpsError && !position && <p className="qibla-note" role="alert">{gpsError}</p>}
+        {!position && (
+          <p className="qibla-note" role="status" dir="auto">
+            <ShieldAlert size={16}/>{gpsFailed ? t("qiblaGpsUnavailable") : gpsLocating ? t("gpsRequest") : t("qiblaGpsRequired")}
+          </p>
+        )}
         <div className="qibla-actions">
-          <Button type="button" onClick={onGpsClick}
-            variant={gpsEnabled ? "outline" : "default"} disabled={gpsLocating}
-            className="qibla-gps-button rounded-xl">
-            <LocateFixed size={17} className={gpsLocating ? "animate-pulse" : ""}/>
-            {gpsLocating ? t("gpsRequest") : gpsEnabled ? t("qiblaGpsOn") : t("qiblaUseGps")}
-          </Button>
+          {!position && (
+            <Button type="button" onClick={requestCompassPosition}
+              variant="default" disabled={gpsLocating} className="qibla-gps-button rounded-xl">
+              <LocateFixed size={17} className={gpsLocating ? "animate-pulse" : ""}/>
+              {gpsLocating ? t("gpsRequest") : t("qiblaUseGps")}
+            </Button>
+          )}
           <Button type="button" variant="outline" onClick={enableSensor}
             disabled={sensorStatus === "requesting" || sensorStatus === "waiting" || sensorStatus === "live"}
             className="qibla-sensor-button rounded-xl">
