@@ -85,6 +85,7 @@ const dict = {
   qiblaHoldFlat: { en: "Keep the phone flat and away from magnets.", ml: "ഫോൺ നിരപ്പായി പിടിച്ച് കാന്തങ്ങളിൽ നിന്ന് അകറ്റുക.", ar: "أبق الهاتف مستويًا وبعيدًا عن المغناطيس." },
   qiblaMagneticNote: { en: "iPhone compass heading may use magnetic north; Qibla bearing is referenced to true north. Local magnetic variation can affect alignment.", ml: "iPhone compass കാന്തികവടക്ക് ഉപയോഗിച്ചേക്കാം; ഖിബ്‌ല bearing യഥാർത്ഥ വടക്ക് അടിസ്ഥാനമാക്കിയാണ്. പ്രാദേശിക കാന്തിക വ്യത്യാസം ബാധിക്കാം.", ar: "قد تعتمد بوصلة iPhone على الشمال المغناطيسي، أما زاوية القبلة فبالنسبة للشمال الحقيقي؛ ويؤثر الانحراف المغناطيسي المحلي." },
   qiblaSensorAccuracy: { en: "Sensor accuracy", ml: "സെൻസർ കൃത്യത", ar: "دقة المستشعر" },
+  qiblaElevation: { en: "Elevation", ml: "ഉയരം", ar: "الارتفاع" },
   theme: { en: "Theme", ml: "തീം", ar: "المظهر" },
   light: { en: "Light", ml: "ലൈറ്റ്", ar: "فاتح" },
   dark: { en: "Dark", ml: "ഡാർക്ക്", ar: "داكن" },
