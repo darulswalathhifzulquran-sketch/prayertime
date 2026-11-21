@@ -428,16 +428,13 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[.2em] text-fuchsia-200">AWQAAT</p>
             <h2 className="font-display text-2xl font-semibold" dir="auto">{t("qiblaTitle")}</h2>
-            <p className="mt-1 text-xs text-fuchsia-100/80" dir="auto">{t("qiblaSubtitle")}</p>
           </div>
           <span className="qibla-heading-icon" aria-hidden="true"><Compass size={25}/></span>
         </div>
 
         <div className="qibla-ios-heading" aria-live="off">
           <span className="qibla-ios-heading-number" dir="ltr">{heading ? localizeDigits(String(Math.round(heading.value)), lang) + "°" : "—°"}</span>
-          <span className="qibla-ios-heading-label" dir="auto">
-            {t("qiblaHeadingCardinal")} · {heading ? ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(heading.value / 45) % 8] : t("qiblaStatic")}
-          </span>
+
         </div>
         <div className="qibla-dial-frame">
           <div className="qibla-vector-wrap">
@@ -495,7 +492,7 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
         {sensorStatus !== "idle" && sensorStatus !== "live" && sensorStatus !== "relative-only" && (
           <p className="qibla-guidance" role="status" aria-live="polite" dir="auto">{sensorMessage}</p>
         )}
-        <p className="qibla-ios-compass-caution" dir="auto">{tilted ? t("qiblaHoldFlat") : t("qiblaMagneticNote")}</p>
+        {tilted && <p className="mt-3 text-center text-xs text-amber-200" role="status" dir="auto">{t("qiblaHoldFlat")}</p>}
         {unstable && (
           <p className="qibla-note" role="alert"><ShieldAlert size={16}/>{t("qiblaSensorUnstable")}</p>
         )}
