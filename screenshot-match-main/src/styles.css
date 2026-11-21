@@ -1617,3 +1617,43 @@
   .awqaat-main { padding-top: 12px; }
 }
 .awqaat-settings-panel { z-index: 70; }
+
+/* Location picker: the generic header-icon rule must not shrink this wide
+   picker to 40px. Match the full-size original toolbar shown on Home/Prayer. */
+.awqaat-header-actions > button.awqaat-location-trigger {
+  flex: 0 0 240px;
+  width: 240px;
+  min-width: 200px;
+  max-width: 100%;
+  justify-content: space-between;
+  overflow: hidden;
+  padding-inline: 14px;
+  font-size: 12px;
+}
+.awqaat-header-actions > button.awqaat-location-trigger > span {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.awqaat-header-actions > button.awqaat-location-trigger > svg {
+  flex: 0 0 auto;
+}
+@media (min-width: 641px) and (max-width: 859px) {
+  .awqaat-header-actions > button.awqaat-location-trigger {
+    flex: 0 0 190px;
+    width: 190px;
+    min-width: 0;
+  }
+}
+@media (max-width: 640px) {
+  .awqaat-header-actions > button.awqaat-location-trigger {
+    flex: 1 1 0%;
+    width: auto;
+    min-width: 0;
+    padding-inline: 9px;
+    font-size: 11px;
+  }
+}
