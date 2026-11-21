@@ -226,7 +226,7 @@ function Index() {
   // Never substitute a district's coordinates for a manually entered city.
   // City and address-only districts use the API's verified-in-India coordinates.
   const qiblaPosition = gps.location
-    ? { lat: gps.location.latitude, lng: gps.location.longitude, source: "gps" as const }
+    ? { lat: gps.location.latitude, lng: gps.location.longitude, altitude: gps.location.altitude, source: "gps" as const }
     : city
       ? pt.resolvedCoordinates
         ? { lat: pt.resolvedCoordinates.lat, lng: pt.resolvedCoordinates.lng, source: "address" as const }
