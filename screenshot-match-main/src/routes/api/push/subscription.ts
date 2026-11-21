@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { pushConfigured, savePushSubscription, deletePushSubscription, validatePushRecord } from "@/lib/prayer-push.server";
+import { pushConfigured, savePushSubscription, deletePushSubscription, validatePushRecord, allowPushRegistration } from "@/lib/prayer-push.server";
 
 function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
@@ -24,6 +24,11 @@ export const Route = createFileRoute("/api/push/subscription")({
         const record = validatePushRecord(body);
         if (!record) return Response.json({ error: "Invalid push subscription" }, { status: 400 });
         try {
+          const caller = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+            request.headers.get("x-real-ip") || "unknown";
+          if (!await allowPushRegistration(caller)) {
+            return Response.json({ error: "Too many subscriptions" }, { status: 429 });
+          }
           await savePushSubscription(record);
           return Response.json({ enabled: true }, { headers: { "Cache-Control": "no-store" } });
         } catch { return Response.json({ error: "Push storage unavailable" }, { status: 503 }); }
