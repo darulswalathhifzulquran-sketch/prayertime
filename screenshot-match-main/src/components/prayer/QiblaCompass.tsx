@@ -277,10 +277,7 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
       if (state.buzz) signalQiblaAligned();
 
       headingRef.current = next;
-      if (!prev || Math.abs(nextContinuous - prev.continuous) >= 0.025 ||
-          prev.display !== next.display || prev.accuracy !== accuracy) {
-        setHeading(next);
-      }
+      setHeading(next);
       setSensorStatus("live");
     };
     window.addEventListener("deviceorientation", onOrientation);
