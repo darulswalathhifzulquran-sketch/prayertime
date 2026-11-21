@@ -9,8 +9,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Clock } from "@/components/prayer/Clock";
+import { formatHijriDate, type HijriAdjustment } from "@/lib/hijri-date";
 import { Stopwatch } from "@/components/prayer/Stopwatch";
 import { QiblaCompass } from "@/components/prayer/QiblaCompass";
+import { PrayerNotificationsSetup } from "@/components/prayer/PrayerNotificationsSetup";
+import { registerPrayerServiceWorker, showForegroundPrayerNotification } from "@/lib/prayer-notifications";
 import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
@@ -65,6 +68,7 @@ function Index() {
   const [school, setSchool] = usePersisted<AsrSchool>("kpt:asrSchool", 0);
   const [h12, setH12] = usePersisted("kpt:h12", true);
   const [clockMode, setClockMode] = usePersisted<"digital" | "analog">("kpt:clock", "digital");
+  const [hijriCorrection, setHijriCorrection] = usePersisted<HijriAdjustment>("kpt:hijri-adjustment", 0);
   const [theme, setTheme] = usePersisted<"light" | "dark">("kpt:theme", "light");
   const [lang, setLang] = usePersisted<Lang>("kpt:lang", "en");
   const t = tr(lang);
@@ -119,6 +123,8 @@ function Index() {
         : pt.resolvedCoordinates;
   const lastFeedbackRef = useRef<string | null>(null);
 
+  useEffect(() => { void registerPrayerServiceWorker(); }, []);
+
   // A browser permits audible feedback after the user has interacted with the
   // installed web app. No new preference, switch or notification prompt needed.
   useEffect(() => {
@@ -148,7 +154,8 @@ function Index() {
       // Feedback still runs once per page session if storage is unavailable.
     }
     signalPrayerTime();
-  }, [now, displayedTimings, pt.dateKey]);
+    void showForegroundPrayerNotification(prayer, formatTime(displayedTimings[prayer], h12), istDateKey(now));
+  }, [now, displayedTimings, pt.dateKey, h12]);
 
   useEffect(() => { document.documentElement.classList.toggle("dark", theme === "dark"); }, [theme]);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
@@ -219,7 +226,7 @@ function Index() {
   // Never substitute a district's coordinates for a manually entered city.
   // City and address-only districts use the API's verified-in-India coordinates.
   const qiblaPosition = gps.location
-    ? { lat: gps.location.latitude, lng: gps.location.longitude, source: "gps" as const }
+    ? { lat: gps.location.latitude, lng: gps.location.longitude, altitude: gps.location.altitude, source: "gps" as const }
     : city
       ? pt.resolvedCoordinates
         ? { lat: pt.resolvedCoordinates.lat, lng: pt.resolvedCoordinates.lng, source: "address" as const }
@@ -394,6 +401,14 @@ function Index() {
                     <ToggleGroupItem value="digital">{t("digital")}</ToggleGroupItem><ToggleGroupItem value="analog">{t("analog")}</ToggleGroupItem>
                   </ToggleGroup>
                 </Field>
+                <Field label={t("hijriCorrection")}>
+                  <ToggleGroup type="single" value={String(hijriCorrection)} onValueChange={(v) => { if (v) setHijriCorrection(Number(v) as HijriAdjustment); }}>
+                    <ToggleGroupItem value="-1">{t("hijriMinusDay")}</ToggleGroupItem>
+                    <ToggleGroupItem value="0">{t("hijriNoShift")}</ToggleGroupItem>
+                    <ToggleGroupItem value="1">{t("hijriPlusDay")}</ToggleGroupItem>
+                  </ToggleGroup>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("hijriCorrectionInfo")}</p>
+                </Field>
                 <Field label={t("theme")}>
                   <ToggleGroup type="single" value={theme} onValueChange={(v) => v && setTheme(v as "light" | "dark")}>
                     <ToggleGroupItem value="light">{t("light")}</ToggleGroupItem><ToggleGroupItem value="dark">{t("dark")}</ToggleGroupItem>
@@ -431,7 +446,7 @@ function Index() {
                     ? `${state.name} · ${district.lat.toFixed(4)}°N, ${district.lng.toFixed(4)}°E · ${district.mode === "hq" ? t("hqReference") : t("districtCentre")}`
                     : `${district.name}, ${state.name} · ${t("addressEstimate")}`, lang)}
               </p>
-              {now ? <Clock now={now} mode={clockMode} h12={h12} lang={lang} /> : <div className="h-24" />}
+              {now ? <Clock now={now} mode={clockMode} h12={h12} lang={lang} maghrib={displayedTimings?.Maghrib} hijriCorrection={hijriCorrection} /> : <div className="h-24" />}
             </div>
             <div className="glass-on-dark rounded-3xl border border-white/25 p-5 text-center text-white backdrop-blur-xl">
               <p className="text-sm uppercase tracking-widest text-gold" dir="auto">{t("next")}</p>
@@ -453,7 +468,10 @@ function Index() {
 
         <section id="prayers" className={cn("glass-shell awqaat-prayer-panel scroll-mt-24 mx-auto max-w-xl rounded-[2rem] p-4 sm:p-6", !showHome && "hidden")}>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-            <h2 className="font-display text-2xl font-semibold" dir="auto">{t("todays")}</h2>
+            <div>
+              <h2 className="font-display text-2xl font-semibold" dir="auto">{t("todays")}</h2>
+              {now && <p className="mt-1.5 text-xs font-medium text-amber-200/85" dir="auto">{t("hijriLabel")}: {formatHijriDate(now, lang, displayedTimings?.Maghrib, hijriCorrection)}</p>}
+            </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {pt.fetchedAt && <span>{t("updated")}: {localizeDigits(new Date(pt.fetchedAt).toLocaleString(lang === "ar" ? "ar-SA-u-ca-gregory-nu-arab" : "en-IN", { timeZone: TZ }), lang)}{pt.fromCache ? ` (${t("cached")})` : ""}</span>}
               <Button variant="ghost" size="sm" onClick={pt.reload} disabled={pt.loading}><RefreshCw className={cn("h-3 w-3", pt.loading && "animate-spin")} />{t("retry")}</Button>
@@ -517,6 +535,11 @@ function Index() {
             now={now}
             timings={displayedTimings}
           />
+          {activeTab === "reminder" && (
+            <div className="mt-4">
+              <PrayerNotificationsSetup lang={lang} position={qiblaPosition} method={method} school={school} />
+            </div>
+          )}
         </section>
         <section id="stopwatch" className={cn("mx-auto max-w-xl scroll-mt-24", activeTab !== "stopwatch" && "hidden")}>
           <Stopwatch title={t("stopwatch")} lang={lang} />

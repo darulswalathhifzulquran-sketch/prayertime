@@ -4,6 +4,8 @@ export type DeviceLocation = {
   latitude: number;
   longitude: number;
   accuracy: number; // Browser-reported uncertainty radius, in meters.
+  altitude: number | null; // Optional GPS elevation above sea level.
+  altitudeAccuracy: number | null;
   updatedAt: number;
 };
 
@@ -37,7 +39,7 @@ export function useDeviceLocation() {
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
+        const { latitude, longitude, accuracy, altitude, altitudeAccuracy } = position.coords;
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude) ||
             !Number.isFinite(accuracy) || Math.abs(latitude) > 90 ||
             Math.abs(longitude) > 180) {
@@ -49,6 +51,8 @@ export function useDeviceLocation() {
           latitude,
           longitude,
           accuracy,
+          altitude: typeof altitude === "number" && Number.isFinite(altitude) ? altitude : null,
+          altitudeAccuracy: typeof altitudeAccuracy === "number" && Number.isFinite(altitudeAccuracy) ? altitudeAccuracy : null,
           updatedAt: position.timestamp,
         });
         setError("");

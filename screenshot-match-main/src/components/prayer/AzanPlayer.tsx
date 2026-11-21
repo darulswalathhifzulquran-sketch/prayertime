@@ -172,7 +172,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
         const id = `kpt:fired:${istDateKey(now)}:${k}`;
         if (localStorage.getItem(id)) continue;
         localStorage.setItem(id, "1");
-        if ("Notification" in window && Notification.permission === "granted") new Notification(`${k} — time for prayer`);
+        // Notifications are delivered by the shared service worker scheduler.
         if (unlocked) void play(k === "Fajr" && fajrSrc ? fajrSrc : standardSrc);
       }
     }
