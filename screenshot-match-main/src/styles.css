@@ -1882,41 +1882,41 @@
 .awqaat-dual-date[lang="ml"] .awqaat-date-hijri-label { letter-spacing: 0; }
 
 
-/* AWQAAT — polished violet Settings and high-contrast glass navigation. */
+/* AWQAAT Settings — midnight sapphire, champagne gold and warm ivory. */
 .awqaat-settings-panel,
 .dark .awqaat-settings-panel {
-  --settings-ink: #42204f;
-  --settings-subtle: #694d78;
-  --settings-surface: linear-gradient(145deg, #fffafd, #f2e8fa);
-  --settings-card: linear-gradient(145deg, rgb(255 255 255 / 90%), rgb(241 224 250 / 78%));
-  --settings-border: rgb(151 98 179 / 26%);
+  --settings-ink: #20354a;
+  --settings-subtle: #526579;
+  --settings-surface: linear-gradient(155deg, #fffdf7, #e9eef3 100%);
+  --settings-card: linear-gradient(145deg, rgb(255 255 255 / 96%), rgb(244 246 249 / 94%));
+  --settings-border: rgb(96 118 138 / 27%);
   --settings-control: rgb(255 255 255 / 60%);
   --settings-glint: rgb(255 255 255 / 80%);
   color: var(--settings-ink);
   background: var(--settings-surface);
   border-inline-start: 1px solid var(--settings-border);
-  box-shadow: -18px 0 55px -20px #180b2c66, inset 1px 0 var(--settings-glint);
+  box-shadow: -18px 0 55px -20px #08192c66, inset 1px 0 var(--settings-glint);
   padding-top: max(16px, env(safe-area-inset-top, 0px));
 }
 .dark .awqaat-settings-panel {
-  --settings-ink: #faf0ff;
-  --settings-subtle: #dac6e7;
-  --settings-surface: radial-gradient(ellipse at 15% 0%, #58356e 0%, transparent 55%), linear-gradient(160deg, #2e173f, #1a1128 75%);
-  --settings-card: linear-gradient(140deg, rgb(157 105 183 / 27%), rgb(91 40 118 / 22%) 60%, rgb(49 23 72 / 50%));
-  --settings-border: rgb(223 179 247 / 30%);
-  --settings-control: rgb(26 14 45 / 44%);
-  --settings-glint: rgb(255 230 255 / 14%);
+  --settings-ink: #f5f7fb;
+  --settings-subtle: #b6c6d7;
+  --settings-surface: radial-gradient(ellipse at 8% 0%, #294c6d 0%, transparent 58%), linear-gradient(155deg, #14283b, #091522 82%);
+  --settings-card: linear-gradient(145deg, rgb(65 94 122 / 42%), rgb(29 51 73 / 85%) 60%, rgb(18 35 54 / 96%));
+  --settings-border: rgb(166 192 216 / 29%);
+  --settings-control: rgb(7 20 35 / 44%);
+  --settings-glint: rgb(220 238 255 / 16%);
 }
 .awqaat-settings-panel > div:first-of-type,
 .dark .awqaat-settings-panel > div:first-of-type {
-  background: linear-gradient(145deg, #a86cc0, #72348c 40%, #40154e 100%);
-  border-color: rgb(232 198 255 / 52%);
-  box-shadow: inset 0 1px 2px rgb(255 243 255 / 47%), 0 8px 22px -13px #180928bb;
+  background: linear-gradient(145deg, #42698b, #193b5b 42%, #11263d 100%);
+  border-color: rgb(233 204 146 / 58%);
+  box-shadow: inset 0 1px 2px rgb(235 245 255 / 42%), 0 8px 22px -13px #091a30bb;
   margin-block: 4px 6px;
 }
 .awqaat-settings-panel > div:first-of-type h2,
 .dark .awqaat-settings-panel > div:first-of-type h2 {
-  color: #fff7ff;
+  color: #fff4da;
 }
 .awqaat-settings-panel > .space-y-5,
 .dark .awqaat-settings-panel > .space-y-5 {
@@ -1933,7 +1933,7 @@
   background: var(--settings-card);
   border: 1px solid var(--settings-border);
   border-radius: 18px;
-  box-shadow: inset 0 1px 2px var(--settings-glint), 0 8px 20px -15px rgb(31 5 47 / 44%);
+  box-shadow: inset 0 1px 2px var(--settings-glint), 0 8px 20px -15px rgb(8 27 46 / 44%);
 }
 .awqaat-settings-panel > .space-y-5 > div > p:first-child,
 .dark .awqaat-settings-panel > .space-y-5 > div > p:first-child {
@@ -1961,16 +1961,16 @@
 .awqaat-settings-panel button[data-state="off"]:hover,
 .dark .awqaat-settings-panel button[data-state="off"]:hover {
   color: var(--settings-ink);
-  background: rgb(178 108 206 / 17%);
+  background: rgb(132 167 198 / 18%);
 }
 .awqaat-settings-panel button[data-state="on"],
 .awqaat-settings-panel button[data-state="on"]:hover,
 .dark .awqaat-settings-panel button[data-state="on"],
 .dark .awqaat-settings-panel button[data-state="on"]:hover {
-  color: #fff;
-  background: linear-gradient(145deg, #a366bd, #74328d 54%, #552268);
-  border: 1px solid rgb(237 200 253 / 65%);
-  box-shadow: inset 0 1px 2px rgb(255 255 255 / 35%), 0 4px 10px -3px #57247777;
+  color: #243044;
+  background: linear-gradient(145deg, #fff0c8, #e5c58b 50%, #c49a58 100%);
+  border: 1px solid rgb(255 237 190 / 85%);
+  box-shadow: inset 0 1px 2px rgb(255 255 255 / 35%), 0 4px 10px -3px #a47c3655;
 }
 .awqaat-settings-panel [role="combobox"],
 .dark .awqaat-settings-panel [role="combobox"] {
@@ -1994,22 +1994,22 @@
 }
 .awqaat-settings-panel > button.absolute:hover,
 .dark .awqaat-settings-panel > button.absolute:hover {
-  background: #814099;
+  background: #315b7e;
   color: #fff;
 }
 .awqaat-settings-panel :is(button, summary, a):focus-visible,
 .dark .awqaat-settings-panel :is(button, summary, a):focus-visible {
-  outline: 2px solid #ce9be6;
+  outline: 2px solid #d9b675;
   outline-offset: 2px;
 }
 .awqaat-settings-options,
 .dark .awqaat-settings-options {
-  color: #50245f;
-  background: #fbf1fd;
-  border: 1px solid #a56cb7;
+  color: #233c55;
+  background: #fffaf0;
+  border: 1px solid #b9a16f;
   z-index: 90;
 }
-.dark .awqaat-settings-options { color: #f6e7ff; background: #321b44; }
+.dark .awqaat-settings-options { color: #f2f6fb; background: #182d43; }
 .awqaat-settings-options [role="option"],
 .dark .awqaat-settings-options [role="option"] { color: inherit; }
 .awqaat-settings-options [role="option"]:hover,
@@ -2017,7 +2017,20 @@
 .dark .awqaat-settings-options [role="option"]:hover,
 .dark .awqaat-settings-options [role="option"][data-highlighted] {
   color: #fff;
-  background: #79368f;
+  background: #345d83;
+}
+/* Subtle metallic rim and light, never a loud saturated glow. */
+.awqaat-settings-panel > div:first-of-type,
+.dark .awqaat-settings-panel > div:first-of-type {
+  border-radius: 18px;
+  background-image: linear-gradient(120deg, rgb(255 255 255 / 10%), transparent 45%), linear-gradient(145deg, #42698b, #193b5b 42%, #11263d 100%);
+}
+.awqaat-settings-panel > .space-y-5 > div:hover,
+.dark .awqaat-settings-panel > .space-y-5 > div:hover {
+  border-color: rgb(202 169 108 / 65%);
+}
+.awqaat-settings-panel [role="group"] > button[data-state="on"] {
+  font-weight: 700;
 }
 .awqaat-settings-credits { color: var(--settings-subtle); font-size: 11px; }
 .awqaat-settings-credits summary { width: max-content; max-width: 100%; }
