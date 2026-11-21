@@ -73,6 +73,19 @@ try {
       }
 
       await measure("home");
+      if (!(await page.locator(".awqaat-hijri-date").isVisible())) {
+        failures.push(vp.name + ": Hijri date missing from Home screen");
+      }
+      if (vp.width === 390) {
+        const configResponse = await page.request.get("/api/push/config");
+        if (configResponse.status() !== 200) failures.push("Push config endpoint is unavailable");
+        else {
+          const json = await configResponse.json();
+          if (typeof json.ready !== "boolean") failures.push("Push config ready flag missing");
+        }
+        const unauthorizedCron = await page.request.get("/api/push/dispatch");
+        if (unauthorizedCron.status() !== 401) failures.push("Push scheduler must reject unauthenticated requests");
+      }
       for (const [index, name] of [
         [1, "prayers"], [2, "qibla"], [3, "azan"],
         [4, "reminder"], [5, "stopwatch"], [0, "home"],
@@ -85,6 +98,12 @@ try {
         await page.locator(sectionId).waitFor({ state: "visible", timeout: 5000 });
         await page.waitForTimeout(120);
         await measure(name);
+        if (name === "qibla" && !(await page.locator(".qibla-ios .qibla-live-dial").isVisible())) {
+          failures.push(vp.name + ": iPhone Qibla compass missing");
+        }
+        if (name === "reminder" && !(await page.locator(".awqaat-push-card").isVisible())) {
+          failures.push(vp.name + ": prayer notifications preview missing");
+        }
       }
 
       await page.locator(".awqaat-location-trigger").click();
