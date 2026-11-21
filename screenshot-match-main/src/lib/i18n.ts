@@ -7,7 +7,7 @@ const dict = {
   next: { en: "Next Prayer", ml: "അടുത്ത നമസ്കാരം", ar: "الصلاة القادمة" },
   remaining: { en: "Remaining", ml: "ബാക്കി സമയം", ar: "الوقت المتبقي" },
   tomorrow: { en: "tomorrow", ml: "നാളെ", ar: "غدًا" },
-  todays: { en: "Today's Prayer Times", ml: "ഇന്നത്തെ നമസ്കാര സമയങ്ങൾ", ar: "مواقيت الصلاة اليوم" },
+  todays: { en: "Prayer Times", ml: "നമസ്കാര സമയങ്ങൾ", ar: "مواقيت الصلاة" },
   notPrayer: { en: "Not a prayer — no Azan", ml: "നമസ്കാരമല്ല — ബാങ്ക് ഇല്ല", ar: "ليس وقت صلاة — لا أذان" },
   upcoming: { en: "Upcoming", ml: "അടുത്തത്", ar: "القادمة" },
   azan: { en: "Azan Player", ml: "ബാങ്ക് പ്ലെയർ", ar: "مشغل الأذان" },
