@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Clock } from "@/components/prayer/Clock";
-import { formatHijriDate, type HijriAdjustment } from "@/lib/hijri-date";
+import { type HijriAdjustment } from "@/lib/hijri-date";
 import { Stopwatch } from "@/components/prayer/Stopwatch";
 import { QiblaCompass } from "@/components/prayer/QiblaCompass";
 import { PrayerNotificationsSetup } from "@/components/prayer/PrayerNotificationsSetup";
@@ -196,6 +196,7 @@ function Index() {
     }
     // Home and Prayer share the same page; the other tabs have dedicated content.
     setOpen(false);
+    setSettingsOpen(false);
     setActiveTab(id);
     // Wait for the selected tab to become visible before scrolling.
     requestAnimationFrame(() => {
@@ -384,14 +385,12 @@ function Index() {
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent className="awqaat-settings-options">{METHODS.map((m) => <SelectItem key={m.id} value={String(m.id)}>{localizeDigits(m.name, lang)}</SelectItem>)}</SelectContent>
                   </Select>
-                  <p className="mt-1 text-xs text-muted-foreground">{t("shafiiNote")}</p>
                 </Field>
                 <Field label={t("asrSchool")}>
                   <ToggleGroup type="single" value={String(school)} onValueChange={(value) => { if (value) setSchool(Number(value) as AsrSchool); }}>
                     <ToggleGroupItem value="0">{t("shafii")}</ToggleGroupItem>
                     <ToggleGroupItem value="1">{t("hanafi")}</ToggleGroupItem>
                   </ToggleGroup>
-                  <p className="mt-1 text-xs text-muted-foreground">{t("asrExplanation")}</p>
                 </Field>
                 <Field label={t("timeFormat")}>
                   <ToggleGroup type="single" value={h12 ? "12" : "24"} onValueChange={(v) => v && setH12(v === "12")}>
@@ -409,13 +408,25 @@ function Index() {
                     <ToggleGroupItem value="0">{t("hijriNoShift")}</ToggleGroupItem>
                     <ToggleGroupItem value="1">{t("hijriPlusDay")}</ToggleGroupItem>
                   </ToggleGroup>
-                  <p className="mt-1 text-xs text-muted-foreground">{t("hijriCorrectionInfo")}</p>
                 </Field>
                 <Field label={t("theme")}>
                   <ToggleGroup type="single" value={theme} onValueChange={(v) => v && setTheme(v as "light" | "dark")}>
                     <ToggleGroupItem value="light">{t("light")}</ToggleGroupItem><ToggleGroupItem value="dark">{t("dark")}</ToggleGroupItem>
                   </ToggleGroup>
                 </Field>
+                <details className="awqaat-settings-credits group max-w-full">
+            <summary className="cursor-pointer select-none rounded-lg px-2 py-1 text-[11px] underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
+              {t("infoCredits")}
+            </summary>
+            <div className="mt-3 max-w-xl space-y-2 rounded-xl border border-white/15 bg-transparent p-3 text-left text-[11px] leading-relaxed">
+              <p>{t("apiWarning")}. {t("apiCaution")} {!gps.location && (city || district.mode !== "hq") && t("approxWarning")}</p>
+              <p>{t("source")}: AlAdhan API (api.aladhan.com) · {t("method")}: {localizeDigits(methodName, lang)} · Asr: {school === 0 ? t("shafii") : t("hanafi")} · {t("timezone")}: {TZ}</p>
+              <p>{gps.location ? t("footerGps") : t("footerDistrict")}</p>
+              <p>{t("footerSharing")}</p>
+              <p>{t("districtSource")} <a href="https://github.com/kalyangupta12/indian-cities-data" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">LGD data (MIT)</a> · <a href="https://github.com/open-admin-data/india-administrative-divisions" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Open Admin Data (CC BY 4.0)</a> · <a href="https://github.com/infenia/indian-district-coordinates" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Infenia centroids (MIT)</a>.</p>
+              <p>{t("photography")} <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Unsplash</a>.</p>
+            </div>
+          </details>
               </div>
             </SheetContent>
           </Sheet>
@@ -469,15 +480,9 @@ function Index() {
         </section>
 
         <section id="prayers" className={cn("glass-shell awqaat-prayer-panel scroll-mt-24 mx-auto max-w-xl rounded-[2rem] p-4 sm:p-6", !showHome && "hidden")}>
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-            <div>
-              <h2 className="font-display text-2xl font-semibold" dir="auto">{t("todays")}</h2>
-              {now && <p className="mt-1.5 text-xs font-medium text-amber-200/85" dir="auto">{t("hijriLabel")}: {formatHijriDate(now, lang, displayedTimings?.Maghrib, hijriCorrection)}</p>}
-            </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {pt.fetchedAt && <span>{t("updated")}: {localizeDigits(new Date(pt.fetchedAt).toLocaleString(lang === "ar" ? "ar-SA-u-ca-gregory-nu-arab" : "en-IN", { timeZone: TZ }), lang)}{pt.fromCache ? ` (${t("cached")})` : ""}</span>}
-              <Button variant="ghost" size="sm" onClick={pt.reload} disabled={pt.loading}><RefreshCw className={cn("h-3 w-3", pt.loading && "animate-spin")} />{t("retry")}</Button>
-            </div>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-display text-2xl font-semibold" dir="auto">{t("todays")}</h2>
+            {pt.error && <Button variant="ghost" size="sm" onClick={pt.reload} disabled={pt.loading}><RefreshCw className={cn("h-3 w-3", pt.loading && "animate-spin")} />{t("retry")}</Button>}
           </div>
           {pt.error && <p className="mb-4 rounded-xl border border-destructive/40 p-3 text-sm text-destructive">{localizeDigits(pt.error, lang)}</p>}
           <div className="flex flex-col gap-2">
@@ -495,7 +500,6 @@ function Index() {
                     <p className="mt-0.5 text-xs font-bold text-muted-foreground">
                       <span className="font-ml text-sm font-bold">{c.ml}</span> · {c.en}
                     </p>
-                    {sunrise && <p className="mt-1 text-[11px] text-muted-foreground">{t("notPrayer")}</p>}
                     {isNext && <span className="mt-1 inline-block rounded-full border border-fuchsia-200/70 bg-fuchsia-100 px-2.5 py-1 text-[10px] font-semibold text-purple-950 shadow-sm">{t("upcoming")}</span>}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
@@ -539,24 +543,7 @@ function Index() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-5 gap-y-2 px-4 py-5 text-xs text-muted-foreground">
-          <p className="font-semibold tracking-wide">JAMIA AWQAAT <span aria-hidden="true">·</span> {t("footerBrand")}</p>
-          <details className="group max-w-full text-right">
-            <summary className="cursor-pointer select-none rounded-lg px-2 py-1 text-[11px] underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2">
-              {t("infoCredits")}
-            </summary>
-            <div className="mt-3 max-w-xl space-y-2 rounded-xl border border-white/15 bg-background/60 p-3 text-left text-[11px] leading-relaxed">
-              <p>{t("apiWarning")}. {t("apiCaution")} {!gps.location && (city || district.mode !== "hq") && t("approxWarning")}</p>
-              <p>{t("source")}: AlAdhan API (api.aladhan.com) · {t("method")}: {localizeDigits(methodName, lang)} · Asr: {school === 0 ? t("shafii") : t("hanafi")} · {t("timezone")}: {TZ}</p>
-              <p>{gps.location ? t("footerGps") : t("footerDistrict")}</p>
-              <p>{t("footerSharing")}</p>
-              <p>{t("districtSource")} <a href="https://github.com/kalyangupta12/indian-cities-data" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">LGD data (MIT)</a> · <a href="https://github.com/open-admin-data/india-administrative-divisions" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Open Admin Data (CC BY 4.0)</a> · <a href="https://github.com/infenia/indian-district-coordinates" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Infenia centroids (MIT)</a>.</p>
-              <p>{t("photography")} <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">Unsplash</a>.</p>
-            </div>
-          </details>
-        </div>
-      </footer>
+
       <nav className={cn("glass-bottom-nav", settingsOpen && "settings-nav-open")} aria-label={t("navHome") + " / " + t("settings")}>
         <span
           aria-hidden="true"
