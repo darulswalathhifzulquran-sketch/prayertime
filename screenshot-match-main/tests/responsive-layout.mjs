@@ -77,13 +77,13 @@ try {
         failures.push(vp.name + ": Hijri date missing from Home screen");
       }
       if (vp.width === 390) {
-        const configResponse = await page.request.get("/api/push/config");
+        const configResponse = await page.request.get(new URL("/api/push/config", base).href);
         if (configResponse.status() !== 200) failures.push("Push config endpoint is unavailable");
         else {
           const json = await configResponse.json();
           if (typeof json.ready !== "boolean") failures.push("Push config ready flag missing");
         }
-        const unauthorizedCron = await page.request.get("/api/push/dispatch");
+        const unauthorizedCron = await page.request.get(new URL("/api/push/dispatch", base).href);
         if (unauthorizedCron.status() !== 401) failures.push("Push scheduler must reject unauthenticated requests");
       }
       for (const [index, name] of [
