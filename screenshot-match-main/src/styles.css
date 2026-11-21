@@ -1821,3 +1821,63 @@
   backdrop-filter: blur(14px);
 }
 .awqaat-push-card button { touch-action: manipulation; }
+
+
+/* Shared Gregorian + Hijri calendar card: readable, restrained, all screen sizes. */
+.awqaat-clock-face > .awqaat-dual-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(100%, 405px);
+  margin-top: 3px;
+  padding: 15px clamp(12px, 4vw, 21px) 17px;
+  border: 1px solid rgb(255 226 173 / 32%);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgb(255 255 255 / 12%), rgb(255 255 255 / 5%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 13%), 0 12px 26px -20px rgb(22 3 45 / 75%);
+  backdrop-filter: blur(14px);
+  font-family: var(--font-sans);
+  line-height: 1.4;
+  text-align: center;
+}
+.awqaat-date-gregorian {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: rgb(255 255 255 / 90%);
+  font-size: clamp(12px, 3.5vw, 14px);
+  font-weight: 600;
+  line-height: 1.45;
+}
+.awqaat-date-gregorian svg { color: #f1cd94; flex-shrink: 0; }
+.awqaat-date-divider {
+  width: 100%; height: 1px;
+  margin: 1px 0;
+  background: linear-gradient(90deg, transparent, rgb(255 229 185 / 37%), transparent);
+}
+.awqaat-date-hijri-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #f4d194;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+.awqaat-date-hijri-value {
+  color: #fff;
+  font-size: clamp(14px, 4.2vw, 19px);
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: -.025em;
+  font-variant-numeric: lining-nums tabular-nums;
+  overflow-wrap: normal;
+}
+.awqaat-dual-date[lang="ar"] { font-family: var(--font-arabic); }
+.awqaat-dual-date[lang="ar"] .awqaat-date-hijri-value { font-size: clamp(18px, 5.4vw, 24px); letter-spacing: 0; }
+.awqaat-dual-date[lang="ml"] { font-family: var(--font-ml); }
+.awqaat-dual-date[lang="ar"] .awqaat-date-hijri-label,
+.awqaat-dual-date[lang="ml"] .awqaat-date-hijri-label { letter-spacing: 0; }
