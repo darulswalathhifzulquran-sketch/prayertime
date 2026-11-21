@@ -12,6 +12,8 @@ import { Clock } from "@/components/prayer/Clock";
 import { formatHijriDate, type HijriAdjustment } from "@/lib/hijri-date";
 import { Stopwatch } from "@/components/prayer/Stopwatch";
 import { QiblaCompass } from "@/components/prayer/QiblaCompass";
+import { PrayerNotificationsSetup } from "@/components/prayer/PrayerNotificationsSetup";
+import { registerPrayerServiceWorker, showForegroundPrayerNotification } from "@/lib/prayer-notifications";
 import { AzanPlayer } from "@/components/prayer/AzanPlayer";
 import { useNow, usePersisted, usePrayerTimes } from "@/hooks/use-prayer-times";
 import { useDeviceLocation } from "@/hooks/use-device-location";
@@ -121,6 +123,8 @@ function Index() {
         : pt.resolvedCoordinates;
   const lastFeedbackRef = useRef<string | null>(null);
 
+  useEffect(() => { void registerPrayerServiceWorker(); }, []);
+
   // A browser permits audible feedback after the user has interacted with the
   // installed web app. No new preference, switch or notification prompt needed.
   useEffect(() => {
@@ -150,7 +154,8 @@ function Index() {
       // Feedback still runs once per page session if storage is unavailable.
     }
     signalPrayerTime();
-  }, [now, displayedTimings, pt.dateKey]);
+    void showForegroundPrayerNotification(prayer, formatTime(displayedTimings[prayer], h12), istDateKey(now));
+  }, [now, displayedTimings, pt.dateKey, h12]);
 
   useEffect(() => { document.documentElement.classList.toggle("dark", theme === "dark"); }, [theme]);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
@@ -530,6 +535,11 @@ function Index() {
             now={now}
             timings={displayedTimings}
           />
+          {activeTab === "reminder" && (
+            <div className="mt-4">
+              <PrayerNotificationsSetup lang={lang} position={qiblaPosition} method={method} school={school} />
+            </div>
+          )}
         </section>
         <section id="stopwatch" className={cn("mx-auto max-w-xl scroll-mt-24", activeTab !== "stopwatch" && "hidden")}>
           <Stopwatch title={t("stopwatch")} lang={lang} />
