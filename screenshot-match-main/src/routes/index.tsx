@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Clock } from "@/components/prayer/Clock";
+import { formatHijriDate, type HijriAdjustment } from "@/lib/hijri-date";
 import { Stopwatch } from "@/components/prayer/Stopwatch";
 import { QiblaCompass } from "@/components/prayer/QiblaCompass";
 import { AzanPlayer } from "@/components/prayer/AzanPlayer";
@@ -65,6 +66,7 @@ function Index() {
   const [school, setSchool] = usePersisted<AsrSchool>("kpt:asrSchool", 0);
   const [h12, setH12] = usePersisted("kpt:h12", true);
   const [clockMode, setClockMode] = usePersisted<"digital" | "analog">("kpt:clock", "digital");
+  const [hijriCorrection, setHijriCorrection] = usePersisted<HijriAdjustment>("kpt:hijri-adjustment", 0);
   const [theme, setTheme] = usePersisted<"light" | "dark">("kpt:theme", "light");
   const [lang, setLang] = usePersisted<Lang>("kpt:lang", "en");
   const t = tr(lang);
@@ -394,6 +396,14 @@ function Index() {
                     <ToggleGroupItem value="digital">{t("digital")}</ToggleGroupItem><ToggleGroupItem value="analog">{t("analog")}</ToggleGroupItem>
                   </ToggleGroup>
                 </Field>
+                <Field label={t("hijriCorrection")}>
+                  <ToggleGroup type="single" value={String(hijriCorrection)} onValueChange={(v) => { if (v) setHijriCorrection(Number(v) as HijriAdjustment); }}>
+                    <ToggleGroupItem value="-1">{t("hijriMinusDay")}</ToggleGroupItem>
+                    <ToggleGroupItem value="0">{t("hijriNoShift")}</ToggleGroupItem>
+                    <ToggleGroupItem value="1">{t("hijriPlusDay")}</ToggleGroupItem>
+                  </ToggleGroup>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("hijriCorrectionInfo")}</p>
+                </Field>
                 <Field label={t("theme")}>
                   <ToggleGroup type="single" value={theme} onValueChange={(v) => v && setTheme(v as "light" | "dark")}>
                     <ToggleGroupItem value="light">{t("light")}</ToggleGroupItem><ToggleGroupItem value="dark">{t("dark")}</ToggleGroupItem>
@@ -431,7 +441,7 @@ function Index() {
                     ? `${state.name} · ${district.lat.toFixed(4)}°N, ${district.lng.toFixed(4)}°E · ${district.mode === "hq" ? t("hqReference") : t("districtCentre")}`
                     : `${district.name}, ${state.name} · ${t("addressEstimate")}`, lang)}
               </p>
-              {now ? <Clock now={now} mode={clockMode} h12={h12} lang={lang} /> : <div className="h-24" />}
+              {now ? <Clock now={now} mode={clockMode} h12={h12} lang={lang} maghrib={displayedTimings?.Maghrib} hijriCorrection={hijriCorrection} /> : <div className="h-24" />}
             </div>
             <div className="glass-on-dark rounded-3xl border border-white/25 p-5 text-center text-white backdrop-blur-xl">
               <p className="text-sm uppercase tracking-widest text-gold" dir="auto">{t("next")}</p>
@@ -453,7 +463,10 @@ function Index() {
 
         <section id="prayers" className={cn("glass-shell awqaat-prayer-panel scroll-mt-24 mx-auto max-w-xl rounded-[2rem] p-4 sm:p-6", !showHome && "hidden")}>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-            <h2 className="font-display text-2xl font-semibold" dir="auto">{t("todays")}</h2>
+            <div>
+              <h2 className="font-display text-2xl font-semibold" dir="auto">{t("todays")}</h2>
+              {now && <p className="mt-1.5 text-xs font-medium text-amber-200/85" dir="auto">{t("hijriLabel")}: {formatHijriDate(now, lang, displayedTimings?.Maghrib, hijriCorrection)}</p>}
+            </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {pt.fetchedAt && <span>{t("updated")}: {localizeDigits(new Date(pt.fetchedAt).toLocaleString(lang === "ar" ? "ar-SA-u-ca-gregory-nu-arab" : "en-IN", { timeZone: TZ }), lang)}{pt.fromCache ? ` (${t("cached")})` : ""}</span>}
               <Button variant="ghost" size="sm" onClick={pt.reload} disabled={pt.loading}><RefreshCw className={cn("h-3 w-3", pt.loading && "animate-spin")} />{t("retry")}</Button>
