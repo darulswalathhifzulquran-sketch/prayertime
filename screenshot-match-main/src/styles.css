@@ -1657,3 +1657,138 @@
     font-size: 11px;
   }
 }
+
+
+/* Qibla Compass — premium iPhone-inspired dark navigation instrument.
+   Original vector elements; only visual styles, no fake heading data. */
+.violet-premium .qibla-ios .qibla-panel {
+  color: #f7f9fd;
+  border: 1px solid rgba(134, 154, 177, .28);
+  background:
+    radial-gradient(ellipse at 50% 11%, rgba(42, 75, 106, .48), transparent 64%),
+    linear-gradient(158deg, #0d1b2b 0%, #0b101a 55%, #040810 100%);
+  box-shadow: 0 23px 50px -32px #000, inset 0 1px 0 rgba(255,255,255,.15);
+  overflow: hidden;
+}
+.qibla-ios .qibla-heading-icon {
+  background: rgba(255,255,255,.07);
+  color: #e5c480;
+  border-color: rgba(209, 187, 125, .35);
+}
+.qibla-ios .qibla-ios-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 0 16px;
+  text-align: center;
+}
+.qibla-ios-heading-number {
+  font-size: clamp(42px, 10vw, 70px);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
+  letter-spacing: -.06em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+.qibla-ios-heading-label {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: #adbac9;
+}
+.qibla-ios .qibla-dial-frame { width: min(100%, 400px); }
+.qibla-ios .qibla-vector-wrap {
+  border-radius: 50%;
+  background: linear-gradient(140deg, #737e8b 0%, #263241 20%, #0b111c 51%, #9ba8b2 100%);
+  border: 1px solid rgba(198,213,225,.28);
+  padding: 5px;
+  box-shadow: 0 20px 45px -21px #000, inset 0 1px 2px rgba(255,255,255,.27);
+}
+.qibla-ios .qibla-live-dial {
+  border-radius: 50%;
+  background: #02060b;
+  overflow: hidden;
+  filter: drop-shadow(0 7px 12px rgba(0,0,0,.28));
+}
+.qibla-ios .qibla-ios-direction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 15px;
+  border: 1px solid rgba(222, 190, 123, .3);
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(214, 176, 94, .07);
+  text-align: center;
+}
+.qibla-ios-direction-label { font-size: 12px; color: #d4dae3; }
+.qibla-ios-direction strong {
+  font-size: clamp(20px, 6vw, 30px);
+  color: #f4d086;
+  font-weight: 700;
+  letter-spacing: -.03em;
+}
+.qibla-ios-aligned-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #70e9aa;
+  box-shadow: 0 0 0 4px rgba(112,233,170,.15), 0 0 15px rgba(112,233,170,.5);
+}
+.qibla-ios .qibla-stat {
+  border: 1px solid rgba(147, 169, 191, .22);
+  background: rgba(237, 247, 255, .045);
+  border-radius: 16px;
+}
+.qibla-ios .qibla-stat > span { color: #b7c9d8; }
+.qibla-ios .qibla-stat small { color: #8fa2b5; }
+.qibla-ios .qibla-stat strong { color: #f9fbff; }
+.qibla-ios .qibla-location-line { color: #cbd6e2; }
+.qibla-ios .qibla-source { color: #dfc687; border-color: rgba(240,200,118,.3); }
+.qibla-ios .qibla-ios-coordinates {
+  margin-top: 14px; text-align: center;
+  font-size: 12px; color: #a9b9c9;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.qibla-ios .qibla-ios-compass-caution {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(157,175,193,.2);
+  border-radius: 14px;
+  background: rgba(141,167,193,.065);
+  color: #aebbc9;
+  font-size: 11px;
+  line-height: 1.55;
+  text-align: center;
+}
+.qibla-ios .qibla-gps-button {
+  background: #176657;
+  border: 1px solid #4bb999;
+}
+.qibla-ios .qibla-sensor-button {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(178,197,215,.3);
+}
+.qibla-ios .qibla-sensor-button:hover { background: rgba(255,255,255,.12); }
+.qibla-ios .qibla-guidance, .qibla-ios .qibla-note {
+  color: #d1dce8;
+  background: rgba(11,26,42,.84);
+  border-color: rgba(123,151,177,.2);
+}
+.qibla-ios .qibla-aligned {
+  border-color: rgba(107,235,171,.35);
+  background: rgba(11,126,87,.23);
+  color: #baf6d9;
+}
+.awqaat-hijri-date { width: min(100%, 365px); }
+@media (max-width: 385px) {
+  .awqaat-hijri-date { padding: 10px 12px; }
+  .qibla-ios .qibla-ios-heading { padding-top: 0; }
+  .qibla-ios .qibla-dial-frame { width: min(100%, 340px); }
+  .qibla-ios .qibla-data-grid { gap: 7px; }
+  .qibla-ios .qibla-stat { padding: 10px 6px; }
+}
