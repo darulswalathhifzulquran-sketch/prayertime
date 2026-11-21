@@ -47,7 +47,7 @@ try {
             main: gap(main),
             card: gap(card),
             nav: gap(bottom),
-            navOutside: navRect ? (navRect.left < -1 || navRect.right > innerWidth + 1) : true,
+            navOutside: navRect ? (navRect.left < -1 || navRect.right > innerWidth + 1 || navRect.top < 0 || navRect.bottom > innerHeight + 1) : true,
             activeCard: card?.id || null,
           };
         });
@@ -73,6 +73,19 @@ try {
       }
 
       await measure("home");
+      if (await page.locator(".awqaat-app > footer").count()) failures.push(vp.name + ": obsolete footer present");
+      if (await page.locator("#prayers .awqaat-date-hijri-value, #prayers > div:first-child p").count()) failures.push(vp.name + ": duplicate prayer date caption");
+      const dock = await page.locator(".glass-bottom-nav").evaluate((node) => {
+        const style = getComputedStyle(node);
+        const buttons = Array.from(node.querySelectorAll("button"));
+        return { fixed: style.position === "fixed", tint: style.backgroundImage, buttons: buttons.length, allVisible: buttons.every(b => {
+          const r = b.getBoundingClientRect();
+          const target = document.elementFromPoint(r.x+r.width/2, r.y+r.height/2);
+          return r.height >= 39 && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth && target && b.contains(target);
+        }) };
+      });
+      if (!dock.fixed || dock.tint === "none" || !dock.allVisible || dock.buttons !== 7) failures.push(vp.name + ": mobile glass dock not visible or reachable " + JSON.stringify(dock));
+
       if (!(await page.locator(".awqaat-hijri-date").isVisible())) {
         failures.push(vp.name + ": Hijri date missing from Home screen");
       }
@@ -109,6 +122,7 @@ try {
           if (!(await page.locator(".qibla-ios .qibla-live-dial").isVisible())) {
             failures.push(vp.name + ": iPhone Qibla compass missing");
           }
+          if (await page.locator(".qibla-ios-heading-label, .qibla-ios-compass-caution").count()) failures.push(vp.name + ": removed Qibla captions still present");
           if (await page.locator(".qibla-location-line").count()) failures.push(vp.name + ": district name appears in Qibla");
           if (vp.width === 390) {
             await page.waitForFunction(() => document.querySelector("#qibla .qibla-stat strong")?.textContent?.includes("°"), {timeout: 10000});
@@ -141,6 +155,12 @@ try {
       // Radix Sheet animates in from the right for up to 500 ms.
       // An off-screen initial animation frame is not a layout overflow.
       await page.waitForTimeout(750);
+      const settingsTheme = await page.locator(".awqaat-settings-panel").evaluate((node) => ({
+        theme: getComputedStyle(node).getPropertyValue("--settings-ink").trim(),
+        fields: node.querySelectorAll(".space-y-5 > div").length,
+        creditsCollapsed: node.querySelector(".awqaat-settings-credits")?.open === false,
+      }));
+      if (!settingsTheme.theme || settingsTheme.fields !== 7 || !settingsTheme.creditsCollapsed) failures.push(vp.name + ": Settings theme or controls missing");
       const settings = await page.locator(".awqaat-settings-panel").evaluate((node) => {
         const r = node.getBoundingClientRect();
         return { left: r.left, right: r.right, width: r.width, window: innerWidth, scroll: node.scrollWidth - node.clientWidth };
