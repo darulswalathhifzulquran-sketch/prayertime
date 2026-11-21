@@ -1880,3 +1880,294 @@
 .awqaat-dual-date[lang="ml"] { font-family: var(--font-ml); }
 .awqaat-dual-date[lang="ar"] .awqaat-date-hijri-label,
 .awqaat-dual-date[lang="ml"] .awqaat-date-hijri-label { letter-spacing: 0; }
+
+
+/* AWQAAT — polished violet Settings and high-contrast glass navigation. */
+.awqaat-settings-panel,
+.dark .awqaat-settings-panel {
+  --settings-ink: #42204f;
+  --settings-subtle: #694d78;
+  --settings-surface: linear-gradient(145deg, #fffafd, #f2e8fa);
+  --settings-card: linear-gradient(145deg, rgb(255 255 255 / 90%), rgb(241 224 250 / 78%));
+  --settings-border: rgb(151 98 179 / 26%);
+  --settings-control: rgb(255 255 255 / 60%);
+  --settings-glint: rgb(255 255 255 / 80%);
+  color: var(--settings-ink);
+  background: var(--settings-surface);
+  border-inline-start: 1px solid var(--settings-border);
+  box-shadow: -18px 0 55px -20px #180b2c66, inset 1px 0 var(--settings-glint);
+  padding-top: max(16px, env(safe-area-inset-top, 0px));
+}
+.dark .awqaat-settings-panel {
+  --settings-ink: #faf0ff;
+  --settings-subtle: #dac6e7;
+  --settings-surface: radial-gradient(ellipse at 15% 0%, #58356e 0%, transparent 55%), linear-gradient(160deg, #2e173f, #1a1128 75%);
+  --settings-card: linear-gradient(140deg, rgb(157 105 183 / 27%), rgb(91 40 118 / 22%) 60%, rgb(49 23 72 / 50%));
+  --settings-border: rgb(223 179 247 / 30%);
+  --settings-control: rgb(26 14 45 / 44%);
+  --settings-glint: rgb(255 230 255 / 14%);
+}
+.awqaat-settings-panel > div:first-of-type,
+.dark .awqaat-settings-panel > div:first-of-type {
+  background: linear-gradient(145deg, #a86cc0, #72348c 40%, #40154e 100%);
+  border-color: rgb(232 198 255 / 52%);
+  box-shadow: inset 0 1px 2px rgb(255 243 255 / 47%), 0 8px 22px -13px #180928bb;
+  margin-block: 4px 6px;
+}
+.awqaat-settings-panel > div:first-of-type h2,
+.dark .awqaat-settings-panel > div:first-of-type h2 {
+  color: #fff7ff;
+}
+.awqaat-settings-panel > .space-y-5,
+.dark .awqaat-settings-panel > .space-y-5 {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding: 12px 5px;
+}
+.awqaat-settings-panel > .space-y-5 > div,
+.dark .awqaat-settings-panel > .space-y-5 > div {
+  margin: 0;
+  padding: 14px;
+  color: var(--settings-ink);
+  background: var(--settings-card);
+  border: 1px solid var(--settings-border);
+  border-radius: 18px;
+  box-shadow: inset 0 1px 2px var(--settings-glint), 0 8px 20px -15px rgb(31 5 47 / 44%);
+}
+.awqaat-settings-panel > .space-y-5 > div > p:first-child,
+.dark .awqaat-settings-panel > .space-y-5 > div > p:first-child {
+  color: var(--settings-ink);
+  font-weight: 700;
+}
+.awqaat-settings-panel [role="group"] {
+  gap: 5px;
+  align-items: stretch;
+  justify-content: center;
+}
+.awqaat-settings-panel [role="group"] > button {
+  min-height: 38px;
+  height: auto;
+  padding: 7px 11px;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  white-space: normal;
+}
+.awqaat-settings-panel button[data-state="off"],
+.dark .awqaat-settings-panel button[data-state="off"] {
+  color: var(--settings-subtle);
+  background: transparent;
+}
+.awqaat-settings-panel button[data-state="off"]:hover,
+.dark .awqaat-settings-panel button[data-state="off"]:hover {
+  color: var(--settings-ink);
+  background: rgb(178 108 206 / 17%);
+}
+.awqaat-settings-panel button[data-state="on"],
+.awqaat-settings-panel button[data-state="on"]:hover,
+.dark .awqaat-settings-panel button[data-state="on"],
+.dark .awqaat-settings-panel button[data-state="on"]:hover {
+  color: #fff;
+  background: linear-gradient(145deg, #a366bd, #74328d 54%, #552268);
+  border: 1px solid rgb(237 200 253 / 65%);
+  box-shadow: inset 0 1px 2px rgb(255 255 255 / 35%), 0 4px 10px -3px #57247777;
+}
+.awqaat-settings-panel [role="combobox"],
+.dark .awqaat-settings-panel [role="combobox"] {
+  color: var(--settings-ink);
+  background: var(--settings-control);
+  border-color: var(--settings-border);
+  border-radius: 12px;
+  min-height: 42px;
+  height: auto;
+  padding-block: 9px;
+  box-shadow: inset 0 1px var(--settings-glint);
+}
+.awqaat-settings-panel .text-muted-foreground,
+.dark .awqaat-settings-panel .text-muted-foreground { color: var(--settings-subtle); }
+.awqaat-settings-panel > button.absolute,
+.dark .awqaat-settings-panel > button.absolute {
+  color: var(--settings-ink);
+  background: var(--settings-control);
+  border: 1px solid var(--settings-border);
+  top: max(9px, env(safe-area-inset-top, 0px));
+}
+.awqaat-settings-panel > button.absolute:hover,
+.dark .awqaat-settings-panel > button.absolute:hover {
+  background: #814099;
+  color: #fff;
+}
+.awqaat-settings-panel :is(button, summary, a):focus-visible,
+.dark .awqaat-settings-panel :is(button, summary, a):focus-visible {
+  outline: 2px solid #ce9be6;
+  outline-offset: 2px;
+}
+.awqaat-settings-options,
+.dark .awqaat-settings-options {
+  color: #50245f;
+  background: #fbf1fd;
+  border: 1px solid #a56cb7;
+  z-index: 90;
+}
+.dark .awqaat-settings-options { color: #f6e7ff; background: #321b44; }
+.awqaat-settings-options [role="option"],
+.dark .awqaat-settings-options [role="option"] { color: inherit; }
+.awqaat-settings-options [role="option"]:hover,
+.awqaat-settings-options [role="option"][data-highlighted],
+.dark .awqaat-settings-options [role="option"]:hover,
+.dark .awqaat-settings-options [role="option"][data-highlighted] {
+  color: #fff;
+  background: #79368f;
+}
+.awqaat-settings-credits { color: var(--settings-subtle); font-size: 11px; }
+.awqaat-settings-credits summary { width: max-content; max-width: 100%; }
+.awqaat-settings-credits > div { overflow-wrap: anywhere; }
+.awqaat-push-availability {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #f2d6ab;
+}
+.awqaat-push-details {
+  margin-top: 7px;
+  font-size: 11px;
+  color: #d3e4f8;
+}
+.awqaat-push-details summary { cursor: pointer; width: max-content; max-width: 100%; }
+.awqaat-push-details p { overflow-wrap: anywhere; }
+
+/* The floating dock retains a translucent glass finish, but its tint is
+   sufficiently opaque to keep icons readable even over bright prayer cards. */
+.glass-bottom-nav,
+.dark .glass-bottom-nav {
+  --dock-pad: 7px;
+  --dock-active: #6a237e;
+  --dock-text: #422552;
+  --dock-surface: linear-gradient(145deg, rgb(250 241 255 / 96%), rgb(225 205 244 / 88%));
+  --dock-lens: linear-gradient(145deg, rgb(255 255 255 / 68%), rgb(169 107 204 / 25%));
+  position: fixed;
+  z-index: 60;
+  isolation: isolate;
+  left: 50%;
+  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  width: min(calc(100% - 20px), 670px);
+  max-width: calc(100vw - 12px);
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0;
+  padding: var(--dock-pad);
+  border: 1px solid rgb(193 147 219 / 75%);
+  border-radius: 24px;
+  background: var(--dock-surface);
+  box-shadow: 0 12px 32px rgb(12 4 28 / 35%), inset 0 1px 2px rgb(255 255 255 / 45%);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+}
+.dark .glass-bottom-nav {
+  --dock-active: #ffe0ff;
+  --dock-text: #efe5f7;
+  --dock-surface: linear-gradient(145deg, rgb(58 31 76 / 96%), rgb(25 17 43 / 90%));
+  --dock-lens: linear-gradient(145deg, rgb(197 131 224 / 48%), rgb(109 44 145 / 40%));
+}
+.glass-bottom-nav .glass-nav-indicator,
+.glass-bottom-nav.settings-nav-open .glass-nav-indicator {
+  left: var(--dock-pad);
+  top: var(--dock-pad);
+  bottom: var(--dock-pad);
+  width: calc((100% - 2 * var(--dock-pad)) / 7);
+  border: 1px solid rgb(209 160 239 / 60%);
+  border-radius: 17px;
+  background: var(--dock-lens);
+  box-shadow: inset 0 1px 2px rgb(255 245 255 / 32%), 0 2px 9px rgb(50 9 69 / 16%);
+}
+.glass-bottom-nav .glass-nav-item,
+.dark .glass-bottom-nav .glass-nav-item {
+  color: var(--dock-text);
+  text-shadow: none;
+  min-height: 52px;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 650;
+  border-radius: 17px;
+}
+.glass-bottom-nav .glass-nav-item svg,
+.dark .glass-bottom-nav .glass-nav-item svg {
+  flex: 0 0 auto;
+  width: 21px;
+  height: 21px;
+  stroke-width: 2;
+}
+.glass-bottom-nav .glass-nav-selected,
+.dark .glass-bottom-nav .glass-nav-selected,
+.glass-bottom-nav .glass-nav-item:hover,
+.dark .glass-bottom-nav .glass-nav-item:hover,
+.glass-bottom-nav .glass-nav-item:focus-visible,
+.dark .glass-bottom-nav .glass-nav-item:focus-visible,
+.glass-bottom-nav [data-bottom-settings-button="true"][aria-expanded="true"],
+.dark .glass-bottom-nav [data-bottom-settings-button="true"][aria-expanded="true"] {
+  color: var(--dock-active);
+}
+.glass-bottom-nav .glass-nav-selected svg,
+.dark .glass-bottom-nav .glass-nav-selected svg,
+.glass-bottom-nav [data-bottom-settings-button="true"][aria-expanded="true"] svg,
+.dark .glass-bottom-nav [data-bottom-settings-button="true"][aria-expanded="true"] svg {
+  color: var(--dock-active);
+  stroke-width: 2.65;
+  filter: drop-shadow(0 0 5px rgb(207 146 242 / 38%));
+}
+.glass-bottom-nav .glass-nav-item:hover svg,
+.glass-bottom-nav .glass-nav-item:focus-visible svg {
+  filter: drop-shadow(0 0 5px rgb(207 146 242 / 38%));
+}
+.glass-bottom-nav .glass-nav-item:focus-visible {
+  outline: 2px solid #cb88e8;
+  outline-offset: -3px;
+}
+.awqaat-app {
+  min-height: 100dvh;
+  padding-bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+}
+@media (max-width: 540px) {
+  .glass-bottom-nav, .dark .glass-bottom-nav {
+    --dock-pad: 5px;
+    z-index: 80;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    width: calc(100% - 12px);
+    border-radius: 22px;
+  }
+  .glass-bottom-nav .glass-nav-item,
+  .dark .glass-bottom-nav .glass-nav-item {
+    min-height: 52px;
+    gap: 4px;
+    font-size: clamp(8.5px, 2.5vw, 11px);
+    padding: 4px 1px;
+    letter-spacing: -.025em;
+  }
+  .glass-bottom-nav .glass-nav-item > span {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: center;
+    line-height: 1.15;
+    max-height: none;
+  }
+  .glass-bottom-nav .glass-nav-item svg,
+  .dark .glass-bottom-nav .glass-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+  .awqaat-settings-panel, .dark .awqaat-settings-panel {
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+  }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .glass-bottom-nav, .dark .glass-bottom-nav {
+    --dock-pad: 4px;
+    bottom: calc(3px + env(safe-area-inset-bottom, 0px));
+  }
+  .glass-bottom-nav .glass-nav-item,
+  .dark .glass-bottom-nav .glass-nav-item { min-height: 40px; gap: 2px; }
+  .glass-bottom-nav .glass-nav-item svg,
+  .dark .glass-bottom-nav .glass-nav-item svg { width: 18px; height: 18px; }
+}
