@@ -134,7 +134,6 @@ export function PrayerNotificationsSetup({
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-[.13em] text-blue-200">JAMIA AWQAAT</p>
           <h3 className="mt-1 text-lg font-bold text-white">{t("pushTitle")}</h3>
-          <p className="mt-1 text-xs leading-relaxed text-slate-300">{t("pushUserAction")}</p>
         </div>
       </div>
       <div className="awqaat-push-preview mt-4 flex items-center gap-3 rounded-2xl p-3">
@@ -164,10 +163,23 @@ export function PrayerNotificationsSetup({
           )}
         </div>
       )}
-      {!installed && <p className="mt-3 text-[11px] leading-relaxed text-blue-100">{t("pushInstallHint")}</p>}
-      {feedback && <p className="mt-3 text-[11px] text-amber-200">{feedback}</p>}
-      {!ready && <p className="mt-3 text-[11px] leading-relaxed text-blue-200/85">{t("pushBackendMissing")}</p>}
-      <p className="mt-2 text-[10px] leading-relaxed text-blue-200/65">{t("pushPrivacy")}</p>
+      {status !== "background" && !ready && (
+        <span className="awqaat-push-availability" role="status">{t("pushForegroundOnly")}</span>
+      )}
+      {feedback && feedback !== t("pushBackendMissing") && feedback !== t("pushUserAction") && <p className="mt-3 text-xs text-amber-200">{feedback}</p>}
+      {ready && status !== "background" && (
+        <p className="mt-2 text-xs text-blue-100">{t("pushPrivacy")}</p>
+      )}
+      <details className="awqaat-push-details">
+        <summary>{t("pushInfo")}</summary>
+        <div className="mt-2 space-y-2 text-xs leading-relaxed">
+          {!installed && <p>{t("pushInstallHint")}</p>}
+          {!ready && <p>{t("pushBackendMissing")}</p>}
+          <p>{t("pushUserAction")}</p>
+          <p>{t("pushPrivacy")}</p>
+          {feedback === t("pushBackendMissing") && ready && <p>{feedback}</p>}
+        </div>
+      </details>
     </section>
   );
 }
