@@ -51,6 +51,19 @@ try {
             activeCard: card?.id || null,
           };
         });
+        // The full location picker is available on Home and Prayer only.
+        const picker = await page.locator(".awqaat-location-trigger").count();
+        const shouldShowPicker = tab === "home" || tab === "prayers";
+        if ((picker === 1) !== shouldShowPicker) {
+          failures.push(vp.name + " / " + tab + ": location picker visibility=" + picker + ", expected " + Number(shouldShowPicker));
+        }
+        if (shouldShowPicker) {
+          const width = await page.locator(".awqaat-location-trigger").evaluate((node) => node.getBoundingClientRect().width);
+          const minWidth = vp.width <= 365 ? 125 : vp.width <= 640 ? 155 : vp.width < 860 ? 175 : 210;
+          if (width < minWidth) {
+            failures.push(vp.name + " / " + tab + ": location picker too narrow (" + width + "px vs " + minWidth + "px)");
+          }
+        }
         console.log(vp.name.padEnd(18), String(vp.width).padStart(4), tab.padEnd(9), JSON.stringify(metric));
         if (metric.document > 3 || metric.header > 4 || metric.main > 4 ||
             metric.card > 4 || metric.nav > 4 || metric.navOutside) {
