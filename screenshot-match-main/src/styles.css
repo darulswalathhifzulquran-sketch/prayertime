@@ -1868,16 +1868,15 @@
   letter-spacing: .14em;
 }
 .awqaat-date-hijri-value {
-  color: #fff;
-  font-size: clamp(14px, 4.2vw, 19px);
-  font-weight: 700;
+  color: rgb(255 255 255 / 90%);
+  font-size: clamp(12px, 3.5vw, 14px);
+  font-weight: 600;
   line-height: 1.45;
-  letter-spacing: -.025em;
   font-variant-numeric: lining-nums tabular-nums;
   overflow-wrap: normal;
 }
 .awqaat-dual-date[lang="ar"] { font-family: var(--font-arabic); }
-.awqaat-dual-date[lang="ar"] .awqaat-date-hijri-value { font-size: clamp(18px, 5.4vw, 24px); letter-spacing: 0; }
+.awqaat-dual-date[lang="ar"] .awqaat-date-hijri-value { letter-spacing: 0; }
 .awqaat-dual-date[lang="ml"] { font-family: var(--font-ml); }
 .awqaat-dual-date[lang="ar"] .awqaat-date-hijri-label,
 .awqaat-dual-date[lang="ml"] .awqaat-date-hijri-label { letter-spacing: 0; }

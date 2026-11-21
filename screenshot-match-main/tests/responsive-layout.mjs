@@ -76,7 +76,14 @@ try {
       if (!(await page.locator(".awqaat-hijri-date").isVisible())) {
         failures.push(vp.name + ": Hijri date missing from Home screen");
       }
+      const dateFonts = await page.evaluate(() => ({
+        gregorian: getComputedStyle(document.querySelector(".awqaat-date-gregorian")).fontSize,
+        hijri: getComputedStyle(document.querySelector(".awqaat-date-hijri-value")).fontSize,
+      }));
+      if (dateFonts.gregorian !== dateFonts.hijri) failures.push(vp.name + ": calendar font sizes differ");
       if (vp.width === 390) {
+        await page.context().grantPermissions(["geolocation"]);
+        await page.context().setGeolocation({ latitude: 19.076, longitude: 72.8777, accuracy: 10 });
         const configResponse = await page.request.get(new URL("/api/push/config", base).href);
         if (configResponse.status() !== 200) failures.push("Push config endpoint is unavailable");
         else {
@@ -98,8 +105,20 @@ try {
         await page.locator(sectionId).waitFor({ state: "visible", timeout: 5000 });
         await page.waitForTimeout(120);
         await measure(name);
-        if (name === "qibla" && !(await page.locator(".qibla-ios .qibla-live-dial").isVisible())) {
-          failures.push(vp.name + ": iPhone Qibla compass missing");
+        if (name === "qibla") {
+          if (!(await page.locator(".qibla-ios .qibla-live-dial").isVisible())) {
+            failures.push(vp.name + ": iPhone Qibla compass missing");
+          }
+          if (await page.locator(".qibla-location-line").count()) failures.push(vp.name + ": district name appears in Qibla");
+          if (vp.width === 390) {
+            await page.waitForFunction(() => document.querySelector("#qibla .qibla-stat strong")?.textContent?.includes("°"), {timeout: 10000});
+            const value = await page.locator("#qibla .qibla-stat strong").first().textContent();
+            const angle = Number(value.replace("°", ""));
+            const r = (n) => n * Math.PI / 180;
+            const delta = r(39.826206 - 72.8777);
+            const expected = ((Math.atan2(Math.sin(delta) * Math.cos(r(21.422487)), Math.cos(r(19.076)) * Math.sin(r(21.422487)) - Math.sin(r(19.076)) * Math.cos(r(21.422487)) * Math.cos(delta)) * 180 / Math.PI) + 360) % 360;
+            if (Math.abs(angle - expected) > 0.2) failures.push("Qibla did not use independent device coordinates: " + value);
+          }
         }
         if (name === "reminder" && !(await page.locator(".awqaat-push-card").isVisible())) {
           failures.push(vp.name + ": prayer notifications preview missing");
