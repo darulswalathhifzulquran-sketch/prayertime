@@ -188,6 +188,7 @@ function Index() {
       return;
     }
     // Home and Prayer share the same page; the other tabs have dedicated content.
+    setOpen(false);
     setActiveTab(id);
     // Wait for the selected tab to become visible before scrolling.
     requestAnimationFrame(() => {
@@ -238,6 +239,7 @@ function Index() {
             <span className="brand-awqaat">{t("title")}</span>
           </div>
           <div className="awqaat-header-actions">
+            {showHome && (
             <Popover open={open} onOpenChange={(nextOpen) => { setOpen(nextOpen); if (!nextOpen) setDistrictSearch(""); }}>
             <PopoverTrigger asChild>
               <Button variant="outline" className="awqaat-location-trigger w-56 max-w-full justify-between gap-2" aria-label={t("district")}>
@@ -338,6 +340,7 @@ function Index() {
               )}
             </PopoverContent>
           </Popover>
+            )}
           <Button
             variant={gps.enabled ? "secondary" : "ghost"}
             size="icon"
