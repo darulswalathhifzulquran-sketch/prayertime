@@ -143,6 +143,7 @@ export function QiblaCompass({
   const [stableAligned, setStableAligned] = useState(false);
   const [unstable, setUnstable] = useState(false);
   const [tilted, setTilted] = useState(false);
+  const tiltRef = useRef(false);
   const alignmentBuzzArmed = useRef(true);
   const bearing = useMemo(
     () => position ? qiblaBearing(position.lat, position.lng) : null,
@@ -227,7 +228,11 @@ export function QiblaCompass({
 
       if (typeof event.beta === "number" && typeof event.gamma === "number" &&
           Number.isFinite(event.beta) && Number.isFinite(event.gamma)) {
-        setTilted(Math.abs(event.beta) > 27 || Math.abs(event.gamma) > 27);
+        const nextTilted = Math.abs(event.beta) > 27 || Math.abs(event.gamma) > 27;
+        if (tiltRef.current !== nextTilted) {
+          tiltRef.current = nextTilted;
+          setTilted(nextTilted);
+        }
       }
       const accuracy = typeof event.webkitCompassAccuracy === "number" &&
         Number.isFinite(event.webkitCompassAccuracy) ? event.webkitCompassAccuracy : undefined;
@@ -265,7 +270,7 @@ export function QiblaCompass({
 
       // Even if the needle is inside the 1.5° deadband, incoming samples are
       // counted for steady alignment; the marker itself stays still.
-      if (bearing !== null && !unreliable && !tilted) {
+      if (bearing !== null && !unreliable && !tiltRef.current) {
         const error = Math.abs(shortestChange(bearing, nextValue));
         if (error <= 5) {
           if (alignmentStartRef.current === null) alignmentStartRef.current = now;
@@ -292,7 +297,7 @@ export function QiblaCompass({
       window.removeEventListener("deviceorientation", onOrientation);
       window.removeEventListener("deviceorientationabsolute", onOrientation as EventListener);
     };
-  }, [active, sensorEnabled, bearing, tilted]);
+  }, [active, sensorEnabled, bearing]);
 
   // Do not keep reporting a live working compass when device readings stop.
   useEffect(() => {
@@ -351,6 +356,8 @@ export function QiblaCompass({
       alignmentStartRef.current = null;
       setStableAligned(false);
       setUnstable(false);
+      tiltRef.current = false;
+      setTilted(false);
       setHeading(null);
       setSensorEnabled(true);
       setSensorStatus("waiting");
