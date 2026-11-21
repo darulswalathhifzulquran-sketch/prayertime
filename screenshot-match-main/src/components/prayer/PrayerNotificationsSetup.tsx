@@ -163,8 +163,8 @@ export function PrayerNotificationsSetup({
           )}
         </div>
       )}
-      {status !== "background" && !ready && (
-        <span className="awqaat-push-availability" role="status">{t("pushForegroundOnly")}</span>
+      {status !== "background" && (
+        <span className="awqaat-push-availability" role="status">{t(ready ? "pushBackgroundInactive" : "pushForegroundOnly")}</span>
       )}
       {feedback && feedback !== t("pushBackendMissing") && feedback !== t("pushUserAction") && <p className="mt-3 text-xs text-amber-200">{feedback}</p>}
       {ready && status !== "background" && (
