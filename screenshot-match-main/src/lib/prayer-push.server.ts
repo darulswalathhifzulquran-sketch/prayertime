@@ -96,6 +96,14 @@ export function validatePushRecord(input: unknown): PushRecord | null {
   };
 }
 
+/** Prevent unauthenticated clients from exhausting server-side push storage. */
+export async function allowPushRegistration(requestId: string): Promise<boolean> {
+  const key = `jamia-awqaat:prayer-push:rate:${createHash("sha256").update(requestId).digest("hex")}`;
+  const count = Number(await redisCommand(["INCR", key]));
+  if (count === 1) await redisCommand(["EXPIRE", key, 3600]);
+  return Number.isFinite(count) && count <= 12;
+}
+
 export async function savePushSubscription(record: PushRecord): Promise<void> {
   const id = hashEndpoint(record.endpoint);
   await redisCommand(["SET", storageKey(id), JSON.stringify(record), "EX", TTL]);
