@@ -1,8 +1,12 @@
 import { istParts, TZ } from "@/lib/prayer";
-import { localizeDigits, type Lang } from "@/lib/i18n";
+import { MoonStar } from "lucide-react";
+import { formatHijriDate, type HijriAdjustment } from "@/lib/hijri-date";
+import { localizeDigits, tr, type Lang } from "@/lib/i18n";
 
-export function Clock({ now, mode, h12, lang }: { now: Date; mode: "digital" | "analog"; h12: boolean; lang: Lang }) {
+export function Clock({ now, mode, h12, lang, maghrib, hijriCorrection }: { now: Date; mode: "digital" | "analog"; h12: boolean; lang: Lang; maghrib?: string; hijriCorrection: HijriAdjustment }) {
   const p = istParts(now);
+  const t = tr(lang);
+  const hijriDate = formatHijriDate(now, lang, maghrib, hijriCorrection);
   const date = new Intl.DateTimeFormat(lang === "ml" ? "ml-IN" : lang === "ar" ? "ar-SA-u-ca-gregory-nu-arab" : "en-IN", { timeZone: TZ, weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(now);
   const hh = h12 ? ((p.h + 11) % 12) + 1 : p.h;
   const pad = (n: number) => localizeDigits(String(n).padStart(2, "0"), lang);
@@ -21,6 +25,13 @@ export function Clock({ now, mode, h12, lang }: { now: Date; mode: "digital" | "
         <div className="font-mono text-lg tabular-nums" dir="ltr">{pad(hh)}:{pad(p.mi)}:{pad(p.s)} {h12 ? (p.h < 12 ? "AM" : "PM") : ""}</div>
       )}
       <div className="text-sm opacity-80" dir="auto">{localizeDigits(date, lang)}</div>
+      <div className="awqaat-hijri-date mt-1 inline-flex max-w-full flex-col items-center gap-1.5 rounded-2xl border border-amber-200/30 bg-white/10 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,.13)] backdrop-blur-lg">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[.18em] text-amber-200">
+          <MoonStar className="h-3.5 w-3.5" aria-hidden="true" />{t("hijriLabel")}
+        </span>
+        <span className="font-display text-base font-semibold leading-snug text-white sm:text-lg" dir="auto">{hijriDate}</span>
+        <span className="text-center text-[10px] leading-relaxed text-white/70" dir="auto">{t("hijriEstimate")}</span>
+      </div>
     </div>
   );
 }
