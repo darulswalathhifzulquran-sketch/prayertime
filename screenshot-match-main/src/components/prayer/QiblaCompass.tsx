@@ -30,83 +30,83 @@ export function qiblaBearing(latitude: number, longitude: number) {
   return normalize(Math.atan2(east, north) * 180 / Math.PI);
 }
 
-/* This is a VECTOR COMPASS, not an image. The silver/white/black/red colours
-   match the supplied example, while dial and needle can rotate independently. */
+/* iPhone-inspired, original vector compass.
+   Compass rose follows the device's heading; the gold Kaaba pointer tracks
+   the great-circle Qibla bearing. No image or mock sensor values are used. */
 function CompassDial({ bearing, heading, lang, alt }: {
   bearing: number | null; heading: Heading | null; lang: Lang; alt: string;
 }) {
   const headingAngle = heading?.continuous ?? 0;
   const directionAngle = bearing === null ? null : bearing - headingAngle;
   const ticks = useMemo(() => Array.from({ length: 120 }, (_, i) => i), []);
-  const directions = [
-    { label: "N", x: 180, y: 83 }, { label: "NE", x: 250, y: 112 },
-    { label: "E", x: 279, y: 184 }, { label: "SE", x: 252, y: 257 },
-    { label: "S", x: 180, y: 285 }, { label: "SW", x: 108, y: 257 },
-    { label: "W", x: 81, y: 184 }, { label: "NW", x: 108, y: 112 },
+  const cardinals = [
+    { label: "N", a: 0 }, { label: "NE", a: 45 }, { label: "E", a: 90 },
+    { label: "SE", a: 135 }, { label: "S", a: 180 }, { label: "SW", a: 225 },
+    { label: "W", a: 270 }, { label: "NW", a: 315 },
   ];
-
   return (
     <svg className="qibla-live-dial" viewBox="0 0 360 360" role="img" aria-label={alt}>
       <defs>
-        <linearGradient id="awqaat-bezel" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#fff"/>
-          <stop offset="21%" stopColor="#858585"/>
-          <stop offset="53%" stopColor="#e9e9e9"/>
-          <stop offset="78%" stopColor="#707070"/>
-          <stop offset="100%" stopColor="#f4f4f4"/>
-        </linearGradient>
-        <radialGradient id="awqaat-face" cx="37%" cy="29%" r="78%">
-          <stop offset="0%" stopColor="#fff"/>
-          <stop offset="80%" stopColor="#f0f0f0"/>
-          <stop offset="100%" stopColor="#d3d3d3"/>
+        <radialGradient id="ios-qibla-face" cx="45%" cy="33%" r="77%">
+          <stop offset="0%" stopColor="#252e3a" />
+          <stop offset="68%" stopColor="#0a111a" />
+          <stop offset="100%" stopColor="#02060b" />
         </radialGradient>
-        <linearGradient id="awqaat-red" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#740b0b"/>
-          <stop offset="42%" stopColor="#ff3131"/>
-          <stop offset="100%" stopColor="#c40000"/>
+        <linearGradient id="ios-qibla-gold" x1="0" x2="1" y1="0" y2="1">
+          <stop offset="0%" stopColor="#fff0aa" />
+          <stop offset="52%" stopColor="#d5ae55" />
+          <stop offset="100%" stopColor="#9a7227" />
         </linearGradient>
       </defs>
-      <circle cx="180" cy="180" r="177" fill="#666" stroke="#c1c1c1" strokeWidth="2"/>
-      <circle cx="180" cy="180" r="171" fill="url(#awqaat-bezel)" stroke="#6a6a6a" strokeWidth="2.5"/>
-      <circle cx="180" cy="180" r="156" fill="#a5a5a5" stroke="#e9e9e9" strokeWidth="3"/>
-      <circle cx="180" cy="180" r="148" fill="url(#awqaat-face)" stroke="#a2a2a2" strokeWidth="1.6"/>
-      <g className="qibla-rose-rotation" style={{ transform: "rotate(" + (-headingAngle) + "deg)" }}>
-        <circle cx="180" cy="180" r="136" fill="none" stroke="#555" strokeWidth=".65" opacity=".52"/>
+      <circle cx="180" cy="180" r="176" fill="#04070d" stroke="#65717e" strokeWidth="2" />
+      <circle cx="180" cy="180" r="168" fill="url(#ios-qibla-face)" stroke="#192431" strokeWidth="2" />
+      <circle cx="180" cy="180" r="144" fill="none" stroke="#344151" strokeWidth="1" />
+      <circle cx="180" cy="180" r="118" fill="none" stroke="#2d3a47" strokeWidth=".8" opacity=".45" />
+      <g className="qibla-rose-rotation" style={{ transform: `rotate(${-headingAngle}deg)` }}>
         {ticks.map((tick) => (
-          <line key={tick} x1="180" y1={tick % 10 === 0 ? "30" : tick % 5 === 0 ? "35" : "39"}
-            x2="180" y2="46" stroke="#434343"
-            strokeWidth={tick % 10 === 0 ? "1.7" : tick % 5 === 0 ? "1.1" : ".57"}
-            opacity={tick % 10 === 0 ? "0.86" : "0.65"}
-            transform={"rotate(" + tick * 3 + " 180 180)"}/>
+          <line key={tick} x1="180"
+            y1={tick % 10 === 0 ? "19" : tick % 5 === 0 ? "25" : "31"}
+            x2="180" y2={tick % 10 === 0 ? "42" : tick % 5 === 0 ? "38" : "35"}
+            stroke={tick === 0 ? "#ef5d64" : tick % 10 === 0 ? "#e3ebf5" : "#8191a2"}
+            strokeWidth={tick % 10 === 0 ? "2.2" : tick % 5 === 0 ? "1.25" : ".75"}
+            opacity={tick % 10 === 0 ? 1 : .62}
+            transform={`rotate(${tick * 3} 180 180)`}/>
         ))}
         {Array.from({ length: 12 }, (_, i) => (
-          <text key={i} x="180" y="60" textAnchor="middle" fontSize="9"
-            fontWeight="600" fill="#4f4f4f" transform={"rotate(" + i * 30 + " 180 180)"}>
+          <text key={i} x="180" y="61" textAnchor="middle" fontSize="10"
+            fontWeight="600" fill="#a8b7c8"
+            transform={`rotate(${i * 30} 180 180)`}>
             {localizeDigits(i * 30, lang)}
           </text>
         ))}
-        <path d="M180 89 L190 179 L180 167 L170 179 Z" fill="#111" stroke="#333" strokeWidth=".8"/>
-        <path d="M180 271 L170 181 L180 193 L190 181 Z" fill="#303030" stroke="#555" strokeWidth=".8"/>
-        <path d="M89 180 L179 170 L167 180 L179 190 Z" fill="#050505"/>
-        <path d="M271 180 L181 190 L193 180 L181 170 Z" fill="#202020"/>
-        <path d="M117 117 L177 168 L169 180 Z M243 117 L183 168 L191 180 Z M243 243 L183 192 L191 180 Z M117 243 L177 192 L169 180 Z" fill="#242424"/>
-        {directions.map((d) => (
-          <text key={d.label} x={d.x} y={d.y} textAnchor="middle"
-            fontSize={d.label.length === 1 ? "18" : "13"} fontWeight="800"
-            fill={d.label === "N" ? "#bd0b0b" : "#111"}>{d.label}</text>
-        ))}
+        {cardinals.map(({label, a}) => {
+          const theta = a * Math.PI / 180;
+          return <text key={label}
+            x={180 + 109 * Math.sin(theta)}
+            y={185 - 109 * Math.cos(theta)}
+            textAnchor="middle" fontSize={label.length === 1 ? "20" : "12"}
+            fontWeight="800" fill={label === "N" ? "#ff696e" : "#f4f7ff"}
+            transform={`rotate(${a} ${180 + 109 * Math.sin(theta)} ${180 - 109 * Math.cos(theta)})`}>
+            {label}
+          </text>;
+        })}
       </g>
       {directionAngle !== null && (
-        <g className="qibla-needle-rotation" style={{ transform: "rotate(" + directionAngle + "deg)" }}>
-          <path d="M180 64 L169 191 L180 174 L191 191 Z" fill="url(#awqaat-red)" stroke="#920000" strokeWidth="1"/>
-          <path d="M180 297 L169 187 L180 194 L191 187 Z" fill="#454545" stroke="#171717" strokeWidth="1"/>
-          <path d="M180 69 L177 170 L180 166 Z" fill="#ffaeae" opacity=".8"/>
+        <g className="qibla-needle-rotation" style={{transform: `rotate(${directionAngle}deg)`}}>
+          <path d="M180 43 L165 145 L180 135 L195 145 Z"
+            fill="url(#ios-qibla-gold)" stroke="#ffdda1" strokeWidth="1.5"/>
+          <path d="M180 313 L166 214 L180 225 L194 214 Z" fill="#637285" stroke="#b8c3d0" strokeWidth=".8" />
+          <path d="M180 48 L177 130 L180 125 Z" fill="#fff4d5" opacity=".9"/>
+          <rect x="170" y="158" width="20" height="20" rx="3" fill="#141718" stroke="#ffd976" strokeWidth="2"/>
+          <rect x="170" y="163" width="20" height="4" fill="#d9ae54"/>
+          <path d="M174 171h12" stroke="#d9ae54" strokeWidth="1" />
         </g>
       )}
-      <circle cx="180" cy="180" r="15" fill="#555" stroke="#111" strokeWidth="2"/>
-      <circle cx="180" cy="180" r="10.5" fill="url(#awqaat-bezel)" stroke="#ddd" strokeWidth="1.2"/>
-      <circle cx="180" cy="180" r="4" fill="#333"/>
-      <circle cx="180" cy="180" r="147" fill="none" stroke="#fff" strokeWidth="1" opacity=".62"/>
+      <path d="M180 6 L174 20 H186 Z" fill="#ff5b61" stroke="#ff878a" strokeWidth=".6" />
+      <circle cx="180" cy="180" r="21" fill="#111a27" stroke="#687586" strokeWidth="1.5"/>
+      <circle cx="180" cy="180" r="14" fill="#283646" stroke="#8797a9" strokeWidth="1"/>
+      <circle cx="180" cy="180" r="5" fill="#f4d489"/>
+      <circle cx="180" cy="180" r="167" fill="none" stroke="#eef5ff" strokeWidth=".6" opacity=".14"/>
     </svg>
   );
 }
@@ -142,6 +142,7 @@ export function QiblaCompass({
   const alignmentStartRef = useRef<number | null>(null);
   const [stableAligned, setStableAligned] = useState(false);
   const [unstable, setUnstable] = useState(false);
+  const [tilted, setTilted] = useState(false);
   const alignmentBuzzArmed = useRef(true);
   const bearing = useMemo(
     () => position ? qiblaBearing(position.lat, position.lng) : null,
@@ -150,7 +151,7 @@ export function QiblaCompass({
   // The alignment indicator uses a time-based hold and a wider exit threshold:
   // a momentary sensor spike cannot make it flash on/off.
   const relative = heading && bearing !== null ? normalize(bearing - heading.value) : null;
-  const aligned = stableAligned && !unstable && sensorStatus === "live" && relative !== null &&
+  const aligned = stableAligned && !unstable && !tilted && sensorStatus === "live" && relative !== null &&
     Math.min(relative, 360 - relative) <= 10;
 
   // A single haptic confirmation when a reliable compass first aligns.
@@ -224,6 +225,10 @@ export function QiblaCompass({
         stableCountRef.current += 1;
       }
 
+      if (typeof event.beta === "number" && typeof event.gamma === "number" &&
+          Number.isFinite(event.beta) && Number.isFinite(event.gamma)) {
+        setTilted(Math.abs(event.beta) > 27 || Math.abs(event.gamma) > 27);
+      }
       const accuracy = typeof event.webkitCompassAccuracy === "number" &&
         Number.isFinite(event.webkitCompassAccuracy) ? event.webkitCompassAccuracy : undefined;
       const poorAccuracy = accuracy !== undefined && accuracy > 25;
@@ -260,7 +265,7 @@ export function QiblaCompass({
 
       // Even if the needle is inside the 1.5° deadband, incoming samples are
       // counted for steady alignment; the marker itself stays still.
-      if (bearing !== null && !unreliable) {
+      if (bearing !== null && !unreliable && !tilted) {
         const error = Math.abs(shortestChange(bearing, nextValue));
         if (error <= 5) {
           if (alignmentStartRef.current === null) alignmentStartRef.current = now;
@@ -287,7 +292,7 @@ export function QiblaCompass({
       window.removeEventListener("deviceorientation", onOrientation);
       window.removeEventListener("deviceorientationabsolute", onOrientation as EventListener);
     };
-  }, [active, sensorEnabled, bearing]);
+  }, [active, sensorEnabled, bearing, tilted]);
 
   // Do not keep reporting a live working compass when device readings stop.
   useEffect(() => {
@@ -373,7 +378,7 @@ export function QiblaCompass({
       : t("qiblaManualHint");
 
   return (
-    <section id="qibla" className="qibla-section mx-auto max-w-xl scroll-mt-24">
+    <section id="qibla" className="qibla-section qibla-ios mx-auto max-w-xl scroll-mt-24">
       <div className="glass-shell qibla-panel rounded-[2rem] p-4 sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
@@ -384,12 +389,23 @@ export function QiblaCompass({
           <span className="qibla-heading-icon" aria-hidden="true"><Compass size={25}/></span>
         </div>
 
+        <div className="qibla-ios-heading" aria-live="off">
+          <span className="qibla-ios-heading-number" dir="ltr">{heading ? localizeDigits(String(Math.round(heading.value)), lang) + "°" : "—°"}</span>
+          <span className="qibla-ios-heading-label" dir="auto">
+            {t("qiblaHeadingCardinal")} · {heading ? ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][Math.round(heading.value / 45) % 8] : t("qiblaStatic")}
+          </span>
+        </div>
         <div className="qibla-dial-frame">
           <div className="qibla-vector-wrap">
             <CompassDial bearing={bearing} heading={heading} lang={lang} alt={t("qiblaTitle")} />
           </div>
         </div>
 
+        <div className="qibla-ios-direction" role="status" dir="auto">
+          <span className="qibla-ios-direction-label">{t("qiblaRotateTo")}</span>
+          <strong>{relative === null ? "—" : localizeDigits(Math.round(Math.min(relative, 360 - relative)), lang) + "°"} {relative !== null && relative > 5 && relative < 355 ? (relative < 180 ? "↻" : "↺") : ""}</strong>
+          {aligned && <span className="qibla-ios-aligned-dot" aria-label={t("qiblaAligned")} />}
+        </div>
         <div className="qibla-data-grid">
           <div className="qibla-stat">
             <span>{t("qiblaBearing")}</span>
@@ -403,6 +419,12 @@ export function QiblaCompass({
           </div>
         </div>
 
+        {position && (
+          <div className="qibla-ios-coordinates" dir="ltr">
+            {position.lat.toFixed(5)}°, {position.lng.toFixed(5)}°
+            {heading?.accuracy !== undefined && <span> · {t("qiblaSensorAccuracy")} ±{Math.round(heading.accuracy)}°</span>}
+          </div>
+        )}
         <div className="qibla-location-line" dir="auto">
           <MapPin size={16} aria-hidden="true"/>
           <span>{locationName}</span>
@@ -437,6 +459,7 @@ export function QiblaCompass({
         {sensorStatus !== "idle" && sensorStatus !== "live" && sensorStatus !== "relative-only" && (
           <p className="qibla-guidance" role="status" aria-live="polite" dir="auto">{sensorMessage}</p>
         )}
+        <p className="qibla-ios-compass-caution" dir="auto">{tilted ? t("qiblaHoldFlat") : t("qiblaMagneticNote")}</p>
         {unstable && (
           <p className="qibla-note" role="alert"><ShieldAlert size={16}/>{t("qiblaSensorUnstable")}</p>
         )}
