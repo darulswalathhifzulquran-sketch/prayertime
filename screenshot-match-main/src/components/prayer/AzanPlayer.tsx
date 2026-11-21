@@ -193,7 +193,7 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
         aria-label="Azan recitation by AL HAFIZ MUHAMMED NOUFAL"
       />
       <h3 className="font-display text-2xl font-semibold" dir="auto">{title}</h3>
-      <video aria-label="Islamic minaret with moving clouds animation" className="glass-tool-photo mt-3 w-full bg-black object-contain" src="/videos/azan-minaret-animation.mp4" autoPlay muted loop playsInline preload="metadata" />
+      <video aria-label="Islamic minaret with moving clouds animation" className="glass-tool-photo mt-3 w-full bg-black object-cover object-center" src="/videos/azan-minaret-animation.mp4" autoPlay muted loop playsInline preload="metadata" />
       {view === "player" && hasAudio && (
         <div className="glass-inner mt-3 flex items-center gap-3 rounded-2xl px-4 py-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-fuchsia-200/40 bg-white/10" aria-hidden="true">
