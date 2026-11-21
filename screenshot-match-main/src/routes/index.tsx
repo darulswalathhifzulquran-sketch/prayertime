@@ -225,7 +225,7 @@ function Index() {
   const showHome = activeTab === "home" || activeTab === "prayers";
   // Never substitute a district's coordinates for a manually entered city.
   // City and address-only districts use the API's verified-in-India coordinates.
-  const qiblaPosition = gps.location
+  const prayerNotificationPosition = gps.location
     ? { lat: gps.location.latitude, lng: gps.location.longitude, altitude: gps.location.altitude, source: "gps" as const }
     : city
       ? pt.resolvedCoordinates
@@ -348,6 +348,7 @@ function Index() {
             </PopoverContent>
           </Popover>
             )}
+          {activeTab !== "qibla" && (
           <Button
             variant={gps.enabled ? "secondary" : "ghost"}
             size="icon"
@@ -357,6 +358,7 @@ function Index() {
             aria-pressed={gps.enabled}
             className={gps.enabled ? "text-primary" : undefined}
           ><LocateFixed className={gps.locating ? "animate-pulse" : undefined} /></Button>
+          )}
           <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label={t("theme")}>{theme === "dark" ? <Sun /> : <Moon />}</Button>
           <Sheet modal={false} open={settingsOpen} onOpenChange={setSettingsOpen}>
             <SheetTrigger asChild><Button variant="ghost" size="icon" aria-label={t("settings")}><Settings /></Button></SheetTrigger>
@@ -419,7 +421,7 @@ function Index() {
           </Sheet>
           </div>
         </div>
-        {(gps.locating || gps.error || gps.location) && (
+        {activeTab !== "qibla" && (gps.locating || gps.error || gps.location) && (
           <p className="pb-2 px-4 text-center text-xs text-muted-foreground" role="status" aria-live="polite" dir="auto">
             {gps.error
               ? localizeDigits(gps.error, lang)
@@ -509,16 +511,7 @@ function Index() {
         </section>
 
         {activeTab === "qibla" && (
-          <QiblaCompass
-            active={true}
-            lang={lang}
-            position={qiblaPosition}
-            locationName={gps.location ? t("gpsYours") : city ? city + ", " + district.name + ", " + state.name : district.name + ", " + state.name}
-            gpsEnabled={gps.enabled}
-            gpsLocating={gps.locating}
-            gpsError={gps.error}
-            onGpsClick={gps.toggle}
-          />
+          <QiblaCompass active={true} lang={lang} />
         )}
 
         {/* Keep both tools mounted while navigating: audio scheduling and running stopwatch persist. */}
@@ -537,7 +530,7 @@ function Index() {
           />
           {activeTab === "reminder" && (
             <div className="mt-4">
-              <PrayerNotificationsSetup lang={lang} position={qiblaPosition} method={method} school={school} />
+              <PrayerNotificationsSetup lang={lang} position={prayerNotificationPosition} method={method} school={school} />
             </div>
           )}
         </section>
