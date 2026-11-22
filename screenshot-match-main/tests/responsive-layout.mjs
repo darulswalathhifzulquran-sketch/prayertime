@@ -159,6 +159,10 @@ try {
       }
 
 
+      // The explicit Prayer tab hides the institutional footer, while manual
+      // scrolling within Home retains it even when the Prayer icon is active.
+      await navButtons.nth(0).click();
+      await page.locator(".jamia-site-footer").waitFor({state: "visible"});
       const footer = await page.locator(".jamia-site-footer").evaluate(async (node) => {
         const logo = node.querySelector("img");
         await logo.decode();
@@ -166,12 +170,12 @@ try {
         const inner = node.querySelector(".jamia-footer-inner");
         return { left: rect.left, right: rect.right, overflow: node.scrollWidth - node.clientWidth,
           columns: getComputedStyle(inner).gridTemplateColumns.split(" ").length,
-          logo: logo.naturalWidth, phones: node.querySelectorAll('a[href^="tel:"]').length,
+          logo: logo.naturalWidth, logoSource: logo.getAttribute("src"), phones: node.querySelectorAll('a[href^="tel:"]').length,
           email: !!node.querySelector('a[href="mailto:info@jamiaimamnavavi-ra.com"]'),
           website: !!node.querySelector('a[href="https://jamiaimamnavavi-ra.com/"]') };
       });
       if (footer.left < -1 || footer.right > vp.width + 1 || footer.overflow > 2 ||
-          footer.columns !== (vp.width <= 700 ? 1 : 2) || !footer.logo || footer.phones !== 3 ||
+          footer.columns !== (vp.width <= 700 ? 1 : 2) || footer.logo < 270 || footer.logoSource !== "/jamia-footer-logo.svg" || footer.phones !== 3 ||
           !footer.email || !footer.website) failures.push(vp.name + ": institutional footer regression " + JSON.stringify(footer));
       await page.evaluate(() => window.scrollTo({top: document.documentElement.scrollHeight, behavior:"instant"}));
       await page.waitForTimeout(120);
@@ -223,6 +227,7 @@ try {
         await page.locator(sectionId).waitFor({ state: "visible", timeout: 5000 });
         await page.waitForTimeout(120);
         await measure(name);
+        if ((await page.locator(".jamia-site-footer").count()) !== (index === 0 ? 1 : 0)) failures.push(vp.name + ": incorrect footer visibility on " + name);
         if (name === "qibla") {
           if (!(await page.locator(".qibla-ios .qibla-live-dial").isVisible())) {
             failures.push(vp.name + ": iPhone Qibla compass missing");
