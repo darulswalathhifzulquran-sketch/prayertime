@@ -132,6 +132,24 @@ try {
             const delta = r(39.826206 - 72.8777);
             const expected = ((Math.atan2(Math.sin(delta) * Math.cos(r(21.422487)), Math.cos(r(19.076)) * Math.sin(r(21.422487)) - Math.sin(r(19.076)) * Math.cos(r(21.422487)) * Math.cos(delta)) * 180 / Math.PI) + 360) % 360;
             if (Math.abs(angle - expected) > 0.2) failures.push("Qibla did not use independent device coordinates: " + value);
+            // With GPS but no orientation event, the real bearing must already be visible.
+            const staticGuide = await page.evaluate(() => {
+              const dial = document.querySelector(".qibla-live-dial");
+              const marker = dial?.querySelector("[data-qibla-marker]");
+              const pointer = dial?.querySelector("[data-qibla-pointer]");
+              return {
+                mode: dial?.getAttribute("data-compass-mode"),
+                marker: !!marker,
+                rotation: pointer?.getAttribute("transform"),
+                reference: !!document.querySelector("[data-qibla-reference]"),
+                falselyAligned: !!document.querySelector(".qibla-aligned"),
+              };
+            });
+            if (staticGuide.mode !== "reference" || !staticGuide.marker || !staticGuide.reference ||
+                !staticGuide.rotation || staticGuide.falselyAligned ||
+                Math.abs(Number(staticGuide.rotation.match(/rotate\(([-.\d]+)/)?.[1]) - expected) > 0.2) {
+              failures.push("GPS-only Qibla pointer regression: " + JSON.stringify(staticGuide));
+            }
             // Simulated Android sensor stream, with measured no-motion gyro readings.
             // A synthetic sensor test is not a physical compass calibration.
             const motionResult = await page.evaluate(async () => {
@@ -165,11 +183,11 @@ try {
                 image.src = asset;
                 try { await image.decode(); decoded = image.naturalWidth > 0; } catch {}
               }
-              return {stable, before, after, beforeAngle, afterAngle: markerAngle(), decoded};
+              return {stable, before, after, beforeAngle, afterAngle: markerAngle(), decoded, mode: document.querySelector(".qibla-live-dial")?.getAttribute("data-compass-mode")};
             });
             console.log("Qibla synthetic motion test:", JSON.stringify(motionResult));
             if(!motionResult.stable || !motionResult.beforeAngle || !motionResult.afterAngle ||
-              motionResult.before === motionResult.after || !motionResult.decoded)
+              motionResult.before === motionResult.after || !motionResult.decoded || motionResult.mode !== "live")
               failures.push("Qibla motion lock or Kaaba image failed: " + JSON.stringify(motionResult));
 
           }

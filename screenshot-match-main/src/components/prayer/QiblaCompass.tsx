@@ -40,7 +40,9 @@ function CompassDial({ bearing, heading, lang, alt }: {
   bearing: number | null; heading: Heading | null; lang: Lang; alt: string;
 }) {
   const headingAngle = heading?.continuous ?? 0;
-  const directionAngle = bearing === null || heading === null ? null : bearing - headingAngle;
+  // When live sensor data is unavailable, keep the real GPS bearing visible
+  // on a north-up reference dial. A reference is never treated as alignment.
+  const directionAngle = bearing === null ? null : bearing - headingAngle;
   const ticks = useMemo(() => Array.from({ length: 120 }, (_, i) => i), []);
   const cardinals = [
     { label: "N", a: 0 }, { label: "NE", a: 45 }, { label: "E", a: 90 },
@@ -48,7 +50,7 @@ function CompassDial({ bearing, heading, lang, alt }: {
     { label: "W", a: 270 }, { label: "NW", a: 315 },
   ];
   return (
-    <svg className="qibla-live-dial" viewBox="0 0 360 360" role="img" aria-label={alt}>
+    <svg className="qibla-live-dial" viewBox="0 0 360 360" role="img" aria-label={alt} data-compass-mode={heading === null ? "reference" : "live"}>
       <defs>
         <radialGradient id="ios-qibla-face" cx="45%" cy="33%" r="77%">
           <stop offset="0%" stopColor="#252e3a" />
@@ -95,7 +97,7 @@ function CompassDial({ bearing, heading, lang, alt }: {
         })}
       </g>
       {directionAngle !== null && (
-        <g transform={`rotate(${directionAngle} 180 180)`}>
+        <g data-qibla-pointer="true" transform={`rotate(${directionAngle} 180 180)`}>
           <path d="M180 72 L165 145 L180 135 L195 145 Z"
             fill="url(#ios-qibla-gold)" stroke="#ffdda1" strokeWidth="1.5"/>
           <path d="M180 313 L166 214 L180 225 L194 214 Z" fill="#637285" stroke="#b8c3d0" strokeWidth=".8" />
@@ -199,7 +201,8 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
       return Number.isFinite(result) ? result : null;
     } catch { return null; }
   }, [position?.lat, position?.lng]);
-  const relative = heading && bearing !== null && declination !== null ? normalize(bearing - heading.value) : null;
+  const liveHeading = sensorStatus === "live" ? heading : null;
+  const relative = liveHeading && bearing !== null && declination !== null ? normalize(bearing - liveHeading.value) : null;
   const aligned = stableAligned && !unstable && !tilted && sensorStatus === "live" && relative !== null &&
     Math.min(relative, 360 - relative) <= 5;
 
@@ -421,6 +424,7 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
     if (ctor && typeof ctor.requestPermission !== "function") void enableSensor();
   }, [active, sensorEnabled, sensorStatus]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const referenceMode = liveHeading === null;
   const sensorMessage =
     sensorStatus === "denied" ? t("qiblaSensorDenied")
       : sensorStatus === "unavailable" ? t("qiblaSensorUnavailable")
@@ -442,20 +446,20 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
         </div>
 
         <div className="qibla-ios-heading" aria-live="off">
-          <span className="qibla-ios-heading-number" dir="ltr">{heading ? localizeDigits(String(heading.display), lang) + "°" : "—°"}</span>
-
+          <span className="qibla-ios-heading-number" dir="ltr">{liveHeading ? localizeDigits(String(liveHeading.display), lang) + "°" : bearing !== null ? localizeDigits(bearing.toFixed(1), lang) + "°" : "—°"}</span>
+          {referenceMode && bearing !== null && <span className="text-xs font-medium text-slate-300" data-qibla-reference="true">{t("qiblaNorthUpGuide")}</span>}
         </div>
         <div className="qibla-dial-frame">
           <div className="qibla-vector-wrap">
-            <CompassDial bearing={bearing} heading={heading} lang={lang} alt={t("qiblaTitle")} />
+            <CompassDial bearing={bearing} heading={liveHeading} lang={lang} alt={referenceMode ? t("qiblaNorthUpGuide") : t("qiblaTitle")} />
           </div>
         </div>
 
-        <div className="qibla-ios-direction" role="status" dir="auto">
+        {!referenceMode && <div className="qibla-ios-direction" role="status" dir="auto">
           <span className="qibla-ios-direction-label">{t("qiblaRotateTo")}</span>
           <strong>{relative === null ? "—" : localizeDigits(Math.round(Math.min(relative, 360 - relative)), lang) + "°"} {relative !== null && relative > 5 && relative < 355 ? (relative < 180 ? "↻" : "↺") : ""}</strong>
           {aligned && <span className="qibla-ios-aligned-dot" aria-label={t("qiblaAligned")} />}
-        </div>
+        </div>}
         <div className="qibla-data-grid">
           <div className="qibla-stat">
             <span>{t("qiblaBearing")}</span>
@@ -464,8 +468,8 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
           </div>
           <div className="qibla-stat">
             <span>{t("qiblaPhoneHeading")}</span>
-            <strong className="font-mono" dir="ltr">{heading === null ? "—" : localizeDigits(String(heading.display), lang) + "°"}</strong>
-            <small>{sensorStatus === "live" ? t("qiblaLive") : t("qiblaStatic")}</small>
+            <strong className="font-mono" dir="ltr">{liveHeading === null ? "—" : localizeDigits(String(liveHeading.display), lang) + "°"}</strong>
+            <small>{liveHeading ? t("qiblaLive") : t("qiblaHeadingUnavailable")}</small>
           </div>
         </div>
 
@@ -498,7 +502,7 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
         {aligned && sensorStatus === "live" && (
           <p className="qibla-aligned" role="status"><CheckCircle2 size={18}/>{t("qiblaAligned")}</p>
         )}
-        {sensorStatus !== "idle" && sensorStatus !== "live" && sensorStatus !== "relative-only" && (
+        {sensorStatus !== "idle" && sensorStatus !== "live" && (
           <p className="qibla-guidance" role="status" aria-live="polite" dir="auto">{sensorMessage}</p>
         )}
         {tilted && <p className="mt-3 text-center text-xs text-amber-200" role="status" dir="auto">{t("qiblaHoldFlat")}</p>}
