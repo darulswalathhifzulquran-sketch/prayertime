@@ -227,7 +227,22 @@ try {
         await page.locator(sectionId).waitFor({ state: "visible", timeout: 5000 });
         await page.waitForTimeout(120);
         await measure(name);
-        if ((await page.locator(".jamia-site-footer").count()) !== (index === 0 ? 1 : 0)) failures.push(vp.name + ": incorrect footer visibility on " + name);
+        // Portrait/landscape phones: the shared Home+Prayer screen ends with
+        // its footer after Prayer. iPads and desktops show it on Home only.
+        const phone = vp.width <= 700 || (vp.width <= 950 && vp.height <= 520);
+        const footerExpected = index === 0 || (index === 1 && phone);
+        const footerVisible = await page.locator(".jamia-site-footer").isVisible();
+        if (footerVisible !== footerExpected)
+          failures.push(vp.name + ": incorrect footer visibility on " + name + ": " + footerVisible);
+        if (index === 1 && phone && footerVisible) {
+          const order = await page.evaluate(() => ({
+            prayerBottom: document.querySelector("#prayers").getBoundingClientRect().bottom,
+            footerTop: document.querySelector(".jamia-site-footer").getBoundingClientRect().top,
+            footers: document.querySelectorAll(".jamia-site-footer").length,
+          }));
+          if (order.footers !== 1 || order.footerTop < order.prayerBottom)
+            failures.push(vp.name + ": footer is not below Prayer " + JSON.stringify(order));
+        }
         if (name === "qibla") {
           if (!(await page.locator(".qibla-ios .qibla-live-dial").isVisible())) {
             failures.push(vp.name + ": iPhone Qibla compass missing");
