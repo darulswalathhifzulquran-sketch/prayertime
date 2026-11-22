@@ -462,11 +462,6 @@ function Index() {
                     <ToggleGroupItem value="digital">{t("digital")}</ToggleGroupItem><ToggleGroupItem value="analog">{t("analog")}</ToggleGroupItem>
                   </ToggleGroup>
                 </Field>
-                <Field label={t("hijriCorrection")}>
-                  <ToggleGroup type="single" value="0" data-hijri-standard="true" aria-label={t("hijriCorrection")}>
-                    <ToggleGroupItem value="0" aria-disabled="true">{t("hijriNoShift")}</ToggleGroupItem>
-                  </ToggleGroup>
-                </Field>
                 <Field label={t("theme")}>
                   <ToggleGroup type="single" value={theme} onValueChange={(v) => v && setTheme(v as "light" | "dark")}>
                     <ToggleGroupItem value="light">{t("light")}</ToggleGroupItem><ToggleGroupItem value="dark">{t("dark")}</ToggleGroupItem>
