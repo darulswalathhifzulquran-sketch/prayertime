@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Clock } from "@/components/prayer/Clock";
+import { JamiaFooter } from "@/components/JamiaFooter";
 import { type HijriAdjustment } from "@/lib/hijri-date";
 import { Stopwatch } from "@/components/prayer/Stopwatch";
 import { QiblaCompass } from "@/components/prayer/QiblaCompass";
@@ -597,6 +598,8 @@ function Index() {
           <Stopwatch title={t("stopwatch")} lang={lang} />
         </section>
       </main>
+
+      <JamiaFooter />
 
 
       <nav className={cn("glass-bottom-nav", settingsOpen && "settings-nav-open")} aria-label={t("navHome") + " / " + t("settings")}>
