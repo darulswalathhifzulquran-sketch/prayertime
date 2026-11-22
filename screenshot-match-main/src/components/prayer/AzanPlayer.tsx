@@ -14,12 +14,18 @@ const AUDIO_BACKUPS = [
   "https://raw.githubusercontent.com/darulswalathhifzulquran-sketch/prayertime/main/screenshot-match-main/public/audio/al-hafiz-muhammed-noufal.mp3",
   "https://cdn.jsdelivr.net/gh/darulswalathhifzulquran-sketch/prayertime@main/screenshot-match-main/public/audio/al-hafiz-muhammed-noufal.mp3",
 ] as const;
+const MUHSIN_AUDIO_SRC = "/audio/al-hafiz-muhammed-muhsin.mp3";
+
 export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "player", lang }: {
   title: string; now: Date | null; timings?: Timings | undefined; standardSrc?: string | undefined; fajrSrc?: string | undefined;
   view?: "player" | "reminders"; lang: Lang;
 }) {
   const t = tr(lang);
   const audio = useRef<HTMLAudioElement | null>(null);
+  const secondAudio = useRef<HTMLAudioElement | null>(null);
+  const [secondPlaying, setSecondPlaying] = useState(false);
+  const [secondFailed, setSecondFailed] = useState(false);
+  const [secondMessage, setSecondMessage] = useState("");
   const backupIndex = useRef(0);
   const userRequestedPlay = useRef(false);
   const retryPlaybackAfterFallback = useRef(false);
@@ -35,7 +41,11 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
   const [unlocked, setUnlocked] = useState(false);
   const [msg, setMsg] = useState("");
 
-  useEffect(() => { if (audio.current) { audio.current.volume = volume; audio.current.muted = muted; } }, [volume, muted]);
+  useEffect(() => {
+    for (const element of [audio.current, secondAudio.current]) {
+      if (element) { element.volume = volume; element.muted = muted; }
+    }
+  }, [volume, muted, view]);
 
   // Reset the media source if an administrator changes the recording.
   useEffect(() => {
@@ -119,6 +129,9 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
   }, [standardSrc, currentSrc, loading, recordingReady, recordingFailed, lang]);
 
   const play = async (src?: string) => {
+    // Only one of the two recitations should play at a time.
+    secondAudio.current?.pause();
+    setSecondPlaying(false);
     const a = audio.current;
     if (!a || !src || recordingFailed) return;
     const effectiveSrc = src === standardSrc ? currentSrc : src;
@@ -147,6 +160,35 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
       setRecordingFailed(true);
       setMsg(t("audioUnavailable"));
     }
+  };
+
+  const playSecond = async () => {
+    const a = secondAudio.current;
+    if (!a) return;
+    userRequestedPlay.current = false;
+    audio.current?.pause();
+    setPlaying(false);
+    setSecondFailed(false);
+    setSecondMessage("");
+    try {
+      a.volume = volume;
+      a.muted = muted;
+      await a.play();
+      setSecondPlaying(true);
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") return;
+      const denied = error instanceof Error && error.name === "NotAllowedError";
+      setSecondMessage(t(denied ? "playError" : "audioUnavailable"));
+      setSecondFailed(!denied);
+    }
+  };
+
+  const stopSecond = () => {
+    const a = secondAudio.current;
+    if (!a) return;
+    a.pause();
+    a.currentTime = 0;
+    setSecondPlaying(false);
   };
 
   const enable = async () => {
@@ -225,6 +267,48 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
         <Button size="icon" variant="ghost" aria-label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(!muted)}>{muted ? <VolumeX /> : <Volume2 />}</Button>
         <Slider className="awqaat-azan-volume w-32 self-center" value={[volume * 100]} max={100} onValueChange={(v) => setVolume((v[0] ?? 0) / 100)} aria-label="Volume" />
       </div>
+      {view === "player" && (
+        <div className="glass-inner awqaat-second-recording mt-4 rounded-2xl px-4 py-3" data-azan-recording="muhsin">
+          <audio
+            ref={secondAudio}
+            src={MUHSIN_AUDIO_SRC}
+            preload="none"
+            aria-label="Azan recitation by AL HAFIZ MUHAMMED MUHSIN"
+            onPlay={() => setSecondPlaying(true)}
+            onPause={() => setSecondPlaying(false)}
+            onEnded={() => setSecondPlaying(false)}
+            onError={() => { setSecondFailed(true); setSecondPlaying(false); setSecondMessage(t("audioUnavailable")); }}
+          />
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-fuchsia-200/40 bg-white/10 text-gold" aria-hidden="true">
+              <Volume2 className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.13em] text-muted-foreground">{t("record")} 02</p>
+              <p className="awqaat-recording-name break-words text-sm font-extrabold tracking-wide" dir="ltr">AL HAFIZ MUHAMMED MUHSIN</p>
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <Button size="icon" aria-label={secondPlaying ? "Pause AL HAFIZ MUHAMMED MUHSIN" : "Play AL HAFIZ MUHAMMED MUHSIN"}
+              onClick={() => secondPlaying ? secondAudio.current?.pause() : void playSecond()}>
+              {secondPlaying ? <Pause /> : <Play />}
+            </Button>
+            <Button size="icon" variant="outline" aria-label="Stop AL HAFIZ MUHAMMED MUHSIN"
+              onClick={stopSecond}><Square /></Button>
+            <Button size="icon" variant="outline" aria-label="Replay AL HAFIZ MUHAMMED MUHSIN"
+              onClick={() => { if (secondAudio.current) secondAudio.current.currentTime = 0; void playSecond(); }}>
+              <RotateCcw />
+            </Button>
+          </div>
+          {secondMessage && <p className="mt-2 text-sm text-destructive" role="alert">{secondMessage}</p>}
+          {secondFailed && (
+            <Button size="sm" variant="ghost" className="mt-2" onClick={() => {
+              setSecondFailed(false); setSecondMessage("");
+              secondAudio.current?.load();
+            }}>{t("retry")}</Button>
+          )}
+        </div>
+      )}
       {view === "reminders" && (
       <div className="glass-inner mt-5 flex items-center justify-between gap-3 rounded-2xl p-3">
         <div className="flex items-center gap-2 text-sm font-medium">{enabled ? <Bell className="h-4 w-4 text-gold" /> : <BellOff className="h-4 w-4" />} {t("azanReminders")}</div>
