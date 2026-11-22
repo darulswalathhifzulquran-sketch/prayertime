@@ -2331,3 +2331,14 @@
 @media (orientation: landscape) and (max-height: 500px) {
   .awqaat-main { padding-top: 16px; }
 }
+
+/* Reserve the full Scheherazade New vocalization area in the next-prayer
+   heading. Keep its tashkeel clear of the caption and the English name. */
+.awqaat-hero .glass-on-dark > p.font-arabic[lang="ar"] {
+  margin-top: 0.875rem;
+  margin-bottom: 0.125rem;
+  line-height: 1.8;
+  padding-block: 0.1em;
+  letter-spacing: normal;
+  overflow: visible;
+}
