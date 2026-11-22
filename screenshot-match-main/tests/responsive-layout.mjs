@@ -329,6 +329,8 @@ try {
         creditsCollapsed: node.querySelector(".awqaat-settings-credits")?.open === false,
       }));
       if (!settingsTheme.theme || settingsTheme.fields !== 7 || !settingsTheme.creditsCollapsed) failures.push(vp.name + ": Settings theme or controls missing");
+      const hijriOptions = await page.locator("[data-hijri-standard]").evaluate(node => Array.from(node.querySelectorAll("button")).map(button=>({text:button.textContent?.trim(),state:button.getAttribute("data-state")})));
+      if(hijriOptions.length !== 1 || hijriOptions[0].text !== "Standard" || hijriOptions[0].state !== "on") failures.push(vp.name + ": Standard-only Hijri setting not applied");
       const settings = await page.locator(".awqaat-settings-panel").evaluate((node) => {
         const r = node.getBoundingClientRect();
         return { left: r.left, right: r.right, width: r.width, window: innerWidth, scroll: node.scrollWidth - node.clientWidth };

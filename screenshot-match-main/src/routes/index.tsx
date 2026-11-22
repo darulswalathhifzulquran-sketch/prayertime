@@ -69,7 +69,8 @@ function Index() {
   const [school, setSchool] = usePersisted<AsrSchool>("kpt:asrSchool", 0);
   const [h12, setH12] = usePersisted("kpt:h12", true);
   const [clockMode, setClockMode] = usePersisted<"digital" | "analog">("kpt:clock", "digital");
-  const [hijriCorrection, setHijriCorrection] = usePersisted<HijriAdjustment>("kpt:hijri-adjustment", 0);
+  // Standard is the only supported calendar setting; ignore legacy +/-1 preferences.
+  const hijriCorrection: HijriAdjustment = 0;
   const [theme, setTheme] = usePersisted<"light" | "dark">("kpt:theme", "light");
   const [lang, setLang] = usePersisted<Lang>("kpt:lang", "en");
   const t = tr(lang);
@@ -462,10 +463,8 @@ function Index() {
                   </ToggleGroup>
                 </Field>
                 <Field label={t("hijriCorrection")}>
-                  <ToggleGroup type="single" value={String(hijriCorrection)} onValueChange={(v) => { if (v) setHijriCorrection(Number(v) as HijriAdjustment); }}>
-                    <ToggleGroupItem value="-1">{t("hijriMinusDay")}</ToggleGroupItem>
-                    <ToggleGroupItem value="0">{t("hijriNoShift")}</ToggleGroupItem>
-                    <ToggleGroupItem value="1">{t("hijriPlusDay")}</ToggleGroupItem>
+                  <ToggleGroup type="single" value="0" data-hijri-standard="true" aria-label={t("hijriCorrection")}>
+                    <ToggleGroupItem value="0" aria-disabled="true">{t("hijriNoShift")}</ToggleGroupItem>
                   </ToggleGroup>
                 </Field>
                 <Field label={t("theme")}>
