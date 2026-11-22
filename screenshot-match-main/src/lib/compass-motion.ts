@@ -63,9 +63,10 @@ export function trackHeading(
   }
   if (moving === false) {
     const quietSince = state.quietSince ?? now;
-    const locked = state.locked || now - quietSince >= 300;
+    const wasLocked = state.locked && state.quietSince !== null;
+    const locked = wasLocked || now - quietSince >= 450;
     // Settle once, then hold exactly while the gyroscope reports no movement.
-    const value = state.locked ? previous : median;
+    const value = wasLocked ? previous : median;
     const disturbed = locked && Math.abs(headingDifference(median, value)) > 8;
     return { value, samples, locked, quietSince, changeSince: null, disturbed };
   }
