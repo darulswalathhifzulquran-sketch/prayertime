@@ -439,7 +439,7 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
       <div className="glass-shell qibla-panel rounded-[2rem] p-4 sm:p-6">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[.2em] text-fuchsia-200">JAMIA AWQAAT</p>
+            <p className="awqaat-brand-caption text-[11px] font-semibold uppercase tracking-[.2em] text-fuchsia-200">JAMIA AWQAAT</p>
             <h2 className="font-display text-2xl font-semibold" dir="auto">{t("qiblaTitle")}</h2>
           </div>
           <span className="qibla-heading-icon" aria-hidden="true"><Compass size={25}/></span>
