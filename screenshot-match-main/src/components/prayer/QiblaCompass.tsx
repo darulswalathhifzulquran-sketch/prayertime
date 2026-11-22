@@ -102,7 +102,7 @@ function CompassDial({ bearing, heading, lang, alt }: {
           <path d="M180 76 L177 130 L180 125 Z" fill="#fff4d5" opacity=".9"/>
           {/* Rotate the marker's position, not the Kaaba picture itself. */}
           <g transform={`translate(180 46) rotate(${-directionAngle})`}>
-            <image href={KAABA_MARKER} x="-18" y="-18" width="36" height="36" preserveAspectRatio="xMidYMid meet" />
+            <image data-qibla-marker="true" href={KAABA_MARKER} x="-18" y="-18" width="36" height="36" preserveAspectRatio="xMidYMid meet" />
           </g>
         </g>
       )}
@@ -204,8 +204,19 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
     Math.min(relative, 360 - relative) <= 5;
 
   useEffect(() => {
-    if (!active || !sensorEnabled) return;
+    trackerRef.current = newMotionTracker();
+    alignmentRef.current = { since: null, aligned: false, armed: true };
+    setStableAligned(false);
+  }, [declination === null ? null : Math.round(declination * 10)]);
 
+  useEffect(() => {
+    if (!active || !sensorEnabled) return;
+    const onScreenChange = () => {
+      trackerRef.current = newMotionTracker();
+      alignmentRef.current = { since: null, aligned: false, armed: true };
+      setStableAligned(false);
+    };
+    window.screen.orientation?.addEventListener("change", onScreenChange);
     const onMotion = (event: DeviceMotionEvent) => {
       const rate = event.rotationRate;
       if (!rate || ![rate.alpha, rate.beta, rate.gamma].every(v => typeof v === "number" && Number.isFinite(v))) return;
@@ -321,6 +332,7 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
     window.addEventListener("deviceorientation", onOrientation);
     window.addEventListener("deviceorientationabsolute", onOrientation as EventListener);
     return () => {
+      window.screen.orientation?.removeEventListener("change", onScreenChange);
       window.removeEventListener("devicemotion", onMotion);
       window.removeEventListener("deviceorientation", onOrientation);
       window.removeEventListener("deviceorientationabsolute", onOrientation as EventListener);
@@ -477,7 +489,7 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
             disabled={sensorStatus === "requesting" || sensorStatus === "waiting"}
             className="qibla-sensor-button rounded-xl">
             <RotateCw size={17}/>
-            {sensorStatus === "live" ? t("qiblaSensorActive") :
+            {sensorStatus === "live" ? t("qiblaRecalibrate") :
               sensorStatus === "requesting" || sensorStatus === "waiting" ? t("qiblaSensorWaiting") :
               t("qiblaEnableSensor")}
           </Button>
