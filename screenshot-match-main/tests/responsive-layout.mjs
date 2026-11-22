@@ -73,6 +73,30 @@ try {
       }
 
       await measure("home");
+      // Test the vocalized Dhuhr word even when the prayer API is unavailable
+      // or the next prayer is different at the time of CI.
+      const arabicSpacing = await page.evaluate(async () => {
+        const panel = document.querySelector("#home .glass-on-dark");
+        const existing = panel.querySelector("p.font-arabic[lang=ar]");
+        const word = existing ? existing.cloneNode(true) : document.createElement("p");
+        word.className = "mt-3 font-arabic text-4xl font-bold leading-tight text-white drop-shadow-sm sm:text-5xl";
+        word.lang = "ar";
+        word.dir = "rtl";
+        word.textContent = "الظُّهْر";
+        const label = panel.firstElementChild;
+        label.after(word);
+        try {
+          await document.fonts.ready;
+          const style = getComputedStyle(word);
+          const bounds = word.getBoundingClientRect();
+          return { ratio: parseFloat(style.lineHeight) / parseFloat(style.fontSize),
+            gap: bounds.top - label.getBoundingClientRect().bottom,
+            font: style.fontFamily, padding: parseFloat(style.paddingTop) };
+        } finally { word.remove(); }
+      });
+      if (arabicSpacing.ratio < 1.75 || arabicSpacing.gap < 10 || arabicSpacing.padding <= 0 || !arabicSpacing.font.includes("Scheherazade New"))
+        failures.push(vp.name + ": insufficient Arabic diacritic spacing " + JSON.stringify(arabicSpacing));
+
       const layout = await page.evaluate(() => {
         const main = document.querySelector(".awqaat-main");
         const home = document.querySelector("#home");
