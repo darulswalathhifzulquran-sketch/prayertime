@@ -163,6 +163,8 @@ try {
       // scrolling within Home retains it even when the Prayer icon is active.
       await navButtons.nth(0).click();
       await page.locator(".jamia-site-footer").waitFor({state: "visible"});
+      // Let the smooth navigation finish before measuring dock/footer clearance.
+      await page.waitForTimeout(750);
       const footer = await page.locator(".jamia-site-footer").evaluate(async (node) => {
         const logo = node.querySelector("img");
         await logo.decode();
