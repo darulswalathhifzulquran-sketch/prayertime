@@ -319,6 +319,27 @@ try {
 
           }
         }
+        if (name === "azan") {
+          const original = page.locator(".awqaat-azan-panel .awqaat-recording-name").first();
+          const second = page.locator('[data-azan-recording="muhsin"]');
+          if (!(await original.isVisible()) || (await original.textContent())?.trim() !== "AL HAFIZ MUHAMMED NOUFAL")
+            failures.push(vp.name + ": original Azan recording was changed");
+          if (!(await second.isVisible()) || !(await second.getByText("AL HAFIZ MUHAMMED MUHSIN", {exact:true}).isVisible()))
+            failures.push(vp.name + ": second Azan recording missing");
+          if ((await second.locator("audio").getAttribute("src")) !== "/audio/al-hafiz-muhammed-muhsin.mp3")
+            failures.push(vp.name + ": second recording source incorrect");
+          if ((await second.getByRole("button").count()) < 3)
+            failures.push(vp.name + ": secondary audio controls missing");
+          if (vp.width === 390) {
+            const response = await page.request.get(new URL("/audio/al-hafiz-muhammed-muhsin.mp3", page.url()).href, {
+              headers: { Range: "bytes=0-1023" }
+            });
+            const audioBytes = new Uint8Array(await response.body());
+            const validHeader = audioBytes.length >= 3 && String.fromCharCode(...audioBytes.slice(0, 3)) === "ID3";
+            if (![200,206].includes(response.status()) || !validHeader)
+              failures.push("MUHSIN MP3 missing, invalid, or not served by site: " + response.status());
+          }
+        }
         if (name === "reminder" && !(await page.locator(".awqaat-push-card").isVisible())) {
           failures.push(vp.name + ": prayer notifications preview missing");
         }
