@@ -328,9 +328,8 @@ try {
         fields: node.querySelectorAll(".space-y-5 > div").length,
         creditsCollapsed: node.querySelector(".awqaat-settings-credits")?.open === false,
       }));
-      if (!settingsTheme.theme || settingsTheme.fields !== 7 || !settingsTheme.creditsCollapsed) failures.push(vp.name + ": Settings theme or controls missing");
-      const hijriOptions = await page.locator("[data-hijri-standard]").evaluate(node => Array.from(node.querySelectorAll("button")).map(button=>({text:button.textContent?.trim(),state:button.getAttribute("data-state")})));
-      if(hijriOptions.length !== 1 || hijriOptions[0].text !== "Standard" || hijriOptions[0].state !== "on") failures.push(vp.name + ": Standard-only Hijri setting not applied");
+      if (!settingsTheme.theme || settingsTheme.fields !== 6 || !settingsTheme.creditsCollapsed) failures.push(vp.name + ": Settings theme or controls missing");
+      if (await page.locator(".awqaat-settings-panel [data-hijri-standard]").count() || await page.locator(".awqaat-settings-panel").getByText("Hijri moon-sighting correction", {exact:true}).count()) failures.push(vp.name + ": redundant Hijri setting is still visible");
       const settings = await page.locator(".awqaat-settings-panel").evaluate((node) => {
         const r = node.getBoundingClientRect();
         return { left: r.left, right: r.right, width: r.width, window: innerWidth, scroll: node.scrollWidth - node.clientWidth };
