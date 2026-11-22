@@ -109,6 +109,8 @@ function Index() {
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
+  // Explicit navigation owns the indicator during its smooth scroll.
+  const navScrollRef = useRef<{ tab: "home" | "prayers"; until: number } | null>(null);
   // Always show the live timing for the selected district or GPS coordinates.
   // Past locally-entered reference times never override another location or date.
   const displayedTimings = pt.today;
@@ -197,6 +199,8 @@ function Index() {
     // Home and Prayer share the same page; the other tabs have dedicated content.
     setOpen(false);
     setSettingsOpen(false);
+    navScrollRef.current = id === "home" || id === "prayers"
+      ? { tab: id, until: performance.now() + 1400 } : null;
     setActiveTab(id);
     // Wait for the selected tab to become visible before scrolling.
     requestAnimationFrame(() => {
@@ -224,6 +228,57 @@ function Index() {
     ? navigation.length - 1
     : navigation.findIndex((item) => item.id === activeTab);
   const showHome = activeTab === "home" || activeTab === "prayers";
+
+  // Home and Prayer are stacked below the desktop two-column breakpoint.
+  // Follow the visible section without causing another scroll or changing
+  // the actual page, prayer calculations, or Settings overlay.
+  useEffect(() => {
+    if (!showHome || settingsOpen) return;
+    const stacked = window.matchMedia("(max-width: 859px)");
+    let frame = 0;
+    const sync = () => {
+      frame = 0;
+      if (!stacked.matches) return;
+      const home = document.getElementById("home");
+      const prayers = document.getElementById("prayers");
+      if (!home || !prayers || !home.getClientRects().length || !prayers.getClientRects().length) return;
+      const headerBottom = Math.max(0, document.querySelector(".awqaat-topbar")?.getBoundingClientRect().bottom ?? 0);
+      const dockTop = Math.min(window.innerHeight, document.querySelector(".glass-bottom-nav")?.getBoundingClientRect().top ?? window.innerHeight);
+      const readingLine = headerBottom + Math.max(0, dockTop - headerBottom) * 0.45;
+      const prayerTop = prayers.getBoundingClientRect().top;
+      const root = document.scrollingElement ?? document.documentElement;
+      const maxScroll = Math.max(0, root.scrollHeight - root.clientHeight);
+      const y = Math.max(0, window.scrollY);
+      const atEnd = maxScroll > 2 && y >= maxScroll - 3;
+      const target = y <= 3 ? "home" : prayerTop <= readingLine || (atEnd && prayerTop < dockTop) ? "prayers" : "home";
+
+      const requested = navScrollRef.current;
+      if (requested) {
+        if (requested.tab === target) { navScrollRef.current = null; return; }
+        if (performance.now() < requested.until) return;
+        navScrollRef.current = null;
+      }
+      setActiveTab(current => (current === "home" || current === "prayers") && current !== target ? target : current);
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(sync); };
+    const manualScroll = () => { navScrollRef.current = null; };
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule, { passive: true });
+    window.addEventListener("touchstart", manualScroll, { passive: true });
+    window.addEventListener("wheel", manualScroll, { passive: true });
+    window.addEventListener("keydown", manualScroll);
+    stacked.addEventListener("change", schedule);
+    schedule();
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      window.removeEventListener("touchstart", manualScroll);
+      window.removeEventListener("wheel", manualScroll);
+      window.removeEventListener("keydown", manualScroll);
+      stacked.removeEventListener("change", schedule);
+    };
+  }, [showHome, settingsOpen]);
   // Never substitute a district's coordinates for a manually entered city.
   // City and address-only districts use the API's verified-in-India coordinates.
   const prayerNotificationPosition = gps.location
