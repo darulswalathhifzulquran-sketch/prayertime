@@ -135,6 +135,30 @@ try {
       }
       if (!fonts.brand.startsWith("Cinzel")) failures.push(vp.name + ": wordmark font changed: " + fonts.brand);
 
+      // The dock follows manual scroll in both directions on a stacked dashboard.
+      // The desktop two-column dashboard is intentionally not scroll-spied.
+      if (vp.width < 860) {
+        const selected = () => page.evaluate(() => {
+          const buttons = Array.from(document.querySelectorAll(".glass-bottom-nav .glass-nav-item"));
+          return buttons.findIndex(button => button.getAttribute("aria-current") === "page");
+        });
+        await page.evaluate(() => window.scrollTo({top: document.documentElement.scrollHeight, behavior:"instant"}));
+        await page.waitForTimeout(180);
+        if (await selected() !== 1) failures.push(vp.name + ": scrolling down did not select Prayer");
+        await page.evaluate(() => window.scrollTo({top: 0, behavior:"instant"}));
+        await page.waitForTimeout(180);
+        if (await selected() !== 0) failures.push(vp.name + ": scrolling up did not select Home");
+        if (vp.width === 390) {
+          await navButtons.nth(1).click();
+          await page.waitForTimeout(700);
+          if (await selected() !== 1) failures.push(vp.name + ": Prayer click selection was overridden by scroll spy");
+          await page.mouse.wheel(0, -5000);
+          await page.waitForTimeout(350);
+          if (await selected() !== 0) failures.push(vp.name + ": manual scroll did not release the navigation lock");
+        }
+      }
+
+
       if (await page.locator(".awqaat-app > footer").count()) failures.push(vp.name + ": obsolete footer present");
       if (await page.locator("#prayers .awqaat-date-hijri-value, #prayers > div:first-child p").count()) failures.push(vp.name + ": duplicate prayer date caption");
       const dock = await page.locator(".glass-bottom-nav").evaluate((node) => {
