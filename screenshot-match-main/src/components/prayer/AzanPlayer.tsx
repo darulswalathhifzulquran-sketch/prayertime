@@ -47,6 +47,15 @@ export function AzanPlayer({ title, now, timings, standardSrc, fajrSrc, view = "
     }
   }, [volume, muted, view]);
 
+  // The second recording is manual playback only; never carry its playing
+  // indicator into the Reminder view when that audio element unmounts.
+  useEffect(() => {
+    if (view !== "player") {
+      secondAudio.current?.pause();
+      setSecondPlaying(false);
+    }
+  }, [view]);
+
   // Reset the media source if an administrator changes the recording.
   useEffect(() => {
     backupIndex.current = 0;
