@@ -132,6 +132,46 @@ try {
             const delta = r(39.826206 - 72.8777);
             const expected = ((Math.atan2(Math.sin(delta) * Math.cos(r(21.422487)), Math.cos(r(19.076)) * Math.sin(r(21.422487)) - Math.sin(r(19.076)) * Math.cos(r(21.422487)) * Math.cos(delta)) * 180 / Math.PI) + 360) % 360;
             if (Math.abs(angle - expected) > 0.2) failures.push("Qibla did not use independent device coordinates: " + value);
+            // Simulated Android sensor stream, with measured no-motion gyro readings.
+            // A synthetic sensor test is not a physical compass calibration.
+            const motionResult = await page.evaluate(async () => {
+              const tick = async (heading, speed) => {
+                const motion = new Event("devicemotion");
+                Object.defineProperty(motion, "rotationRate", { value: { alpha: speed, beta: 0, gamma: 0 } });
+                window.dispatchEvent(motion);
+                const orientation = new Event("deviceorientationabsolute");
+                for (const [key, value] of Object.entries({alpha: (360-heading+360)%360,beta:0,gamma:0,absolute:true})) {
+                  Object.defineProperty(orientation, key, {value});
+                }
+                window.dispatchEvent(orientation);
+                await new Promise(resolve => setTimeout(resolve, 35));
+              };
+              const heading = () => document.querySelector(".qibla-ios-heading-number")?.textContent;
+              const marker = () => document.querySelector("[data-qibla-marker]");
+              const markerAngle = () => marker()?.parentElement?.parentElement?.getAttribute("transform");
+              for(let i=0;i<22;i++) await tick(291,0);
+              const before = heading(), beforeAngle = markerAngle();
+              let stable = true;
+              for(const n of [289,285,288,290,287,288,287,280,285,289,291]) {
+                await tick(n,0);
+                stable &&= heading() === before && markerAngle() === beforeAngle;
+              }
+              for(let i=0;i<7;i++) await tick(321,60);
+              const after = heading();
+              const asset = marker()?.getAttribute("href");
+              let decoded = false;
+              if (asset) {
+                const image = new Image();
+                image.src = asset;
+                try { await image.decode(); decoded = image.naturalWidth > 0; } catch {}
+              }
+              return {stable, before, after, beforeAngle, afterAngle: markerAngle(), decoded};
+            });
+            console.log("Qibla synthetic motion test:", JSON.stringify(motionResult));
+            if(!motionResult.stable || !motionResult.beforeAngle || !motionResult.afterAngle ||
+              motionResult.before === motionResult.after || !motionResult.decoded)
+              failures.push("Qibla motion lock or Kaaba image failed: " + JSON.stringify(motionResult));
+
           }
         }
         if (name === "reminder" && !(await page.locator(".awqaat-push-card").isVisible())) {
