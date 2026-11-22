@@ -132,7 +132,7 @@ export function PrayerNotificationsSetup({
       <div className="flex items-start gap-3">
         <div className="awqaat-push-icon"><BellRing size={21} /></div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold uppercase tracking-[.13em] text-blue-200">JAMIA AWQAAT</p>
+          <p className="awqaat-brand-caption text-xs font-bold uppercase tracking-[.13em] text-blue-200">JAMIA AWQAAT</p>
           <h3 className="mt-1 text-lg font-bold text-white">{t("pushTitle")}</h3>
         </div>
       </div>
