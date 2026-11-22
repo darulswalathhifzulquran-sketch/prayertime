@@ -73,6 +73,20 @@ try {
       }
 
       await measure("home");
+      const layout = await page.evaluate(() => {
+        const main = document.querySelector(".awqaat-main");
+        const home = document.querySelector("#home");
+        const prayers = document.querySelector("#prayers");
+        const row = prayers.querySelector(".glassy-prayer-row");
+        return { main: main.getBoundingClientRect().width, home: home.getBoundingClientRect().width,
+          prayers: prayers.getBoundingClientRect().width, row: row.getBoundingClientRect().height,
+          gap: parseFloat(getComputedStyle(prayers.querySelector(".flex.flex-col")).gap) };
+      });
+      if (layout.main < Math.min(vp.width - 4, 1500) || layout.gap < 10)
+        failures.push(vp.name + ": spacious layout not applied " + JSON.stringify(layout));
+      if (vp.width >= 1366 && (layout.home < 570 || layout.prayers < 610))
+        failures.push(vp.name + ": desktop dashboard too narrow " + JSON.stringify(layout));
+
       // Typeface-only update: verify the main wordmark and all core text roles.
       const fonts = await page.evaluate(() => {
         const family = (sel) => {
