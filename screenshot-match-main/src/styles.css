@@ -48,12 +48,12 @@
   --color-ring-offset-background: var(--background);
   --color-gold: var(--gold);
   --color-hero-foreground: var(--hero-foreground);
-  /* Manrope makes Latin numerals elegant; script-specific Malayalam and Arabic typography stays unchanged. */
-  --font-sans: "Manrope", "Inter", "Noto Sans Malayalam", system-ui, sans-serif;
-  --font-mono: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Cormorant Garamond", serif;
-  --font-arabic: "Noto Naskh Arabic", serif;
-  --font-ml: "Noto Sans Malayalam", sans-serif;
+  /* Scheherazade New for Latin and Arabic; Malayalam glyphs use Noto Sans Malayalam. */
+  --font-sans: "Scheherazade New", "Noto Sans Malayalam", serif;
+  --font-mono: "Scheherazade New", "Noto Sans Malayalam", serif;
+  --font-display: "Scheherazade New", "Noto Sans Malayalam", serif;
+  --font-arabic: "Scheherazade New", "Noto Sans Malayalam", serif;
+  --font-ml: "Scheherazade New", "Noto Sans Malayalam", serif;
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -128,7 +128,7 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: "Manrope", "Inter", "Noto Sans Malayalam", system-ui, sans-serif;
+    font-family: "Scheherazade New", "Noto Sans Malayalam", serif;
     font-variant-numeric: tabular-nums;
   }
 }
@@ -978,12 +978,12 @@
 }
 .awqaat-settings-panel > div:first-of-type h2 {
   color: #f9fffc;
-  font-family: "Cinzel", "Cormorant Garamond", "Noto Naskh Arabic", Georgia, serif;
+  font-family: "Scheherazade New", "Noto Sans Malayalam", serif;
   font-size: 1.32rem;
   letter-spacing: .025em;
 }
 .awqaat-settings-panel[dir="rtl"] > div:first-of-type h2 {
-  font-family: "Noto Naskh Arabic", serif;
+  font-family: "Scheherazade New", "Noto Sans Malayalam", serif;
   letter-spacing: 0;
 }
 .awqaat-settings-panel > button.absolute {
@@ -1039,7 +1039,7 @@
   color: #b8d0c6;
 }
 .awqaat-settings-panel[dir="rtl"] .font-arabic {
-  font-family: "Noto Naskh Arabic", serif;
+  font-family: "Scheherazade New", "Noto Sans Malayalam", serif;
 }
 
 /* Invert to a light pearl surface when the SITE is in Dark Mode. */
@@ -1119,11 +1119,11 @@
 }
 
 /* Arabic mode uses traditional Arabic-Indic digits, not Western 0–9.
- * The specific Naskh font is scoped to numerical display, not the site theme. */
+ * The requested font stack also applies to localized numerical displays. */
 .awqaat-arabic-numerals .font-mono,
 .awqaat-arabic-numerals .arabic-digit-display,
 .awqaat-settings-panel[dir="rtl"] .arabic-digit-display {
-  font-family: "Noto Naskh Arabic", "Manrope", serif;
+  font-family: "Scheherazade New", "Noto Sans Malayalam", serif;
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
 }
@@ -1685,7 +1685,7 @@
 }
 .qibla-ios-heading-number {
   font-size: clamp(42px, 10vw, 70px);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: "Scheherazade New", "Noto Sans Malayalam", serif;
   font-weight: 300;
   letter-spacing: -.06em;
   line-height: 1.1;
@@ -2183,4 +2183,9 @@
   .dark .glass-bottom-nav .glass-nav-item { min-height: 40px; gap: 2px; }
   .glass-bottom-nav .glass-nav-item svg,
   .dark .glass-bottom-nav .glass-nav-item svg { width: 18px; height: 18px; }
+}
+
+/* Preserve existing fonts on the JAMIA AWQAAT brand captions only. */
+.awqaat-brand-caption {
+  font-family: "Manrope", "Inter", "Noto Sans Malayalam", system-ui, sans-serif;
 }
