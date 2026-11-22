@@ -3,7 +3,9 @@ import { CheckCircle2, Compass, LocateFixed, RotateCw, ShieldAlert } from "lucid
 import { Button } from "@/components/ui/button";
 import { localizeDigits, tr, type Lang } from "@/lib/i18n";
 import { signalQiblaAligned } from "@/lib/prayer-feedback";
-import { nextCompassHeading, stableHeadingDegree, updateAlignment, type AlignmentState } from "@/lib/compass-motion";
+import { newMotionTracker, trackHeading, medianHeading, stableHeadingDegree, updateAlignment, type AlignmentState } from "@/lib/compass-motion";
+import { magneticDeclination } from "@/lib/wmm2025";
+import { KAABA_MARKER } from "@/lib/kaaba-marker";
 
 type Position = { lat: number; lng: number };
 type CompassOrientation = DeviceOrientationEvent & {
@@ -38,7 +40,7 @@ function CompassDial({ bearing, heading, lang, alt }: {
   bearing: number | null; heading: Heading | null; lang: Lang; alt: string;
 }) {
   const headingAngle = heading?.continuous ?? 0;
-  const directionAngle = bearing === null ? null : bearing - headingAngle;
+  const directionAngle = bearing === null || heading === null ? null : bearing - headingAngle;
   const ticks = useMemo(() => Array.from({ length: 120 }, (_, i) => i), []);
   const cardinals = [
     { label: "N", a: 0 }, { label: "NE", a: 45 }, { label: "E", a: 90 },
@@ -63,7 +65,7 @@ function CompassDial({ bearing, heading, lang, alt }: {
       <circle cx="180" cy="180" r="168" fill="url(#ios-qibla-face)" stroke="#192431" strokeWidth="2" />
       <circle cx="180" cy="180" r="144" fill="none" stroke="#344151" strokeWidth="1" />
       <circle cx="180" cy="180" r="118" fill="none" stroke="#2d3a47" strokeWidth=".8" opacity=".45" />
-      <g className="qibla-rose-rotation" style={{ transform: `rotate(${-headingAngle}deg)` }}>
+      <g transform={`rotate(${-headingAngle} 180 180)`}>
         {ticks.map((tick) => (
           <line key={tick} x1="180"
             y1={tick % 10 === 0 ? "19" : tick % 5 === 0 ? "25" : "31"}
@@ -93,14 +95,15 @@ function CompassDial({ bearing, heading, lang, alt }: {
         })}
       </g>
       {directionAngle !== null && (
-        <g className="qibla-needle-rotation" style={{transform: `rotate(${directionAngle}deg)`}}>
-          <path d="M180 43 L165 145 L180 135 L195 145 Z"
+        <g transform={`rotate(${directionAngle} 180 180)`}>
+          <path d="M180 72 L165 145 L180 135 L195 145 Z"
             fill="url(#ios-qibla-gold)" stroke="#ffdda1" strokeWidth="1.5"/>
           <path d="M180 313 L166 214 L180 225 L194 214 Z" fill="#637285" stroke="#b8c3d0" strokeWidth=".8" />
-          <path d="M180 48 L177 130 L180 125 Z" fill="#fff4d5" opacity=".9"/>
-          <rect x="170" y="158" width="20" height="20" rx="3" fill="#141718" stroke="#ffd976" strokeWidth="2"/>
-          <rect x="170" y="163" width="20" height="4" fill="#d9ae54"/>
-          <path d="M174 171h12" stroke="#d9ae54" strokeWidth="1" />
+          <path d="M180 76 L177 130 L180 125 Z" fill="#fff4d5" opacity=".9"/>
+          {/* Rotate the marker's position, not the Kaaba picture itself. */}
+          <g transform={`translate(180 46) rotate(${-directionAngle})`}>
+            <image href={KAABA_MARKER} x="-18" y="-18" width="36" height="36" preserveAspectRatio="xMidYMid meet" />
+          </g>
         </g>
       )}
       <path d="M180 6 L174 20 H186 Z" fill="#ff5b61" stroke="#ff878a" strokeWidth=".6" />
@@ -166,6 +169,8 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
   const [sensorStatus, setSensorStatus] = useState<SensorStatus>("idle");
   const [heading, setHeading] = useState<Heading | null>(null);
   const headingRef = useRef<Heading | null>(null);
+  const trackerRef = useRef(newMotionTracker());
+  const motionRef = useRef({ seen: 0, turning: 0, integrated: 0 });
   const lastEventRef = useRef(0);
   const lastReliableRef = useRef(0);
   const sawRelativeRef = useRef(false);
@@ -186,19 +191,44 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
   );
   // The alignment indicator uses a time-based hold and a wider exit threshold:
   // a momentary sensor spike cannot make it flash on/off.
-  const relative = heading && bearing !== null ? normalize(bearing - heading.value) : null;
+  // Model correction uses only the compass's private device coordinates.
+  const declination = useMemo(() => {
+    if (!position) return null;
+    try {
+      const result = magneticDeclination(position.lat, position.lng);
+      return Number.isFinite(result) ? result : null;
+    } catch { return null; }
+  }, [position?.lat, position?.lng]);
+  const relative = heading && bearing !== null && declination !== null ? normalize(bearing - heading.value) : null;
   const aligned = stableAligned && !unstable && !tilted && sensorStatus === "live" && relative !== null &&
     Math.min(relative, 360 - relative) <= 5;
 
   useEffect(() => {
     if (!active || !sensorEnabled) return;
 
+    const onMotion = (event: DeviceMotionEvent) => {
+      const rate = event.rotationRate;
+      if (!rate || ![rate.alpha, rate.beta, rate.gamma].every(v => typeof v === "number" && Number.isFinite(v))) return;
+      const now = performance.now();
+      const m = motionRef.current;
+      const dt = m.seen ? Math.min((now - m.seen) / 1000, 0.1) : 0;
+      m.seen = now;
+      const speed = Math.hypot(rate.alpha!, rate.beta!, rate.gamma!);
+      // Detect slow physical turns as well as fast ones, without integrating
+      // insignificant stationary gyro drift indefinitely.
+      if (Math.abs(rate.alpha!) > 0.45) m.integrated += rate.alpha! * dt;
+      else m.integrated *= 0.8;
+      if (speed > 2.5 || Math.abs(m.integrated) > 1.2) {
+        m.turning = now;
+        m.integrated = 0;
+      }
+    };
     const onOrientation = (raw: DeviceOrientationEvent) => {
       const event = raw as CompassOrientation;
       let value: number | null = null;
       let source: "webkit" | "absolute-event" | "absolute" | null = null;
       if (typeof event.webkitCompassHeading === "number" &&
-          Number.isFinite(event.webkitCompassHeading)) {
+          Number.isFinite(event.webkitCompassHeading) && event.webkitCompassHeading >= 0) {
         value = event.webkitCompassHeading;
         source = "webkit";
       } else if (event.alpha !== null && Number.isFinite(event.alpha) &&
@@ -221,6 +251,7 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
         if (priority[source] <= priority[previousSource] &&
             now - sourceSeenRef.current < 2300) return;
         previousRawRef.current = null;
+        trackerRef.current = newMotionTracker();
       }
       sourceRef.current = source;
       sourceSeenRef.current = now;
@@ -231,7 +262,9 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
       lastEventRef.current = now;
       lastReliableRef.current = now;
 
-      const normalized = normalize(value);
+      if (declination === null) return; // No uncorrected magnetic heading presented as true north.
+      const screenAngle = window.screen.orientation?.angle ?? (typeof window.orientation === "number" ? window.orientation : 0);
+      const normalized = normalize(value + declination + screenAngle);
       const priorRaw = previousRawRef.current;
       const abrupt = priorRaw !== null && now - priorRaw.at < 350 &&
         Math.abs(shortestChange(normalized, priorRaw.value)) > 35;
@@ -253,11 +286,14 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
       const accuracy = typeof event.webkitCompassAccuracy === "number" &&
         Number.isFinite(event.webkitCompassAccuracy) ? event.webkitCompassAccuracy : undefined;
       const poorAccuracy = accuracy !== undefined && (accuracy < 0 || accuracy > 25);
-      const unreliable = poorAccuracy || jumpCountRef.current >= 4;
+      const motion = motionRef.current;
+      const moving = motion.seen && now - motion.seen < 350 ? (motion.turning > 0 && now - motion.turning < 250) : null;
+      const tracked = trackHeading(trackerRef.current, normalized, now, elapsed, moving);
+      trackerRef.current = tracked;
+      const unreliable = poorAccuracy || tracked.disturbed || (moving !== true && jumpCountRef.current >= 4);
       setUnstable(unreliable);
-
       const prev = headingRef.current;
-      const nextContinuous = nextCompassHeading(prev?.continuous ?? null, normalized, elapsed);
+      const nextContinuous = tracked.value ?? normalized;
       const nextValue = normalize(nextContinuous);
       const next: Heading = {
         value: nextValue,
@@ -270,23 +306,26 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
       // of a second. Rearm only after moving away, avoiding repeated vibration.
       const reliable = bearing !== null && !unreliable && !tiltRef.current;
       const filteredError = bearing === null ? 180 : Math.abs(shortestChange(bearing, nextValue));
-      const rawError = bearing === null ? 180 : Math.abs(shortestChange(bearing, normalized));
+      const reference = medianHeading(tracked.samples, nextValue);
+      const rawError = bearing === null ? 180 : Math.abs(shortestChange(bearing, normalize(reference)));
       const state = updateAlignment(alignmentRef.current, now, filteredError, rawError, reliable);
       alignmentRef.current = state;
       setStableAligned(state.aligned);
       if (state.buzz) signalQiblaAligned();
 
       headingRef.current = next;
-      setHeading(next);
+      if (!prev || prev.continuous !== next.continuous || prev.display !== next.display || prev.accuracy !== next.accuracy) setHeading(next);
       setSensorStatus("live");
     };
+    window.addEventListener("devicemotion", onMotion);
     window.addEventListener("deviceorientation", onOrientation);
     window.addEventListener("deviceorientationabsolute", onOrientation as EventListener);
     return () => {
+      window.removeEventListener("devicemotion", onMotion);
       window.removeEventListener("deviceorientation", onOrientation);
       window.removeEventListener("deviceorientationabsolute", onOrientation as EventListener);
     };
-  }, [active, sensorEnabled, bearing]);
+  }, [active, sensorEnabled, bearing, declination]);
 
   // Do not keep reporting a live working compass when device readings stop.
   useEffect(() => {
@@ -297,6 +336,7 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
       setStableAligned(false);
       alignmentRef.current = { since: null, aligned: false, armed: alignmentRef.current.armed };
       headingRef.current = null;
+      trackerRef.current = newMotionTracker();
       setHeading(null);
     }, 1500);
     return () => window.clearInterval(timer);
@@ -326,14 +366,21 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
       // Magnetometer / absolute-heading permission matters for actual Qibla.
       // Passing true is essential where the modern API supports it.
       if (typeof ctor.requestPermission === "function") {
-        const permission = await ctor.requestPermission(true);
+        const motionCtor = window.DeviceMotionEvent as typeof DeviceMotionEvent & { requestPermission?: () => Promise<string> };
+        const orientationPermission = ctor.requestPermission(true);
+        // Start both requests synchronously within the user gesture.
+        if (typeof motionCtor?.requestPermission === "function") void motionCtor.requestPermission().catch(() => {});
+        const permission = await orientationPermission;
         if (permission !== "granted") {
           setSensorStatus("denied");
           return;
         }
       }
+      // Ask for gyro access in the same explicit user interaction where possible.
       sawRelativeRef.current = false;
       headingRef.current = null;
+      trackerRef.current = newMotionTracker();
+      motionRef.current = { seen: 0, turning: 0, integrated: 0 };
       lastEventRef.current = 0;
       lastReliableRef.current = 0;
       sourceRef.current = null;
@@ -427,7 +474,7 @@ export function QiblaCompass({ active, lang }: { active: boolean; lang: Lang }) 
             </Button>
           )}
           <Button type="button" variant="outline" onClick={enableSensor}
-            disabled={sensorStatus === "requesting" || sensorStatus === "waiting" || sensorStatus === "live"}
+            disabled={sensorStatus === "requesting" || sensorStatus === "waiting"}
             className="qibla-sensor-button rounded-xl">
             <RotateCw size={17}/>
             {sensorStatus === "live" ? t("qiblaSensorActive") :
