@@ -2429,3 +2429,11 @@
 @media (prefers-reduced-motion: reduce) {
   .jamia-site-footer a { transition: none; }
 }
+
+/* Phones have a single scrolling Home → Prayer page: its footer stays below
+   Prayer. Tablets and desktops retain the footer only when Home is active.
+   Landscape phones follow the same rule without changing the glass dock. */
+.jamia-footer-prayer-tab { display: none; }
+@media (max-width: 700px), (max-width: 950px) and (max-height: 520px) {
+  .jamia-footer-prayer-tab { display: block; }
+}
