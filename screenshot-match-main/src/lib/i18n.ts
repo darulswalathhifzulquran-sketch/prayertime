@@ -41,6 +41,8 @@ const dict = {
   qiblaPhoneHeading: { en: "Device heading", ml: "ഫോണിന്റെ ദിശ", ar: "اتجاه الجهاز" },
   qiblaLive: { en: "Live compass", ml: "ലൈവ് കോമ്പസ്", ar: "بوصلة مباشرة" },
   qiblaStatic: { en: "North-relative guide", ml: "വടക്ക് അടിസ്ഥാനമാക്കിയുള്ള സൂചി", ar: "دليل بالنسبة للشمال" },
+  qiblaNorthUpGuide: { en: "Qibla bearing · North-up guide", ml: "ഖിബ്‌ല ദിശ · വടക്ക് മുകളിൽ", ar: "زاوية القبلة · الشمال في الأعلى" },
+  qiblaHeadingUnavailable: { en: "Live heading unavailable", ml: "ലൈവ് ദിശ ലഭ്യമല്ല", ar: "الاتجاه المباشر غير متاح" },
   qiblaAddressSource: { en: "Address lookup", ml: "വിലാസം വഴി", ar: "حسب العنوان" },
   qiblaDistrictSource: { en: "District reference", ml: "ജില്ലാ സൂചകസ്ഥലം", ar: "مرجع المنطقة" },
   qiblaLocationNeeded: { en: "Coordinates are not available for this location. Choose a district with coordinates or use GPS.", ml: "ഈ സ്ഥലത്തിന്റെ കോർഡിനേറ്റ്സ് ലഭിച്ചിട്ടില്ല. മറ്റൊരു ജില്ല തിരഞ്ഞെടുക്കുക അല്ലെങ്കിൽ GPS ഉപയോഗിക്കുക.", ar: "إحداثيات هذا الموقع غير متاحة بعد. اختر منطقة لها إحداثيات أو استخدم GPS." },
