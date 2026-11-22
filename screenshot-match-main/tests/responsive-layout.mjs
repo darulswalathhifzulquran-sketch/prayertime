@@ -73,6 +73,30 @@ try {
       }
 
       await measure("home");
+      // Typeface-only update: verify the main wordmark and all core text roles.
+      const fonts = await page.evaluate(() => {
+        const family = (sel) => {
+          const el = document.querySelector(sel);
+          return el ? getComputedStyle(el).fontFamily : "";
+        };
+        return {
+          body: family("body"),
+          brand: family(".brand-awqaat"),
+          heading: family("#prayers h2"),
+          arabic: family("#prayers .font-arabic"),
+          malayalam: family("#prayers .font-ml"),
+          nav: family(".glass-nav-item"),
+          date: family(".awqaat-date-hijri-value"),
+        };
+      });
+      for (const role of ["body", "heading", "arabic", "malayalam", "nav", "date"]) {
+        if (!fonts[role].startsWith('"Scheherazade New"') && !fonts[role].startsWith("Scheherazade New")) {
+          failures.push(vp.name + ": wrong font for " + role + " " + fonts[role]);
+        }
+        if (!fonts[role].includes("Noto Sans Malayalam")) failures.push(vp.name + ": missing Malayalam fallback for " + role);
+      }
+      if (!fonts.brand.startsWith("Cinzel")) failures.push(vp.name + ": wordmark font changed: " + fonts.brand);
+
       if (await page.locator(".awqaat-app > footer").count()) failures.push(vp.name + ": obsolete footer present");
       if (await page.locator("#prayers .awqaat-date-hijri-value, #prayers > div:first-child p").count()) failures.push(vp.name + ": duplicate prayer date caption");
       const dock = await page.locator(".glass-bottom-nav").evaluate((node) => {
