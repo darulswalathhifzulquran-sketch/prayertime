@@ -2437,3 +2437,64 @@
 @media (max-width: 700px), (max-width: 950px) and (max-height: 520px) {
   .jamia-footer-prayer-tab { display: block; }
 }
+
+/* Readable medium-size lettering throughout the location picker only.
+   Scheherazade New, Noto Sans Malayalam, layout colors and controls remain. */
+.awqaat-header-actions > button.awqaat-location-trigger {
+  font-size: 15px;
+  line-height: 1.35;
+}
+.awqaat-location-menu {
+  font-size: 16px;
+  line-height: 1.45;
+}
+.awqaat-location-menu > div:first-child {
+  font-size: 18px;
+  line-height: 1.35;
+}
+.awqaat-location-menu label {
+  font-size: 15px;
+  line-height: 1.45;
+}
+.awqaat-location-menu button[role="combobox"],
+.awqaat-location-state-options [role="option"],
+.awqaat-location-menu [cmdk-item] {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.awqaat-location-menu [cmdk-item] {
+  min-height: 41px;
+  padding-block: 8px;
+}
+.awqaat-location-menu [cmdk-item] .font-ml {
+  font-size: 15px;
+  line-height: 1.4;
+}
+.awqaat-location-menu [cmdk-input],
+.awqaat-location-menu input,
+.awqaat-location-menu input::placeholder {
+  font-size: 16px;
+}
+.awqaat-location-menu > p,
+.awqaat-location-menu [role="status"] > p {
+  font-size: 15px;
+  line-height: 1.45;
+}
+.awqaat-location-menu dt {
+  font-size: 14px;
+  line-height: 1.45;
+}
+.awqaat-location-menu dd {
+  font-size: 16px;
+  line-height: 1.4;
+}
+.awqaat-location-menu button:not([role="combobox"]) {
+  font-size: 15px;
+}
+@media (max-width: 365px) {
+  .awqaat-location-menu {
+    font-size: 15px;
+  }
+  .awqaat-location-menu [cmdk-item] { font-size: 15px; }
+  .awqaat-location-menu dd { font-size: 15px; }
+}

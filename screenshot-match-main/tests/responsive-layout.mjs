@@ -163,6 +163,8 @@ try {
       // scrolling within Home retains it even when the Prayer icon is active.
       await navButtons.nth(0).click();
       await page.locator(".jamia-site-footer").waitFor({state: "visible"});
+      // Let the smooth navigation finish before measuring dock/footer clearance.
+      await page.waitForTimeout(750);
       const footer = await page.locator(".jamia-site-footer").evaluate(async (node) => {
         const logo = node.querySelector("img");
         await logo.decode();
@@ -331,6 +333,34 @@ try {
       if (popover.left < -2 || popover.right > vp.width + 2 || popover.scroll > 4) {
         failures.push(vp.name + ": location selector overflow " + JSON.stringify(popover));
       }
+      const locationTypography = await page.locator(".awqaat-location-menu").evaluate(node => {
+        const font = selector => {
+          const element = node.querySelector(selector);
+          return element ? parseFloat(getComputedStyle(element).fontSize) : null;
+        };
+        return {
+          heading: font(":scope > div:first-child"),
+          label: font("label"),
+          district: font("[cmdk-item]"),
+          secondaryDistrict: font("[cmdk-item] .font-ml"),
+          search: font("input"),
+          help: font(":scope > p"),
+          coordinateLabel: font("dt"),
+          coordinateValue: font("dd"),
+        };
+      });
+      if (locationTypography.heading < 18 || locationTypography.label < 15 ||
+          locationTypography.district < 15 || locationTypography.secondaryDistrict < 15 ||
+          locationTypography.search < 16 || locationTypography.help < 15 ||
+          locationTypography.coordinateLabel < 14 || locationTypography.coordinateValue < 15) {
+        failures.push(vp.name + ": location text remains too small " + JSON.stringify(locationTypography));
+      }
+      const stateDropdown = page.locator(".awqaat-location-menu button[role=combobox]").first();
+      await stateDropdown.click();
+      const stateOptionSize = await page.locator(".awqaat-location-state-options [role=option]").first()
+        .evaluate(node => parseFloat(getComputedStyle(node).fontSize));
+      if (stateOptionSize < 16) failures.push(vp.name + ": state dropdown font too small " + stateOptionSize);
+      await page.keyboard.press("Escape");
       await page.keyboard.press("Escape");
 
       await navButtons.nth(6).click();

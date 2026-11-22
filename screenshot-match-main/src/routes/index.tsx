@@ -325,7 +325,7 @@ function Index() {
                   <SelectTrigger className="w-full rounded-xl bg-background/80">
                     <SelectValue placeholder={t("state")} />
                   </SelectTrigger>
-                  <SelectContent className="max-h-64">
+                  <SelectContent className="awqaat-location-state-options max-h-64">
                     {ORDERED_STATES.map((s) =>
                       <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                     )}
