@@ -110,6 +110,8 @@ function Index() {
   const [open, setOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
+  // Explicit page navigation is separate from the scroll-spy highlight.
+  const [homeFooterVisible, setHomeFooterVisible] = useState(true);
   // Explicit navigation owns the indicator during its smooth scroll.
   const navScrollRef = useRef<{ tab: "home" | "prayers"; until: number } | null>(null);
   // Always show the live timing for the selected district or GPS coordinates.
@@ -202,6 +204,7 @@ function Index() {
     setSettingsOpen(false);
     navScrollRef.current = id === "home" || id === "prayers"
       ? { tab: id, until: performance.now() + 1400 } : null;
+    setHomeFooterVisible(id === "home");
     setActiveTab(id);
     // Wait for the selected tab to become visible before scrolling.
     requestAnimationFrame(() => {
@@ -599,7 +602,7 @@ function Index() {
         </section>
       </main>
 
-      <JamiaFooter />
+      {homeFooterVisible && showHome && <JamiaFooter />}
 
 
       <nav className={cn("glass-bottom-nav", settingsOpen && "settings-nav-open")} aria-label={t("navHome") + " / " + t("settings")}>
