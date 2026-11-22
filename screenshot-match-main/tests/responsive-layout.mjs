@@ -331,7 +331,7 @@ try {
           if ((await second.getByRole("button").count()) < 3)
             failures.push(vp.name + ": secondary audio controls missing");
           if (vp.width === 390) {
-            const response = await page.request.get("/audio/al-hafiz-muhammed-muhsin.mp3", {
+            const response = await page.request.get(new URL("/audio/al-hafiz-muhammed-muhsin.mp3", page.url()).href, {
               headers: { Range: "bytes=0-1023" }
             });
             const audioBytes = new Uint8Array(await response.body());
